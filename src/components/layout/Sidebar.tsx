@@ -8,13 +8,12 @@ import {
   LogOut,
   Menu,
   Building2,
-  Shield,
   CreditCard
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuth } from '../../contexts/AuthContext';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { AnimatedIcon } from '../ui/animated-icon';
 
 interface SidebarProps {
@@ -81,7 +80,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
       <div className={`
         fixed left-0 top-0 z-30 h-full bg-card border-r border-border transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0 lg:static lg:z-10
+        lg:translate-x-0 lg:fixed lg:z-0
         w-64
       `}>
         <div className="flex flex-col h-full">

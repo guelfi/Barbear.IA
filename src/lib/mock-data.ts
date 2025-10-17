@@ -1,4 +1,4 @@
-import { Appointment, Barber, Client, Service, DashboardStats, Tenant, User } from '../types';
+import { Appointment, Barber, Client, Service, DashboardStats, Tenant } from '../types';
 
 export const mockTenants: Tenant[] = [
   {

@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { Button } from "../ui/button";
 import { MaterialButton } from "../ui/material-button";
 import {
   MaterialCard,
@@ -18,7 +17,7 @@ import {
 } from "../ui/tabs";
 import { ThemeToggle } from "../ui/theme-toggle";
 import { motion } from "motion/react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+// ImageWithFallback import removed as it is unused
 import { useAuth } from "../../contexts/AuthContext";
 import {
   Eye,
@@ -27,18 +26,15 @@ import {
   Users,
   Shield,
   UserCheck,
-  CheckCircle,
 } from "lucide-react";
 import { AnimatedIcon } from "../ui/animated-icon";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { LoginCredentials, RegisterData } from "../../types";
 import { formatPhoneBrazil, validateEmail, validatePhone } from "../../lib/validation";
 
 export function AuthForm() {
   const [activeTab, setActiveTab] = useState("login");
-  const [userType, setUserType] = useState<
-    "barbershop" | "client"
-  >("barbershop");
+  // unused state removed
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   
@@ -810,7 +806,10 @@ export function AuthForm() {
                         ...registerData,
                         userType: "client",
                       });
-                      setUserType("client");
+                      setRegisterData({
+                        ...registerData,
+                        userType: "client",
+                      });
                     }}
                     className="flex-1 flex flex-col h-auto py-3 px-2 user-type-button"
                     data-selected={registerData.userType === "client"}
@@ -833,6 +832,10 @@ export function AuthForm() {
                     type="button"
                     variant={
                       registerData.userType === "barber"
+
+
+
+
                         ? "raised"
                         : "outline"
                     }
@@ -841,7 +844,6 @@ export function AuthForm() {
                         ...registerData,
                         userType: "barber",
                       });
-                      setUserType("barber" as any);
                     }}
                     className="flex-1 flex flex-col h-auto py-3 px-2 user-type-button"
                     data-selected={registerData.userType === "barber"}
@@ -872,7 +874,6 @@ export function AuthForm() {
                         ...registerData,
                         userType: "barbershop",
                       });
-                      setUserType("barbershop");
                     }}
                     className="flex-1 flex flex-col h-auto py-3 px-2 user-type-button"
                     data-selected={registerData.userType === "barbershop"}

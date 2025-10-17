@@ -35,7 +35,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { User as UserType } from '../../types';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 // Mock users data
 const mockUsers: UserType[] = [

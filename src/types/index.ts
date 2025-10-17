@@ -148,7 +148,7 @@ export interface RegisterData {
   email: string;
   password: string;
   phone: string;
-  userType: 'barbershop' | 'client';
+  userType: 'barbershop' | 'client' | 'barber';
   // For barbershop registration
   businessName?: string;
   address?: string;

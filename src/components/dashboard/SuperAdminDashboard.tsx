@@ -40,7 +40,7 @@ import {
   Play,
 } from 'lucide-react';
 import { SuperAdminStats, Tenant } from '../../types';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 // Mock data for Super Admin
 const mockSuperAdminStats: SuperAdminStats = {
