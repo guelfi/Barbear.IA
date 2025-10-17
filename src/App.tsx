@@ -243,7 +243,7 @@ function AppContent() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -251,7 +251,7 @@ function AppContent() {
         onToggle={handleSidebarToggle}
       />
       
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-64 lg:relative lg:z-10">
+      <div className="flex flex-col min-h-screen lg:ml-64">
         <Header
           title={currentTitle}
           onMenuToggle={handleSidebarToggle}
