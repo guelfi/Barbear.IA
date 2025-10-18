@@ -46,8 +46,8 @@ export function TrialBanner() {
   };
 
   return (
-    <div className="px-4 lg:px-6">
-      <Alert className="border-l-4 border-l-primary bg-muted/30 py-2 px-3 min-h-[76px]">
+    <div className="mb-6">
+      <Alert className="border-l-4 border-l-primary bg-muted/30 py-3 px-4 max-w-full">
         <div className="space-y-1">
           {/* Primeira linha: ícone + texto + chip */}
           <div className="flex items-center space-x-2">

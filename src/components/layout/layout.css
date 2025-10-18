@@ -1,0 +1,40 @@
+/* Layout específico para corrigir o problema do sidebar */
+.sidebar-layout {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar-container {
+  width: 16rem; /* 256px - w-64 */
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile styles */
+@media (max-width: 1023px) {
+  .sidebar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 30;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .sidebar-container.open {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    width: 100%;
+  }
+}

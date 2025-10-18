@@ -16,6 +16,7 @@ import { ServiceList } from './components/services/ServiceList';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner';
 import { Appointment, Client } from './types';
+import './components/layout/layout.css';
 
 function AppContent() {
   const { user, isLoading } = useAuth();
@@ -243,23 +244,24 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Sidebar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        isOpen={sidebarOpen}
-        onToggle={handleSidebarToggle}
-      />
-      
-      <div className="flex flex-col min-h-screen lg:ml-64">
+    <div className="sidebar-layout bg-background text-foreground">
+      <div className={`sidebar-container ${sidebarOpen ? 'open' : ''}`}>
+        <Sidebar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          isOpen={sidebarOpen}
+          onToggle={handleSidebarToggle}
+        />
+      </div>
+
+      <div className="main-content">
         <Header
           title={currentTitle}
           onMenuToggle={handleSidebarToggle}
         />
-        
-        {user?.role !== 'super_admin' && user?.role !== 'barber' && <TrialBanner />}
-        
+
         <main className="flex-1 overflow-auto p-4 lg:p-6">
+          {user?.role !== 'super_admin' && user?.role !== 'barber' && <TrialBanner />}
           {renderContent()}
         </main>
       </div>
