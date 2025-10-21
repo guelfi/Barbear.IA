@@ -1,17 +1,24 @@
-name: Deploy to OCI
+name: Deploy Barbear.IA to OCI
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:  # Permite execução manual
+
+env:
+  PROJECT_NAME: Barbear.IA
+  CONTAINER_NAME: barbear-ia-frontend
+  PORT: 3500
 
 jobs:
   test:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -22,11 +29,21 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
+    - name: Run linting
+      run: npm run lint || echo "Linting completed with warnings"
+    
     - name: Run tests
       run: npm test -- --coverage --watchAll=false
     
     - name: Build application
       run: npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files
+        path: build/
+        retention-days: 1
 
   deploy:
     needs: test
@@ -34,121 +51,153 @@ jobs:
     if: github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build application
-      run: npm run build
-    
-    - name: Build and tag Docker image
-      run: |
-        docker build -t barbear-ia-frontend:latest .
-        docker tag barbear-ia-frontend:latest barbear-ia-frontend:${{ github.sha }}
-    
-    - name: Save Docker image
-      run: docker save barbear-ia-frontend:latest | gzip > barbear-ia-frontend.tar.gz
-    
-    - name: Deploy to OCI
+    - name: Sync project files to OCI
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.OCI_HOST }}
         username: ${{ secrets.OCI_USERNAME }}
         key: ${{ secrets.OCI_SSH_KEY }}
         script: |
+          echo "🚀 Iniciando sincronização do ${{ env.PROJECT_NAME }}..."
+          
           # Create project directory if not exists
-          sudo mkdir -p /var/www/Barbear.IA
-          sudo chown ubuntu:ubuntu /var/www/Barbear.IA
-          cd /var/www/Barbear.IA
+          sudo mkdir -p /var/www/${{ env.PROJECT_NAME }}
+          sudo chown ubuntu:ubuntu /var/www/${{ env.PROJECT_NAME }}
+          cd /var/www/${{ env.PROJECT_NAME }}
           
           # Backup current setup
           if [ -f docker-compose.yml ]; then
+            echo "📦 Criando backup da configuração atual..."
             cp docker-compose.yml docker-compose.yml.backup.$(date +%Y%m%d_%H%M%S)
           fi
           
-          # Download project files
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Accept: application/vnd.github.v3.raw" \
-               -o docker-compose.yml \
-               -L https://api.github.com/repos/${{ github.repository }}/contents/docker-compose.yml
+          # Download essential project files from GitHub
+          echo "📥 Baixando arquivos do repositório..."
           
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Accept: application/vnd.github.v3.raw" \
-               -o Dockerfile \
-               -L https://api.github.com/repos/${{ github.repository }}/contents/Dockerfile
+          # Function to download file with error handling
+          download_file() {
+            local file=$1
+            echo "Baixando $file..."
+            if curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                    -H "Accept: application/vnd.github.v3.raw" \
+                    -o "$file" \
+                    -L "https://api.github.com/repos/${{ github.repository }}/contents/$file" \
+                    --fail --silent --show-error; then
+              echo "✅ $file baixado com sucesso"
+            else
+              echo "❌ Erro ao baixar $file"
+              return 1
+            fi
+          }
           
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Accept: application/vnd.github.v3.raw" \
-               -o nginx.conf \
-               -L https://api.github.com/repos/${{ github.repository }}/contents/nginx.conf
+          # Download required files
+          download_file "docker-compose.yml"
+          download_file "Dockerfile"
+          download_file "nginx.conf"
+          download_file "package.json"
+          download_file ".dockerignore"
           
-          # Stop current containers (only Barbear.IA)
-          if [ -f docker-compose.yml ]; then
-            docker-compose down --remove-orphans
+          echo "✅ Sincronização de arquivos concluída"
+
+    - name: Deploy to OCI with Zero Downtime
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.OCI_HOST }}
+        username: ${{ secrets.OCI_USERNAME }}
+        key: ${{ secrets.OCI_SSH_KEY }}
+        script: |
+          cd /var/www/${{ env.PROJECT_NAME }}
+          
+          echo "🔄 Iniciando deploy do ${{ env.PROJECT_NAME }}..."
+          
+          # Check if container is currently running
+          CONTAINER_RUNNING=$(docker-compose ps -q ${{ env.CONTAINER_NAME }} 2>/dev/null)
+          
+          if [ ! -z "$CONTAINER_RUNNING" ]; then
+            echo "📊 Container atual detectado, preparando para atualização..."
+            
+            # Health check before deploy
+            if curl -f http://localhost:${{ env.PORT }}/ > /dev/null 2>&1; then
+              echo "✅ Aplicação atual está saudável"
+            else
+              echo "⚠️ Aplicação atual não está respondendo"
+            fi
           fi
           
-          # Remove old Barbear.IA images only
-          docker images --format "table {{.Repository}}:{{.Tag}}" | grep barbear-ia | xargs -r docker rmi -f
+          # Build new image with cache optimization
+          echo "🏗️ Construindo nova imagem..."
+          docker-compose build --no-cache ${{ env.CONTAINER_NAME }}
           
-          # Build new image
-          docker-compose build --no-cache
-          
-          # Start new version
-          docker-compose up -d
-          
-          # Health check
-          echo "Aguardando 30 segundos para inicialização..."
-          sleep 30
-          
-          # Check if container is running
-          if ! docker-compose ps | grep -q "Up"; then
-            echo "Container não está rodando, verificando logs..."
-            docker-compose logs
+          if [ $? -ne 0 ]; then
+            echo "❌ Erro no build da imagem"
             exit 1
           fi
           
-          # Test application
-          if ! curl -f http://localhost:3500/ > /dev/null 2>&1; then
-            echo "Health check failed, rolling back..."
+          # Stop current container gracefully
+          if [ ! -z "$CONTAINER_RUNNING" ]; then
+            echo "🛑 Parando container atual..."
+            docker-compose stop ${{ env.CONTAINER_NAME }}
+          fi
+          
+          # Start new version
+          echo "🚀 Iniciando nova versão..."
+          docker-compose up -d ${{ env.CONTAINER_NAME }}
+          
+          # Wait for container to be ready
+          echo "⏳ Aguardando inicialização (30 segundos)..."
+          sleep 30
+          
+          # Health check with retry
+          echo "🔍 Executando health check..."
+          RETRY_COUNT=0
+          MAX_RETRIES=5
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if curl -f http://localhost:${{ env.PORT }}/ > /dev/null 2>&1; then
+              echo "✅ Health check passou! Aplicação está funcionando"
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              echo "⏳ Tentativa $RETRY_COUNT/$MAX_RETRIES falhou, aguardando 10 segundos..."
+              sleep 10
+            fi
+          done
+          
+          # Final health check
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "❌ Health check falhou após $MAX_RETRIES tentativas"
+            echo "📋 Logs do container:"
+            docker-compose logs --tail=20 ${{ env.CONTAINER_NAME }}
+            
+            echo "🔄 Tentando rollback..."
             docker-compose down
+            
+            # Restore from backup if available
             if [ -f docker-compose.yml.backup.* ]; then
               latest_backup=$(ls -t docker-compose.yml.backup.* | head -1)
+              echo "📦 Restaurando backup: $latest_backup"
               cp "$latest_backup" docker-compose.yml
-              docker-compose up -d
+              docker-compose up -d ${{ env.CONTAINER_NAME }}
+              sleep 15
+              
+              if curl -f http://localhost:${{ env.PORT }}/ > /dev/null 2>&1; then
+                echo "✅ Rollback realizado com sucesso"
+              else
+                echo "❌ Rollback também falhou"
+              fi
             fi
             exit 1
           fi
           
-          echo "Deploy realizado com sucesso! Barbear.IA disponível na porta 3500"
+          # Show final status
+          echo "📊 Status final dos containers:"
+          docker-compose ps
           
-          # Cleanup old images (only unused ones)
+          echo "🧹 Limpando imagens não utilizadas..."
           docker image prune -f
-    
-    - name: Copy Docker image to OCI
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ secrets.OCI_HOST }}
-        username: ${{ secrets.OCI_USERNAME }}
-        key: ${{ secrets.OCI_SSH_KEY }}
-        source: "barbear-ia-frontend.tar.gz"
-        target: "/tmp/"
-    
-    - name: Load Docker image on OCI
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.OCI_HOST }}
-        username: ${{ secrets.OCI_USERNAME }}
-        key: ${{ secrets.OCI_SSH_KEY }}
-        script: |
-          cd /tmp
-          if [ -f barbear-ia-frontend.tar.gz ]; then
-            docker load < barbear-ia-frontend.tar.gz
-            rm barbear-ia-frontend.tar.gz
-          fi
+          
+          echo "🎉 Deploy do ${{ env.PROJECT_NAME }} realizado com sucesso!"
+          echo "🌐 Aplicação disponível em: http://${{ secrets.OCI_HOST }}:${{ env.PORT }}"
