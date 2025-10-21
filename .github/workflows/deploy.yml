@@ -1,0 +1,154 @@
+name: Deploy to OCI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests
+      run: npm test -- --coverage --watchAll=false
+    
+    - name: Build application
+      run: npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Build and tag Docker image
+      run: |
+        docker build -t barbear-ia-frontend:latest .
+        docker tag barbear-ia-frontend:latest barbear-ia-frontend:${{ github.sha }}
+    
+    - name: Save Docker image
+      run: docker save barbear-ia-frontend:latest | gzip > barbear-ia-frontend.tar.gz
+    
+    - name: Deploy to OCI
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.OCI_HOST }}
+        username: ${{ secrets.OCI_USERNAME }}
+        key: ${{ secrets.OCI_SSH_KEY }}
+        script: |
+          # Create project directory if not exists
+          sudo mkdir -p /var/www/Barbear.IA
+          sudo chown ubuntu:ubuntu /var/www/Barbear.IA
+          cd /var/www/Barbear.IA
+          
+          # Backup current setup
+          if [ -f docker-compose.yml ]; then
+            cp docker-compose.yml docker-compose.yml.backup.$(date +%Y%m%d_%H%M%S)
+          fi
+          
+          # Download project files
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3.raw" \
+               -o docker-compose.yml \
+               -L https://api.github.com/repos/${{ github.repository }}/contents/docker-compose.yml
+          
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3.raw" \
+               -o Dockerfile \
+               -L https://api.github.com/repos/${{ github.repository }}/contents/Dockerfile
+          
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3.raw" \
+               -o nginx.conf \
+               -L https://api.github.com/repos/${{ github.repository }}/contents/nginx.conf
+          
+          # Stop current containers (only Barbear.IA)
+          if [ -f docker-compose.yml ]; then
+            docker-compose down --remove-orphans
+          fi
+          
+          # Remove old Barbear.IA images only
+          docker images --format "table {{.Repository}}:{{.Tag}}" | grep barbear-ia | xargs -r docker rmi -f
+          
+          # Build new image
+          docker-compose build --no-cache
+          
+          # Start new version
+          docker-compose up -d
+          
+          # Health check
+          echo "Aguardando 30 segundos para inicialização..."
+          sleep 30
+          
+          # Check if container is running
+          if ! docker-compose ps | grep -q "Up"; then
+            echo "Container não está rodando, verificando logs..."
+            docker-compose logs
+            exit 1
+          fi
+          
+          # Test application
+          if ! curl -f http://localhost:3500/ > /dev/null 2>&1; then
+            echo "Health check failed, rolling back..."
+            docker-compose down
+            if [ -f docker-compose.yml.backup.* ]; then
+              latest_backup=$(ls -t docker-compose.yml.backup.* | head -1)
+              cp "$latest_backup" docker-compose.yml
+              docker-compose up -d
+            fi
+            exit 1
+          fi
+          
+          echo "Deploy realizado com sucesso! Barbear.IA disponível na porta 3500"
+          
+          # Cleanup old images (only unused ones)
+          docker image prune -f
+    
+    - name: Copy Docker image to OCI
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.OCI_HOST }}
+        username: ${{ secrets.OCI_USERNAME }}
+        key: ${{ secrets.OCI_SSH_KEY }}
+        source: "barbear-ia-frontend.tar.gz"
+        target: "/tmp/"
+    
+    - name: Load Docker image on OCI
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.OCI_HOST }}
+        username: ${{ secrets.OCI_USERNAME }}
+        key: ${{ secrets.OCI_SSH_KEY }}
+        script: |
+          cd /tmp
+          if [ -f barbear-ia-frontend.tar.gz ]; then
+            docker load < barbear-ia-frontend.tar.gz
+            rm barbear-ia-frontend.tar.gz
+          fi
