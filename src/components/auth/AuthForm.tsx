@@ -773,7 +773,7 @@ export function AuthForm() {
                     transition={{ duration: 0.4, delay: 0.7 }}
                   >
                     <p className="text-xs text-muted-foreground text-center mb-3">
-                      Acesso rápido para teste:
+                      Acesso rápido para teste (REMOVER QUANDO ENTRAR EM PRODUÇÃO):
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       <MaterialButton
