@@ -56,11 +56,14 @@ export interface TenantSettings {
 export interface Service {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   price: number;
   duration: number; // minutes
+  category: string;
   tenantId: string;
   isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Barber {
@@ -69,10 +72,32 @@ export interface Barber {
   email: string;
   phone: string;
   avatar?: string;
-  services: string[]; // service IDs
-  schedule: Schedule[];
+  specialties: string[];
+  workingHours: WorkingHours;
+  services?: string[]; // service IDs
+  schedule?: Schedule[];
   tenantId: string;
   isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface WorkingHours {
+  monday: DaySchedule;
+  tuesday: DaySchedule;
+  wednesday: DaySchedule;
+  thursday: DaySchedule;
+  friday: DaySchedule;
+  saturday: DaySchedule;
+  sunday: DaySchedule;
+}
+
+export interface DaySchedule {
+  isWorking: boolean;
+  startTime?: string;
+  endTime?: string;
+  breakStart?: string;
+  breakEnd?: string;
 }
 
 export interface Schedule {

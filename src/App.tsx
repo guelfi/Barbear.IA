@@ -11,11 +11,16 @@ import { AppointmentCalendar } from './components/appointments/AppointmentCalend
 import { AppointmentForm } from './components/appointments/AppointmentForm';
 import { ClientList } from './components/clients/ClientList';
 import { ClientForm } from './components/clients/ClientForm';
+import { ClientProfile } from './components/clients/ClientProfile';
 import { BarberList } from './components/barbers/BarberList';
+import { BarberForm } from './components/barbers/BarberForm';
+import { BarberProfile } from './components/barbers/BarberProfile';
+import { BarbershopProfile } from './components/barbershop/BarbershopProfile';
 import { ServiceList } from './components/services/ServiceList';
+import { ServiceForm } from './components/services/ServiceForm';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner';
-import { Appointment, Client } from './types';
+import { Appointment, Client, Barber, Service } from './types';
 import './components/layout/layout.css';
 
 function AppContent() {
@@ -25,8 +30,12 @@ function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
+  const [showBarberForm, setShowBarberForm] = useState(false);
+  const [showServiceForm, setShowServiceForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | undefined>();
   const [editingClient, setEditingClient] = useState<Client | undefined>();
+  const [editingBarber, setEditingBarber] = useState<Barber | undefined>();
+  const [editingService, setEditingService] = useState<Service | undefined>();
 
   const titles = useMemo(() => ({
     dashboard: user?.role === 'super_admin' ? 'Super Dashboard' : 'Dashboard',
@@ -35,6 +44,7 @@ function AppContent() {
     barbers: 'Barbeiros',
     services: 'Serviços',
     settings: 'Configurações',
+    profile: 'Meu Perfil',
     tenants: 'Barbearias',
     users: 'Usuários',
     billing: 'Faturamento',
@@ -82,30 +92,54 @@ function AppContent() {
   }, [editingClient]);
 
   const handleCreateBarber = useCallback(() => {
-    // Placeholder for barber creation logic
-    toast.success('Barbeiro criado com sucesso!');
+    setEditingBarber(undefined);
+    setShowBarberForm(true);
   }, []);
 
-  const handleEditBarber = useCallback(() => {
-    // Placeholder for barber editing logic
-    toast.success('Barbeiro atualizado com sucesso!');
+  const handleEditBarber = useCallback((barber: Barber) => {
+    setEditingBarber(barber);
+    setShowBarberForm(true);
   }, []);
+
+  const handleSaveBarber = useCallback((barberData: Partial<Barber>) => {
+    if (editingBarber) {
+      toast.success('Barbeiro atualizado com sucesso!');
+    } else {
+      toast.success('Barbeiro cadastrado com sucesso!');
+    }
+    setShowBarberForm(false);
+    setEditingBarber(undefined);
+  }, [editingBarber]);
 
   const handleCreateService = useCallback(() => {
-    // Placeholder for service creation logic
-    toast.success('Serviço criado com sucesso!');
+    setEditingService(undefined);
+    setShowServiceForm(true);
   }, []);
 
-  const handleEditService = useCallback(() => {
-    // Placeholder for service editing logic
-    toast.success('Serviço atualizado com sucesso!');
+  const handleEditService = useCallback((service: Service) => {
+    setEditingService(service);
+    setShowServiceForm(true);
   }, []);
+
+  const handleSaveService = useCallback((serviceData: Partial<Service>) => {
+    if (editingService) {
+      toast.success('Serviço atualizado com sucesso!');
+    } else {
+      toast.success('Serviço cadastrado com sucesso!');
+    }
+    setShowServiceForm(false);
+    setEditingService(undefined);
+  }, [editingService]);
 
   const handleCancel = useCallback(() => {
     setShowAppointmentForm(false);
     setShowClientForm(false);
+    setShowBarberForm(false);
+    setShowServiceForm(false);
     setEditingAppointment(undefined);
     setEditingClient(undefined);
+    setEditingBarber(undefined);
+    setEditingService(undefined);
   }, []);
 
   const handleSidebarToggle = useCallback(() => {
@@ -128,6 +162,26 @@ function AppContent() {
         <ClientForm
           client={editingClient}
           onSave={handleSaveClient}
+          onCancel={handleCancel}
+        />
+      );
+    }
+
+    if (showBarberForm) {
+      return (
+        <BarberForm
+          barber={editingBarber}
+          onSave={handleSaveBarber}
+          onCancel={handleCancel}
+        />
+      );
+    }
+
+    if (showServiceForm) {
+      return (
+        <ServiceForm
+          service={editingService}
+          onSave={handleSaveService}
           onCancel={handleCancel}
         />
       );
@@ -187,8 +241,12 @@ function AppContent() {
             onEditService={handleEditService}
           />
         );
+      case 'profile':
+        // Para admin (barbearia) mostra perfil da barbearia, para cliente mostra perfil do cliente
+        return user?.role === 'admin' ? <BarbershopProfile /> : <ClientProfile />;
       case 'settings':
-        return (
+        // Para barbeiro mostra perfil do barbeiro, para outros mostra configurações
+        return user?.role === 'barber' ? <BarberProfile /> : (
           <div className="text-center py-12">
             <h3>Configurações</h3>
             <p className="text-muted-foreground">
@@ -202,8 +260,12 @@ function AppContent() {
   }, [
     showAppointmentForm,
     showClientForm,
+    showBarberForm,
+    showServiceForm,
     editingAppointment,
     editingClient,
+    editingBarber,
+    editingService,
     user?.role,
     activeTab,
     handleCreateAppointment,
@@ -216,6 +278,8 @@ function AppContent() {
     handleEditService,
     handleSaveAppointment,
     handleSaveClient,
+    handleSaveBarber,
+    handleSaveService,
     handleCancel
   ]);
 

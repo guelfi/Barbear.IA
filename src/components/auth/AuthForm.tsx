@@ -37,17 +37,17 @@ export function AuthForm() {
   // unused state removed
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  
+
   // Refs para auto-focus
   const loginEmailRef = useRef<HTMLInputElement>(null);
   const registerNameRef = useRef<HTMLInputElement>(null);
-  
+
   // Estados para animação de typewriter
   const [showLoginTypewriter, setShowLoginTypewriter] = useState(false);
   const [loginTypewriterText, setLoginTypewriterText] = useState("");
   const [showRegisterTypewriter, setShowRegisterTypewriter] = useState(false);
   const [registerTypewriterText, setRegisterTypewriterText] = useState("");
-  
+
   // Estados para validação em tempo real
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [phoneValid, setPhoneValid] = useState<boolean | null>(null);
@@ -80,7 +80,7 @@ export function AuthForm() {
       setShowLoginTypewriter(true);
       const message = "Digite seu email";
       let currentIndex = 0;
-      
+
       const typewriterInterval = setInterval(() => {
         if (currentIndex <= message.length) {
           setLoginTypewriterText(message.slice(0, currentIndex));
@@ -93,7 +93,7 @@ export function AuthForm() {
           }, 3000);
         }
       }, 80); // 80ms entre cada letra
-      
+
       return () => clearInterval(typewriterInterval);
     } else if (loginData.email) {
       setShowLoginTypewriter(false);
@@ -107,7 +107,7 @@ export function AuthForm() {
       setShowRegisterTypewriter(true);
       const message = "Digite seu nome";
       let currentIndex = 0;
-      
+
       const typewriterInterval = setInterval(() => {
         if (currentIndex <= message.length) {
           setRegisterTypewriterText(message.slice(0, currentIndex));
@@ -120,7 +120,7 @@ export function AuthForm() {
           }, 3000);
         }
       }, 80);
-      
+
       return () => clearInterval(typewriterInterval);
     } else if (registerData.name) {
       setShowRegisterTypewriter(false);
@@ -161,12 +161,12 @@ export function AuthForm() {
       }
     }
   };
-  
+
   // Handler para mudança de telefone com máscara e validação
   const handlePhoneChange = (value: string) => {
     const formatted = formatPhoneBrazil(value);
     setRegisterData({ ...registerData, phone: formatted });
-    
+
     if (formatted.length > 0) {
       setPhoneValid(validatePhone(formatted));
     } else {
@@ -260,7 +260,7 @@ export function AuthForm() {
           >
             <motion.div
               className="relative"
-              animate={{ 
+              animate={{
                 rotate: [0, 15, -15, 10, -5, 0],
                 scale: [1, 1.1, 1, 1.05, 1.02, 1],
                 y: [0, -2, 0, -1, 0]
@@ -275,7 +275,7 @@ export function AuthForm() {
                 rotate: [0, -15, 15, -10, 10, 0, 180, 360],
                 scale: [1, 1.3, 1.2, 1.25, 1.1, 1.15, 1.2, 1],
                 y: [0, -5, -3, -4, -2, -3, -1, 0],
-                transition: { 
+                transition: {
                   duration: 1.2,
                   ease: "easeInOut"
                 }
@@ -302,17 +302,17 @@ export function AuthForm() {
                 <Scissors className="h-8 w-8 text-primary mr-2 blur-sm" />
               </motion.div>
             </motion.div>
-            <motion.h1 
+            <motion.h1
               className="text-3xl font-bold text-primary"
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ 
-                duration: 0.6, 
+              transition={{
+                duration: 0.6,
                 delay: 0.5,
                 type: "tween",
                 ease: "easeOut"
               }}
-              whileHover={{ 
+              whileHover={{
                 scale: 1.02,
                 color: "var(--color-primary)",
                 textShadow: "0 0 8px rgba(0,0,0,0.3)"
@@ -341,9 +341,9 @@ export function AuthForm() {
             <motion.div
               className="mx-auto mb-4 w-20 h-20 rounded-full overflow-hidden elevation-2 hover-lift"
               initial={{ scale: 0, rotate: -180, opacity: 0 }}
-              animate={{ 
-                scale: 1, 
-                rotate: 0, 
+              animate={{
+                scale: 1,
+                rotate: 0,
                 opacity: 1,
                 y: [0, -5, 0]
               }}
@@ -353,8 +353,8 @@ export function AuthForm() {
                 type: "tween",
                 ease: "easeOut"
               }}
-              whileHover={{ 
-                scale: 1.1, 
+              whileHover={{
+                scale: 1.1,
                 rotate: [0, -5, 5, 0],
                 boxShadow: "0 8px 25px rgba(0,0,0,0.15)"
               }}
@@ -382,15 +382,15 @@ export function AuthForm() {
                 }}
               >
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg overflow-hidden">
-                  <svg 
-                    width="200" 
-                    height="200" 
-                    viewBox="0 0 200 200" 
+                  <svg
+                    width="200"
+                    height="200"
+                    viewBox="0 0 200 200"
                     className="barbershop-image-animated"
                   >
                     {/* Background */}
                     <rect width="200" height="200" fill="url(#bgGradient)" />
-                    
+
                     {/* Gradients */}
                     <defs>
                       <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -404,33 +404,33 @@ export function AuthForm() {
                         <stop offset="100%" stopColor="#dc2626" />
                       </linearGradient>
                     </defs>
-                    
+
                     {/* Barber Pole */}
                     <g transform="translate(85, 30)">
                       <rect x="0" y="0" width="30" height="140" fill="url(#poleGradient)" rx="15" />
                       <circle cx="15" cy="-5" r="8" fill="#4a5568" />
                       <circle cx="15" cy="145" r="8" fill="#4a5568" />
                     </g>
-                    
+
                     {/* Scissors */}
                     <g transform="translate(50, 80)">
                       <path d="M10 10 L25 25 M25 10 L10 25" stroke="#e2e8f0" strokeWidth="3" strokeLinecap="round" />
                       <circle cx="10" cy="10" r="4" fill="#e2e8f0" />
                       <circle cx="25" cy="25" r="4" fill="#e2e8f0" />
                     </g>
-                    
+
                     {/* Razor */}
                     <g transform="translate(120, 80)">
                       <rect x="0" y="0" width="20" height="30" fill="#6b7280" rx="3" />
                       <rect x="2" y="2" width="16" height="26" fill="#e5e7eb" rx="2" />
                       <rect x="6" y="32" width="8" height="4" fill="#4b5563" />
                     </g>
-                    
+
                     {/* Mustache */}
                     <g transform="translate(70, 120)">
                       <path d="M0 10 Q15 0 30 10 Q45 0 60 10 Q45 20 30 10 Q15 20 0 10" fill="#374151" />
                     </g>
-                    
+
                     {/* Text */}
                     <text x="100" y="180" textAnchor="middle" fill="#e2e8f0" fontSize="14" fontFamily="serif" fontWeight="bold">
                       Barbearia Clássica
@@ -600,12 +600,12 @@ export function AuthForm() {
                   >
                     <motion.div
                       className="relative"
-                      animate={{ 
+                      animate={{
                         rotate: [0, 8, -8, 0],
                         scale: [1, 1.05, 1]
                       }}
-                      transition={{ 
-                        duration: 2, 
+                      transition={{
+                        duration: 2,
                         delay: 0.3,
                         repeat: Infinity,
                         ease: "easeInOut"
@@ -764,6 +764,80 @@ export function AuthForm() {
                       {isLoading ? "Entrando..." : "Entrar"}
                     </MaterialButton>
                   </motion.div>
+
+                  {/* Quick Access Buttons */}
+                  <motion.div
+                    className="mt-6 pt-4 border-t border-border"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.7 }}
+                  >
+                    <p className="text-xs text-muted-foreground text-center mb-3">
+                      Acesso rápido para teste:
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <MaterialButton
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setLoginData({
+                            userType: "barbershop",
+                            email: "admin@barbearia.com",
+                            password: "admin123"
+                          });
+                        }}
+                        className="text-xs"
+                      >
+                        Admin
+                      </MaterialButton>
+                      <MaterialButton
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setLoginData({
+                            userType: "super_admin",
+                            email: "admin@barbear.ia",
+                            password: "super123"
+                          });
+                        }}
+                        className="text-xs"
+                      >
+                        Super Admin
+                      </MaterialButton>
+                      <MaterialButton
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setLoginData({
+                            userType: "barber",
+                            email: "barbeiro@barbearia.com",
+                            password: "barber123"
+                          });
+                        }}
+                        className="text-xs"
+                      >
+                        Barbeiro
+                      </MaterialButton>
+                      <MaterialButton
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setLoginData({
+                            userType: "client",
+                            email: "cliente@email.com",
+                            password: "cliente123"
+                          });
+                        }}
+                        className="text-xs"
+                      >
+                        Cliente
+                      </MaterialButton>
+                    </div>
+                  </motion.div>
                 </motion.form>
 
               </TabsContent>
@@ -881,12 +955,12 @@ export function AuthForm() {
                   >
                     <motion.div
                       className="relative"
-                      animate={{ 
+                      animate={{
                         rotate: [0, 10, -10, 0],
                         scale: [1, 1.08, 1]
                       }}
-                      transition={{ 
-                        duration: 2.5, 
+                      transition={{
+                        duration: 2.5,
                         delay: 0.3,
                         repeat: Infinity,
                         ease: "easeInOut"
@@ -926,8 +1000,8 @@ export function AuthForm() {
                       {registerData.userType === "barbershop"
                         ? "Responsável:"
                         : registerData.userType === "barber"
-                        ? "Barbeiro:"
-                        : "Nome:"}
+                          ? "Barbeiro:"
+                          : "Nome:"}
                     </Label>
                     <div className="relative flex-1">
                       <Input
@@ -1005,10 +1079,9 @@ export function AuthForm() {
                         required
                         disabled={!registerData.userType}
                         placeholder={registerData.userType ? "seu@email.com" : "Selecione o tipo de usuário"}
-                        className={`flex-1 transition-material hover:elevation-1 focus:elevation-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
-                          emailValid === false ? 'border-red-500 focus:border-red-500' : 
-                          emailValid === true ? 'border-green-500 focus:border-green-500' : ''
-                        }`}
+                        className={`flex-1 transition-material hover:elevation-1 focus:elevation-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm ${emailValid === false ? 'border-red-500 focus:border-red-500' :
+                            emailValid === true ? 'border-green-500 focus:border-green-500' : ''
+                          }`}
                       />
                       {emailValid === true && registerData.email && (
                         <motion.div
@@ -1041,10 +1114,9 @@ export function AuthForm() {
                         required
                         disabled={!registerData.userType}
                         placeholder={registerData.userType ? "(11) 99999-9999" : "Selecione o tipo de usuário"}
-                        className={`flex-1 transition-material hover:elevation-1 focus:elevation-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
-                          phoneValid === false ? 'border-red-500 focus:border-red-500' : 
-                          phoneValid === true ? 'border-green-500 focus:border-green-500' : ''
-                        }`}
+                        className={`flex-1 transition-material hover:elevation-1 focus:elevation-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm ${phoneValid === false ? 'border-red-500 focus:border-red-500' :
+                            phoneValid === true ? 'border-green-500 focus:border-green-500' : ''
+                          }`}
                       />
                       {phoneValid === true && registerData.phone && (
                         <motion.div
