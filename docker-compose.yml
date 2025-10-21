@@ -1,0 +1,22 @@
+version: '3.3'
+
+services:
+  barbear-ia-frontend:
+    build: .
+    container_name: barbear-ia-frontend
+    ports:
+      - "3500:80"
+    networks:
+      - barbear-ia-net
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/ || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  barbear-ia-net:
+    driver: bridge
