@@ -18,6 +18,56 @@
 
 O **Barbear.IA** é uma plataforma SaaS (Software as a Service) moderna e completa para gestão de barbearias, desenvolvida com foco na experiência do usuário e eficiência operacional. O sistema oferece uma solução integrada para agendamentos, gestão de clientes, barbeiros, serviços e muito mais.
 
+## 🚧 Status do Projeto
+
+> **⚠️ PROJETO EM DESENVOLVIMENTO - ATUALMENTE EM FREEZER**
+
+Este projeto encontra-se atualmente **pausado temporariamente** devido ao desenvolvedor principal estar envolvido em outros projetos prioritários. 
+
+### 📋 Situação Atual
+- ✅ **Frontend Completo**: Interface do usuário totalmente desenvolvida e funcional
+- ⏸️ **Backend Pendente**: Ainda não iniciado o desenvolvimento da API
+- 🎨 **Design Finalizado**: Todas as telas e componentes implementados
+- 📱 **Responsividade**: Interface adaptada para todos os dispositivos
+
+### 👨‍💻 Desenvolvedor Principal
+**Marco Guelfi** - Proprietário do repositório e conta GitHub
+- Desenvolvedor Full Stack com foco em arquiteturas modernas
+- Atualmente dedicado a outros projetos comerciais
+- Retomada do desenvolvimento prevista conforme disponibilidade
+
+### 🔮 Roadmap Técnico do Backend
+Quando retomado, o backend será desenvolvido utilizando as melhores práticas do mercado:
+
+**🏗️ Tecnologias Planejadas:**
+- **.NET Core 8** - Framework principal
+- **Entity Framework Core** - ORM para acesso a dados
+- **SQL Server** - Banco de dados principal
+- **Redis** - Cache e sessões
+- **Docker** - Containerização
+
+**📐 Padrões de Arquitetura:**
+- **DDD (Domain Driven Design)** - Modelagem orientada ao domínio
+- **Clean Architecture** - Arquitetura limpa e desacoplada
+- **SOLID Principles** - Princípios de design orientado a objetos
+- **CQRS** - Separação de comandos e consultas
+- **Event Sourcing** - Rastreamento de eventos
+
+**🧪 Qualidade de Código:**
+- **TDD (Test Driven Development)** - Desenvolvimento orientado a testes
+- **Clean Code** - Código limpo e legível
+- **Unit Tests** - Testes unitários abrangentes
+- **Integration Tests** - Testes de integração
+- **Code Coverage** - Cobertura de testes > 90%
+
+### 🤝 Contribuições
+Embora o projeto esteja pausado, **contribuições são bem-vindas**, especialmente:
+- 🐛 Correções de bugs no frontend
+- 🎨 Melhorias na interface
+- 📚 Documentação
+- 🧪 Testes automatizados
+- 💡 Sugestões de funcionalidades
+
 ### 🌟 Características Principais
 
 - **🏢 Multi-tenant**: Suporte a múltiplas barbearias em uma única plataforma
