@@ -130,18 +130,88 @@ docker-compose up -d
 
 ## 🚨 Troubleshooting
 
-### Deploy falha no health check:
+### ❌ **Erro mais comum: Dessincronização de Dependências**
+
+**Sintoma:** `npm ci` falha com erro sobre package-lock.json desatualizado
+
+**Causa:** Versões no `package.json` e `package-lock.json` não estão sincronizadas
+
+**Solução:**
+```bash
+# 1. Regenerar package-lock.json
+rm package-lock.json
+npm install
+
+# 2. Commitar as alterações
+git add package-lock.json
+git commit -m "fix: regenerar package-lock.json para sincronizar dependências"
+git push
+
+# 3. Validar sincronização
+npm ci --dry-run
+```
+
+**Prevenção:** Sempre execute `npm ci --dry-run` antes de fazer push
+
+### 🐳 **Erro de Permissão Docker Buildx**
+
+**Sintoma:** `ERROR: open /home/***/.docker/buildx/.lock: permission denied`
+
+**Solução:**
+```bash
+# Via SSH na instância OCI
+sudo chown -R ubuntu:ubuntu /home/ubuntu/.docker/
+sudo chmod -R 755 /home/ubuntu/.docker/
+sudo systemctl restart docker
+```
+
+### 💾 **Problemas de Memória/Swap**
+
+**Sintoma:** Build falha por falta de memória
+
+**Solução:** Configurar swap na OCI:
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+### 🏥 **Deploy falha no health check:**
 1. Verifique os logs: `docker-compose logs barbear-ia-frontend`
 2. Verifique se a porta 3500 está aberta no firewall
 3. Teste conectividade local: `curl http://localhost:3500/`
 
-### Erro de permissão SSH:
+### 🔐 **Erro de permissão SSH:**
 1. Verifique se a chave SSH está correta no secret
 2. Teste conexão manual: `ssh -i ssh-key-2025-08-28.key ubuntu@[OCI_HOST]`
 
-### Arquivos não sincronizam:
+### 📁 **Arquivos não sincronizam:**
 1. Verifique se o `GITHUB_TOKEN` tem permissões adequadas
 2. Confirme se os arquivos existem no repositório
+
+### 🔍 **Comandos de Diagnóstico Avançado:**
+
+```bash
+# Verificar sincronização de dependências
+npm ci --dry-run
+
+# Verificar espaço em disco na OCI
+df -h
+
+# Verificar memória disponível
+free -h
+
+# Verificar logs detalhados do Docker
+docker-compose logs --tail=50 barbear-ia-frontend
+
+# Verificar status dos contêineres
+docker-compose ps
+
+# Testar build local
+docker-compose build --no-cache barbear-ia-frontend
+```
 
 ## 📊 Monitoramento
 
