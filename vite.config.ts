@@ -78,6 +78,7 @@ import { defineConfig } from 'vite';
     },
     server: {
       port: 3500,
+      host: '0.0.0.0',
       open: true,
       hmr: {
         port: 3501,
@@ -86,6 +87,8 @@ import { defineConfig } from 'vite';
       watch: {
         usePolling: true,
         interval: 100
-      }
+      },
+      cors: true,
+      strictPort: false
     },
   });
