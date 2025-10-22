@@ -32,7 +32,6 @@ import {
   User,
   Ban,
   CheckCircle,
-  XCircle,
 } from 'lucide-react';
 import { User as UserType } from '../../types';
 import { toast } from 'sonner';

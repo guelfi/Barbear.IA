@@ -111,7 +111,7 @@ const hoverVariants = {
   navigation: {
     scale: 1.1,
     rotate: [0, 5, -5, 0],
-    transition: { duration: 0.3, type: "tween" }
+    transition: { duration: 0.3, type: "tween" as const }
   },
   action: {
     scale: 1.2,
@@ -121,7 +121,7 @@ const hoverVariants = {
   user: {
     scale: 1.15,
     rotate: [0, 10, -10, 0],
-    transition: { duration: 0.5, type: "tween" }
+    transition: { duration: 0.5, type: "tween" as const }
   },
   admin: {
     scale: 1.2,
@@ -136,7 +136,7 @@ const hoverVariants = {
   calendar: {
     scale: 1.15,
     rotateX: [0, 15, 0],
-    transition: { duration: 0.4, type: "tween" }
+    transition: { duration: 0.4, type: "tween" as const }
   },
   system: {
     rotate: 360,
@@ -145,13 +145,13 @@ const hoverVariants = {
   interactive: {
     scale: 1.3,
     rotate: [0, 15, -15, 0],
-    transition: { duration: 0.4, type: "tween" }
+    transition: { duration: 0.4, type: "tween" as const }
   }
 };
 
 const clickVariants = {
   scale: [1, 0.9, 1.1, 1],
-  transition: { duration: 0.3, type: "tween" }
+  transition: { duration: 0.3, type: "tween" as const }
 };
 
 const categoryDefaults: Record<IconCategory, { animation: IconAnimationType; intensity: "low" | "medium" | "high" }> = {

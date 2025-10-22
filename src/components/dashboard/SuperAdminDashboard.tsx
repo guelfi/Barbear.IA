@@ -157,7 +157,6 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
   );
 
   const pendingTenants = filteredTenants.filter(t => t.status === 'pending');
-  const activeTenants = filteredTenants.filter(t => t.status === 'approved');
 
   const handleApproveTenant = (tenantId: string) => {
     setTenants(prev => 
@@ -652,7 +651,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredTenants.map((tenant, index) => (
+                      {filteredTenants.map((tenant) => (
                         <TableRow 
                           key={tenant.id}
                           className="hover:bg-accent/50 transition-colors"

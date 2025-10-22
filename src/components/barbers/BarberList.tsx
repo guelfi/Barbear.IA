@@ -35,11 +35,13 @@ export function BarberList({ onCreateBarber, onEditBarber }: BarberListProps) {
     );
   };
 
-  const getBarberServices = (serviceIds: string[]) => {
+  const getBarberServices = (serviceIds?: string[]) => {
+    if (!serviceIds) return [];
     return services.filter(service => serviceIds.includes(service.id));
   };
 
-  const getWorkingDays = (schedule: any[]) => {
+  const getWorkingDays = (schedule?: any[]) => {
+    if (!schedule) return 'Não definido';
     const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     return schedule
       .filter(s => s.isWorking)
