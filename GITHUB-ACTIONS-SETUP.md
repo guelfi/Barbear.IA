@@ -65,8 +65,8 @@ O workflow está configurado em `.github/workflows/deploy.yml` e inclui:
 
 O workflow é executado automaticamente quando:
 
-- **Push para branch `fix/jsx-typescript-errors`**: Deploy automático
-- **Pull Request para `fix/jsx-typescript-errors`**: Apenas testes
+- **Push para branch `freezer-project`**: Deploy automático
+- **Pull Request para `freezer-project`**: Apenas testes
 - **Execução manual**: Via interface do GitHub Actions
 
 ## 📁 Arquivos Sincronizados
