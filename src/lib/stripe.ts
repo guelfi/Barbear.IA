@@ -31,56 +31,49 @@ export const stripeConfig: StripeConfig = {
 // Subscription plans configuration
 export const subscriptionPlans: StripePlan[] = [
   {
-    id: 'trial',
-    name: 'Período de Teste',
-    description: '7 dias gratuitos para testar a plataforma',
-    price: 0,
-    currency: 'BRL',
-    interval: 'month',
-    features: [
-      'Até 3 barbeiros',
-      'Até 50 agendamentos/mês',
-      'Suporte por email',
-      'Recursos básicos'
-    ],
-    stripePriceId: 'price_trial'
-  },
-  {
-    id: 'basic',
-    name: 'Plano Básico',
-    description: 'Ideal para barbearias pequenas',
-    price: 49.90,
-    currency: 'BRL',
-    interval: 'month',
-    features: [
-      'Até 5 barbeiros',
-      'Agendamentos ilimitados',
-      'Suporte prioritário',
-      'Relatórios básicos',
-      'Notificações por WhatsApp',
-      'App móvel'
-    ],
-    stripePriceId: 'price_basic_monthly',
-    popular: true
-  },
-  {
-    id: 'premium',
-    name: 'Plano Premium',
-    description: 'Para barbearias em crescimento',
-    price: 99.90,
+    id: 'pro-monthly',
+    name: 'Barbear.IA Pro',
+    description: 'Plataforma completa para gestão de barbearias - Mensal',
+    price: 39.90,
     currency: 'BRL',
     interval: 'month',
     features: [
       'Barbeiros ilimitados',
       'Agendamentos ilimitados',
-      'Suporte 24/7',
-      'Relatórios avançados',
-      'Integração completa WhatsApp',
-      'App móvel white-label',
+      'Suporte prioritário',
+      'Relatórios completos',
+      'Notificações por WhatsApp',
+      'App móvel',
       'Sistema de fidelidade',
-      'Multi-unidades'
+      'Multi-unidades',
+      'Dashboard avançado',
+      'Backup automático'
     ],
-    stripePriceId: 'price_premium_monthly'
+    stripePriceId: 'price_pro_monthly',
+    popular: false
+  },
+  {
+    id: 'pro-yearly',
+    name: 'Barbear.IA Pro',
+    description: 'Plataforma completa para gestão de barbearias - Anual',
+    price: 359.00,
+    currency: 'BRL',
+    interval: 'year',
+    features: [
+      'Barbeiros ilimitados',
+      'Agendamentos ilimitados',
+      'Suporte prioritário',
+      'Relatórios completos',
+      'Notificações por WhatsApp',
+      'App móvel',
+      'Sistema de fidelidade',
+      'Multi-unidades',
+      'Dashboard avançado',
+      'Backup automático',
+      '🎉 Economia de 25% no plano anual'
+    ],
+    stripePriceId: 'price_pro_yearly',
+    popular: true
   }
 ];
 
@@ -166,7 +159,7 @@ export class StripeService {
       status: 'active',
       currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       cancelAtPeriodEnd: false,
-      plan: subscriptionPlans[1] // Basic plan
+      plan: subscriptionPlans[0] // Pro plan (único plano disponível)
     };
   }
 

@@ -2,6 +2,7 @@
 .sidebar-layout {
   display: flex;
   height: 100vh;
+  overflow-x: hidden; /* Previne scroll horizontal */
 }
 
 .sidebar-container {
@@ -16,6 +17,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden; /* Previne scroll horizontal no conteúdo principal */
 }
 
 /* Mobile styles */
@@ -25,9 +27,10 @@
     top: 0;
     left: 0;
     height: 100vh;
-    z-index: 30;
+    z-index: 60;
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
+    background-color: var(--card);
   }
   
   .sidebar-container.open {
@@ -35,6 +38,8 @@
   }
   
   .main-content {
-    width: 100%;
+    width: 100vw; /* Usa viewport width para garantir largura correta */
+    max-width: 100%; /* Limita a largura máxima */
+    overflow-x: hidden; /* Previne scroll horizontal */
   }
 }

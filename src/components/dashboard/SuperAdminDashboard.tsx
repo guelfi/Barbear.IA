@@ -68,7 +68,7 @@ const mockSuperAdminStats: SuperAdminStats = {
       subscription: {
         id: 'sub-1',
         tenantId: 'tenant-1',
-        plan: 'trial',
+        plan: 'pro-monthly',
         status: 'active',
         trialEndsAt: '2024-03-15T00:00:00Z',
         currentPeriodStart: '2024-03-08T00:00:00Z',
@@ -99,7 +99,7 @@ const mockSuperAdminStats: SuperAdminStats = {
       subscription: {
         id: 'sub-2',
         tenantId: 'tenant-2',
-        plan: 'basic',
+        plan: 'pro-yearly',
         status: 'active',
         currentPeriodStart: '2024-02-01T00:00:00Z',
         currentPeriodEnd: '2024-03-01T00:00:00Z',
