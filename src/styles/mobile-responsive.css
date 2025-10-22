@@ -1,0 +1,108 @@
+/* Mobile Responsive Fixes */
+
+/* Notificações - Correção de overflow mobile */
+@media (max-width: 640px) {
+  /* Container de notificações */
+  .notification-dropdown {
+    position: fixed !important;
+    top: 60px !important;
+    right: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+  }
+  
+  /* Ajustes para telas muito pequenas */
+  @media (max-width: 360px) {
+    .notification-dropdown {
+      right: 4px !important;
+      left: 4px !important;
+    }
+  }
+  
+  /* Conteúdo das notificações */
+  .notification-content {
+    max-height: calc(100vh - 120px) !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Texto das notificações em mobile */
+  .notification-item {
+    padding: 12px !important;
+  }
+  
+  .notification-title {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+  
+  .notification-message {
+    font-size: 13px !important;
+    line-height: 1.3 !important;
+  }
+}
+
+/* Tablet - Ajustes intermediários */
+@media (min-width: 641px) and (max-width: 768px) {
+  .notification-dropdown {
+    right: 16px !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+}
+
+/* Sidebar - Correções de responsividade */
+@media (max-width: 768px) {
+  /* Overlay para fechar sidebar */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 300ms ease-in-out, visibility 300ms ease-in-out;
+  }
+  
+  .sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  /* Sidebar com animação suave */
+  .mobile-sidebar {
+    transform: translateX(-100%);
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .mobile-sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+/* Animações suaves para transições */
+.smooth-transition {
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Correções específicas para diferentes resoluções */
+@media (max-width: 360px) {
+  .mobile-content {
+    padding: 8px !important;
+  }
+}
+
+@media (min-width: 361px) and (max-width: 414px) {
+  .mobile-content {
+    padding: 12px !important;
+  }
+}
+
+@media (min-width: 415px) and (max-width: 768px) {
+  .mobile-content {
+    padding: 16px !important;
+  }
+}

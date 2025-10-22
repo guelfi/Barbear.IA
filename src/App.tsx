@@ -22,6 +22,7 @@ import { Toaster } from './components/ui/sonner';
 import { InstallPrompt } from './components/pwa/InstallPrompt';
 import { AccessibilityChecker } from './components/accessibility/AccessibilityChecker';
 import { ResponsiveTestSuite } from './components/testing/ResponsiveTestSuite';
+import { MobileResponsiveTest } from './components/testing/MobileResponsiveTest';
 import { toast } from 'sonner';
 import { Appointment, Client, Barber, Service } from './types';
 import './components/layout/layout.css';
@@ -51,6 +52,7 @@ function AppContent() {
     tenants: 'Barbearias',
     users: 'Usuários',
     billing: 'Faturamento',
+    'mobile-test': 'Teste Mobile',
   }), [user?.role]);
 
   // Form handlers - moved to top to comply with Rules of Hooks
@@ -257,6 +259,8 @@ function AppContent() {
             </p>
           </div>
         );
+      case 'mobile-test':
+        return <MobileResponsiveTest />;
       default:
         return <Dashboard />;
     }

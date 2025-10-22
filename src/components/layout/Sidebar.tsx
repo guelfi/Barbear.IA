@@ -8,7 +8,8 @@ import {
   LogOut,
   Menu,
   Building2,
-  CreditCard
+  CreditCard,
+  Smartphone
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -43,6 +44,7 @@ const menuItemsByRole = {
     { id: 'services', label: 'Serviços', icon: Scissors, animation: 'cut' as const, category: 'interactive' as const },
     { id: 'profile', label: 'Perfil da Barbearia', icon: Building2, animation: 'float' as const, category: 'user' as const },
     { id: 'settings', label: 'Configurações', icon: Settings, animation: 'spin' as const, category: 'system' as const },
+    { id: 'mobile-test', label: '🧪 Teste Mobile', icon: Smartphone, animation: 'bounce' as const, category: 'system' as const },
   ],
   barber: [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3, animation: 'scale' as const, category: 'stats' as const },
@@ -100,7 +102,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
     }
   };
 
-  // Handle escape key and click outside
+  // Handle escape key and click outside with improved mobile support
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -108,7 +110,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
       }
     };
 
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (isOpen && sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
         // Don't close if clicking on the menu toggle button
         const target = e.target as Element;
@@ -118,12 +120,15 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
       }
     };
 
+    // Add both mouse and touch events for better mobile support
     document.addEventListener('keydown', handleEscape);
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
     
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [isOpen, onToggle]);
 
@@ -148,7 +153,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
       {/* Mobile overlay with improved animation */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ease-in-out"
+          className="sidebar-overlay fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ease-in-out"
           onClick={onToggle}
           role="button"
           tabIndex={0}
@@ -164,7 +169,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
       {/* Sidebar with enhanced animations and touch support */}
       <aside 
         ref={sidebarRef}
-        className="h-full bg-card border-r border-border w-64 relative z-50 transition-all duration-300 ease-in-out transform"
+        className={`mobile-sidebar smooth-transition h-full bg-card border-r border-border w-64 relative z-50 transition-all duration-300 ease-in-out transform ${isOpen ? 'open' : ''}`}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -231,8 +236,12 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
                     onClick={() => {
                       measureAction(`navigate_to_${item.id}`, () => {
                         onTabChange(item.id);
-                        // Always close sidebar when selecting an item (both mobile and desktop)
-                        onToggle();
+                        // Close sidebar after navigation with smooth transition
+                        if (isOpen) {
+                          setTimeout(() => {
+                            onToggle();
+                          }, 150); // Small delay for better UX
+                        }
                       });
                     }}
                     onMouseEnter={() => {

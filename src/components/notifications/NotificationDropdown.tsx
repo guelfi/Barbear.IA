@@ -405,7 +405,13 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
 
             {/* Dropdown */}
             <div 
-                className="absolute top-full right-0 mt-2 w-80 sm:w-80 md:w-80 lg:w-80 xl:w-96 max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-2rem)] z-50 animate-in slide-in-from-top-2 duration-200"
+                className="notification-dropdown absolute top-full right-0 mt-2 w-80 sm:w-80 md:w-80 lg:w-80 xl:w-96 max-w-[calc(100vw-16px)] sm:max-w-[calc(100vw-32px)] md:max-w-[calc(100vw-48px)] z-50 animate-in slide-in-from-top-2 duration-200"
+                style={{
+                    // Garantir que o dropdown não ultrapasse os limites da tela
+                    left: 'auto',
+                    right: '8px',
+                    transform: 'none'
+                }}
                 onKeyDown={handleKeyDown}
                 role="dialog"
                 aria-label="Painel de notificações"
@@ -454,7 +460,7 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
                         </div>
                     </CardHeader>
 
-                    <CardContent className="p-0 max-h-96 sm:max-h-[28rem] overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                    <CardContent className="notification-content p-0 max-h-96 sm:max-h-[28rem] overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
                         {error ? (
                             <div className="text-center py-12 px-4">
                                 <AlertCircle className="h-16 w-16 mx-auto text-red-500/60 mb-4" />
