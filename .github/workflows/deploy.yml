@@ -1,15 +1,13 @@
-name: Deploy Barbear.IA to OCI
+name: 🚀 Deploy Barbear.IA para OCI
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:  # Permite execução manual
+    branches: [ master ]  # Alterado de main para master
+  workflow_dispatch:
 
 env:
-  PROJECT_NAME: Barbear.IA
-  CONTAINER_NAME: barbear-ia-frontend
+  PROJECT_NAME: "Barbear.IA"
+  CONTAINER_NAME: "barbear-ia-frontend"
   PORT: 3500
 
 jobs:
