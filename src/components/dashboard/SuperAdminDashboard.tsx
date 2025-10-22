@@ -619,7 +619,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                         Gerencie todas as barbearias cadastradas na plataforma
                       </CardDescription>
                     </div>
-                    <div className="relative w-72">
+                    <div className="relative w-full max-w-72 sm:w-72">
                       <AnimatedIcon
                         icon={Search}
                         animation="pulse"
