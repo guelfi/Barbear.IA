@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent } from '../ui/card';
+import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Clock, CreditCard, AlertTriangle, Crown } from 'lucide-react';
+import { Alert } from '../ui/alert';
+import { Clock, CreditCard } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface TrialInfo {
@@ -25,7 +24,7 @@ const mockTrialInfo: TrialInfo = {
 
 export function TrialBanner() {
   const { user } = useAuth();
-  const [trialInfo, setTrialInfo] = useState<TrialInfo>(mockTrialInfo);
+  const [trialInfo] = useState<TrialInfo>(mockTrialInfo);
 
   // Don't show banner for super_admin or clients
   if (!user || user.role === 'super_admin' || user.role === 'client') {
@@ -36,14 +35,6 @@ export function TrialBanner() {
   if ((trialInfo.plan === 'pro-monthly' || trialInfo.plan === 'pro-yearly') && trialInfo.status === 'approved') {
     return null;
   }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
 
   return (
     <div className="mb-6">

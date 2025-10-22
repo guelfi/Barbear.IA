@@ -1,0 +1,23 @@
+# Tipo de mudança (escolha um):
+# feat: nova funcionalidade
+# fix: correção de bug
+# docs: alterações na documentação
+# style: formatação, ponto e vírgula ausente, etc; sem mudança de código
+# refactor: refatoração de código de produção
+# test: adição de testes, refatoração de testes; sem mudança de código de produção
+# chore: atualização de tarefas de build, configurações do gerenciador de pacotes, etc; sem mudança de código de produção
+
+# Exemplo de formato:
+# feat: adicionar funcionalidade de agendamento
+# fix: corrigir erro na validação de formulário
+# docs: atualizar README com instruções de instalação
+
+# Descreva suas mudanças em até 50 caracteres:
+
+
+# Explique o que e por que vs. como (opcional):
+
+
+# Referências de issues (opcional):
+# Closes #123
+# Fixes #456

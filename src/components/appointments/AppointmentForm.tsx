@@ -7,7 +7,7 @@ import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { mockClients, mockBarbers, mockServices } from '../../lib/mock-data';
-import { Appointment, Client, Barber, Service } from '../../types';
+import { Appointment, Service } from '../../types';
 
 interface AppointmentFormProps {
   appointment?: Appointment;

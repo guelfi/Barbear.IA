@@ -15,6 +15,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
 import { AnimatedIcon } from '../ui/animated-icon';
+import { usePreloadOnHover } from '../lazy/LazyComponents';
+import { usePerformance } from '../../hooks/usePerformance';
+import { useEffect, useRef, useState } from 'react';
 
 interface SidebarProps {
   activeTab: string;
@@ -58,27 +61,102 @@ const menuItemsByRole = {
 
 export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarProps) {
   const { user, logout } = useAuth();
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  // Minimum distance for swipe gesture
+  const minSwipeDistance = 50;
+
+  // Performance monitoring
+  const { measureAction, measureAsyncAction } = usePerformance('Sidebar');
+  const { preloadComponent } = usePreloadOnHover();
 
   const handleLogout = () => {
-    logout();
-    toast.success('Logout realizado com sucesso!');
+    measureAsyncAction('logout', async () => {
+      logout();
+      toast.success('Logout realizado com sucesso!');
+    });
   };
+
+  // Handle swipe gestures
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    
+    if (isLeftSwipe && isOpen) {
+      onToggle();
+    }
+  };
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onToggle();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onToggle]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (isOpen && window.innerWidth < 1024) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   // Get menu items based on user role
   const menuItems = user ? menuItemsByRole[user.role] || menuItemsByRole.admin : menuItemsByRole.admin;
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Mobile overlay with improved animation */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ease-in-out"
           onClick={onToggle}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              onToggle();
+            }
+          }}
+          aria-label="Fechar sidebar"
         />
       )}
       
-      {/* Sidebar */}
-      <aside className="h-full bg-card border-r border-border w-64 relative z-50">
+      {/* Sidebar with enhanced animations and touch support */}
+      <aside 
+        ref={sidebarRef}
+        className="h-full bg-card border-r border-border w-64 relative z-50 transition-transform duration-300 ease-in-out"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        role="navigation"
+        aria-label="Menu principal"
+        data-testid="sidebar"
+      >
         <div className="flex flex-col h-full bg-card">
           {/* Header */}
           <div className="p-6 border-b border-border bg-card">
@@ -127,19 +205,39 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 bg-card">
-            <ul className="space-y-2">
+          <nav className="flex-1 p-4 bg-card" role="navigation" aria-label="Menu de navegação">
+            <ul className="space-y-2" role="menubar">
               {menuItems.map((item, index) => (
-                <li key={item.id}>
+                <li key={item.id} role="none">
                   <Button
                     variant={activeTab === item.id ? 'secondary' : 'ghost'}
-                    className="w-full justify-start hover:scale-[1.02] transition-all duration-200 bg-transparent hover:bg-accent"
+                    className="w-full justify-start hover:scale-[1.02] transition-all duration-200 bg-transparent hover:bg-[#f5f5f5] dark:hover:bg-accent focus:bg-[#f5f5f5] dark:focus:bg-accent active:scale-[0.98]"
                     onClick={() => {
-                      onTabChange(item.id);
-                      if (window.innerWidth < 1024) {
-                        onToggle();
+                      measureAction(`navigate_to_${item.id}`, () => {
+                        onTabChange(item.id);
+                        if (window.innerWidth < 1024) {
+                          onToggle();
+                        }
+                      });
+                    }}
+                    onMouseEnter={() => {
+                      // Preload component on hover for better performance
+                      const componentMap: Record<string, keyof typeof import('../lazy/LazyComponents')['preloadComponents']> = {
+                        'dashboard': 'dashboard',
+                        'appointments': 'appointments',
+                        'clients': 'clients',
+                        'barbers': 'barbers',
+                        'services': 'services'
+                      };
+                      
+                      const componentName = componentMap[item.id];
+                      if (componentName) {
+                        preloadComponent(componentName)();
                       }
                     }}
+                    role="menuitem"
+                    aria-label={`Navegar para ${item.label}`}
+                    tabIndex={0}
                   >
                     <AnimatedIcon
                       icon={item.icon}
@@ -149,6 +247,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
                       intensity={activeTab === item.id ? "high" : "medium"}
                       delay={index * 100}
                       className="mr-2"
+                      aria-hidden="true"
                     />
                     {item.label}
                   </Button>
@@ -161,8 +260,11 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
           <div className="p-4 border-t border-border bg-card">
             <Button
               variant="ghost"
-              className="w-full justify-start hover:scale-[1.02] transition-all duration-200 bg-transparent hover:bg-accent"
+              className="w-full justify-start hover:scale-[1.02] transition-all duration-200 bg-transparent hover:bg-[#f5f5f5] dark:hover:bg-accent focus:bg-[#f5f5f5] dark:focus:bg-accent active:scale-[0.98]"
               onClick={handleLogout}
+              role="button"
+              aria-label="Fazer logout da aplicação"
+              tabIndex={0}
             >
               <AnimatedIcon
                 icon={LogOut}
@@ -171,6 +273,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
                 size="sm"
                 intensity="medium"
                 className="mr-2"
+                aria-hidden="true"
               />
               Sair
             </Button>

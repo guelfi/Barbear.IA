@@ -40,6 +40,7 @@ export function Header({ title, onMenuToggle }: HeaderProps) {
             size="sm"
             className="lg:hidden hover:scale-105 transition-transform duration-200"
             onClick={onMenuToggle}
+            data-testid="sidebar-toggle"
           >
             <AnimatedIcon
               icon={Menu}

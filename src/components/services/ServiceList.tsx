@@ -22,7 +22,7 @@ export function ServiceList({ onCreateService, onEditService }: ServiceListProps
 
   const filteredServices = services.filter(service =>
     service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.description.toLowerCase().includes(searchTerm.toLowerCase())
+    (service.description && service.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const toggleServiceStatus = (id: string) => {

@@ -19,6 +19,9 @@ import { BarbershopProfile } from './components/barbershop/BarbershopProfile';
 import { ServiceList } from './components/services/ServiceList';
 import { ServiceForm } from './components/services/ServiceForm';
 import { Toaster } from './components/ui/sonner';
+import { InstallPrompt } from './components/pwa/InstallPrompt';
+import { AccessibilityChecker } from './components/accessibility/AccessibilityChecker';
+import { ResponsiveTestSuite } from './components/testing/ResponsiveTestSuite';
 import { toast } from 'sonner';
 import { Appointment, Client, Barber, Service } from './types';
 import './components/layout/layout.css';
@@ -101,7 +104,7 @@ function AppContent() {
     setShowBarberForm(true);
   }, []);
 
-  const handleSaveBarber = useCallback((barberData: Partial<Barber>) => {
+  const handleSaveBarber = useCallback((_barberData: Partial<Barber>) => {
     if (editingBarber) {
       toast.success('Barbeiro atualizado com sucesso!');
     } else {
@@ -121,7 +124,7 @@ function AppContent() {
     setShowServiceForm(true);
   }, []);
 
-  const handleSaveService = useCallback((serviceData: Partial<Service>) => {
+  const handleSaveService = useCallback((_serviceData: Partial<Service>) => {
     if (editingService) {
       toast.success('Serviço atualizado com sucesso!');
     } else {
@@ -331,6 +334,9 @@ function AppContent() {
       </div>
 
       <Toaster position="top-right" />
+      <InstallPrompt />
+      <AccessibilityChecker />
+      <ResponsiveTestSuite />
     </div>
   );
 }
