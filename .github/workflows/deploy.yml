@@ -133,6 +133,7 @@ jobs:
           download_file "Dockerfile"
           download_file "nginx.conf"
           download_file "package.json"
+          download_file "package-lock.json"
           download_file ".dockerignore"
           
           echo "✅ Sincronização de arquivos concluída"
