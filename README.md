@@ -117,9 +117,9 @@ Embora o projeto esteja pausado, **contribuições são bem-vindas**, especialme
 - **Métricas globais**: Estatísticas de toda a plataforma
 
 ### 💳 Sistema de Assinatura
-- **Planos flexíveis**: Trial, Básico e Premium
+- **Plano único**: Versão Pro com todas as funcionalidades
 - **Integração Stripe**: Pagamentos seguros e automatizados
-- **Controle de acesso**: Funcionalidades baseadas no plano contratado
+- **Controle de acesso**: Funcionalidades completas para assinantes
 - **Gestão de cobrança**: Controle automático de renovações
 
 ## 🛠️ Tecnologias Utilizadas

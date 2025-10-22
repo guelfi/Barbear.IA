@@ -14,7 +14,7 @@ export interface User {
 export interface TenantSubscription {
   id: string;
   tenantId: string;
-  plan: 'trial' | 'basic' | 'premium';
+  plan: 'pro-monthly' | 'pro-yearly';
   status: 'active' | 'suspended' | 'cancelled' | 'pending_approval';
   trialEndsAt?: string;
   currentPeriodStart: string;

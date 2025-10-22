@@ -78,10 +78,10 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
       )}
       
       {/* Sidebar */}
-      <aside className="h-full bg-card border-r border-border w-64">
-        <div className="flex flex-col h-full">
+      <aside className="h-full bg-card border-r border-border w-64 relative z-50">
+        <div className="flex flex-col h-full bg-card">
           {/* Header */}
-          <div className="p-6 border-b border-border">
+          <div className="p-6 border-b border-border bg-card">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 cursor-pointer group">
                 <AnimatedIcon
@@ -127,13 +127,13 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4">
+          <nav className="flex-1 p-4 bg-card">
             <ul className="space-y-2">
               {menuItems.map((item, index) => (
                 <li key={item.id}>
                   <Button
                     variant={activeTab === item.id ? 'secondary' : 'ghost'}
-                    className="w-full justify-start hover:scale-[1.02] transition-all duration-200"
+                    className="w-full justify-start hover:scale-[1.02] transition-all duration-200 bg-transparent hover:bg-accent"
                     onClick={() => {
                       onTabChange(item.id);
                       if (window.innerWidth < 1024) {
@@ -158,10 +158,10 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border bg-card">
             <Button
               variant="ghost"
-              className="w-full justify-start hover:scale-[1.02] transition-all duration-200"
+              className="w-full justify-start hover:scale-[1.02] transition-all duration-200 bg-transparent hover:bg-accent"
               onClick={handleLogout}
             >
               <AnimatedIcon

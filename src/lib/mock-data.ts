@@ -18,7 +18,7 @@ export const mockTenants: Tenant[] = [
     subscription: {
       id: 'sub-1',
       tenantId: 'tenant-1',
-      plan: 'basic',
+      plan: 'pro-monthly',
       status: 'active',
       currentPeriodStart: '2024-02-01T00:00:00Z',
       currentPeriodEnd: '2024-03-01T00:00:00Z',
@@ -43,8 +43,11 @@ export const mockServices: Service[] = [
     description: 'Corte de cabelo masculino tradicional',
     price: 35,
     duration: 30,
+    category: 'Cabelo',
     tenantId: 'tenant1',
     isActive: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
   },
   {
     id: '2',
@@ -52,8 +55,11 @@ export const mockServices: Service[] = [
     description: 'Barba completa com navalha',
     price: 25,
     duration: 20,
+    category: 'Barba',
     tenantId: 'tenant1',
     isActive: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
   },
   {
     id: '3',
@@ -61,8 +67,11 @@ export const mockServices: Service[] = [
     description: 'Corte de cabelo + barba completa',
     price: 55,
     duration: 45,
+    category: 'Combo',
     tenantId: 'tenant1',
     isActive: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
   },
   {
     id: '4',
@@ -70,8 +79,11 @@ export const mockServices: Service[] = [
     description: 'Design de sobrancelha masculina',
     price: 15,
     duration: 15,
+    category: 'Estética',
     tenantId: 'tenant1',
     isActive: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
   },
 ];
 
@@ -82,6 +94,16 @@ export const mockBarbers: Barber[] = [
     email: 'joao@barbearia.com',
     phone: '(11) 98765-4321',
     avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iNTAiIGZpbGw9IiM2MzY2RjEiLz4KPHN2ZyB4PSIyNSIgeT0iMjUiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTIwIDIxdi0yYTQgNCAwIDAgMC00LTRIOGE0IDQgMCAwIDAtNCA0djIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPg==',
+    specialties: ['Corte Masculino', 'Barba', 'Combo'],
+    workingHours: {
+      monday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+      tuesday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+      wednesday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+      thursday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+      friday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+      saturday: { isWorking: true, startTime: '08:00', endTime: '16:00' },
+      sunday: { isWorking: false }
+    },
     services: ['1', '2', '3'],
     schedule: [
       { dayOfWeek: 1, startTime: '08:00', endTime: '18:00', isWorking: true },
@@ -94,12 +116,24 @@ export const mockBarbers: Barber[] = [
     ],
     tenantId: 'tenant1',
     isActive: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
   },
   {
     id: '2',
     name: 'Carlos Oliveira',
     email: 'carlos@barbearia.com',
     phone: '(11) 98765-4322',
+    specialties: ['Corte Masculino', 'Barba', 'Sobrancelha', 'Combo'],
+    workingHours: {
+      monday: { isWorking: true, startTime: '09:00', endTime: '19:00' },
+      tuesday: { isWorking: true, startTime: '09:00', endTime: '19:00' },
+      wednesday: { isWorking: true, startTime: '09:00', endTime: '19:00' },
+      thursday: { isWorking: true, startTime: '09:00', endTime: '19:00' },
+      friday: { isWorking: true, startTime: '09:00', endTime: '19:00' },
+      saturday: { isWorking: true, startTime: '09:00', endTime: '17:00' },
+      sunday: { isWorking: false }
+    },
     services: ['1', '2', '3', '4'],
     schedule: [
       { dayOfWeek: 1, startTime: '09:00', endTime: '19:00', isWorking: true },
@@ -112,6 +146,8 @@ export const mockBarbers: Barber[] = [
     ],
     tenantId: 'tenant1',
     isActive: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
   },
 ];
 

@@ -11,7 +11,7 @@ interface TrialInfo {
   trialEndsAt: string;
   daysRemaining: number;
   status: 'active' | 'expired' | 'approved';
-  plan: 'trial' | 'basic' | 'premium';
+  plan: 'pro-monthly' | 'pro-yearly';
 }
 
 // Mock trial data - replace with real API call
@@ -20,7 +20,7 @@ const mockTrialInfo: TrialInfo = {
   trialEndsAt: '2024-03-15T23:59:59Z',
   daysRemaining: 5,
   status: 'active',
-  plan: 'trial'
+  plan: 'pro-monthly'
 };
 
 export function TrialBanner() {
@@ -33,7 +33,7 @@ export function TrialBanner() {
   }
 
   // Don't show banner if user is already on a paid plan
-  if (trialInfo.plan !== 'trial') {
+  if ((trialInfo.plan === 'pro-monthly' || trialInfo.plan === 'pro-yearly') && trialInfo.status === 'approved') {
     return null;
   }
 
