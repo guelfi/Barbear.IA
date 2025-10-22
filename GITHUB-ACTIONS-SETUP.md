@@ -15,12 +15,21 @@ Configure os seguintes secrets no seu repositório GitHub:
 
 ### Navegação: `Settings` → `Secrets and variables` → `Actions` → `New repository secret`
 
+#### ✅ **Secrets que VOCÊ deve configurar:**
+
 | Secret Name | Descrição | Exemplo |
 |-------------|-----------|---------|
 | `OCI_HOST` | IP público da instância OCI | `129.153.86.168` |
 | `OCI_USERNAME` | Usuário SSH (geralmente `ubuntu`) | `ubuntu` |
 | `OCI_SSH_KEY` | Chave SSH privada para acesso à OCI | Conteúdo do arquivo `.key` |
-| `GITHUB_TOKEN` | Token de acesso ao GitHub (automático) | Gerado automaticamente |
+
+#### 🤖 **Secrets automáticos (NÃO configurar):**
+
+| Secret Name | Descrição |
+|-------------|-----------||
+| `GITHUB_TOKEN` | ❌ **Automático** - Fornecido automaticamente pelo GitHub Actions |
+
+> **⚠️ Importante:** O `GITHUB_TOKEN` é criado automaticamente pelo GitHub em cada execução do workflow. Você NÃO precisa configurá-lo manualmente!
 
 ### 🔑 Como obter a chave SSH privada:
 
