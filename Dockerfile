@@ -3,11 +3,20 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Instalar versão estável do npm para consistência
+RUN npm install -g npm@10
+
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including dev dependencies for build)
-RUN npm ci
+# Instalar dependências com fallback inteligente
+RUN if [ -f package-lock.json ]; then \
+      echo "📦 Usando npm ci (build reprodutível)"; \
+      npm ci --no-audit --no-fund; \
+    else \
+      echo "⚠️ package-lock.json ausente, usando npm install"; \
+      npm install --no-audit --no-fund; \
+    fi
 
 # Copy source code
 COPY . .
@@ -26,6 +35,10 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
+
+# Health check para monitoramento automático
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost/ || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
