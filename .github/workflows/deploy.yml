@@ -22,10 +22,21 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
+        # Removido cache: 'npm' para forçar instalação limpa
     
-    - name: Install dependencies
-      run: npm ci
+    - name: Clean npm cache
+      run: |
+        npm cache clean --force
+        npm cache verify
+    
+    - name: Install dependencies (clean)
+      run: npm ci --no-cache --prefer-offline=false
+    
+    - name: Clean Vite cache
+      run: |
+        rm -rf node_modules/.vite
+        rm -rf dist
+        rm -rf build
     
     - name: Run linting
       run: npm run lint || echo "Linting completed with warnings"
@@ -33,8 +44,8 @@ jobs:
     - name: Run tests
       run: npm test -- --coverage --watchAll=false
     
-    - name: Build application
-      run: npm run build
+    - name: Build application (force clean)
+      run: npm run build -- --force --no-cache
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -126,8 +137,14 @@ jobs:
           fi
           
           # Build new image with cache optimization
-          echo "🏗️ Construindo nova imagem..."
-          docker-compose build --no-cache ${{ env.CONTAINER_NAME }}
+          echo "🏗️ Construindo nova imagem com build limpo..."
+          
+          # Clean Docker build cache
+          docker system prune -f
+          docker builder prune -f
+          
+          # Build with no cache to ensure fresh build
+          docker-compose build --no-cache --pull ${{ env.CONTAINER_NAME }}
           
           if [ $? -ne 0 ]; then
             echo "❌ Erro no build da imagem"

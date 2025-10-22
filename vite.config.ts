@@ -52,9 +52,40 @@ import { defineConfig } from 'vite';
     build: {
       target: 'esnext',
       outDir: 'build',
+      rollupOptions: {
+        output: {
+          // Generate unique filenames with hash for cache busting
+          entryFileNames: 'assets/[name]-[hash].js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]',
+          // Ensure consistent chunk naming
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select']
+          }
+        }
+      },
+      // Force clean build
+      emptyOutDir: true,
+      // Disable minification terser cache
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true
+        }
+      }
     },
     server: {
       port: 3500,
       open: true,
+      hmr: {
+        port: 3501,
+        host: 'localhost'
+      },
+      watch: {
+        usePolling: true,
+        interval: 100
+      }
     },
   });

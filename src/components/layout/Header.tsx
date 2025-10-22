@@ -41,6 +41,7 @@ export function Header({ title, onMenuToggle }: HeaderProps) {
             className="lg:hidden hover:scale-105 transition-transform duration-200"
             onClick={onMenuToggle}
             data-testid="sidebar-toggle"
+            data-sidebar-toggle
           >
             <AnimatedIcon
               icon={Menu}

@@ -250,7 +250,7 @@ export function UserManagement() {
                   placeholder="Buscar usuários..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
+                  className="pl-10 w-full max-w-64 sm:w-64"
                 />
               </div>
               <select

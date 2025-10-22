@@ -100,7 +100,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
     }
   };
 
-  // Handle escape key
+  // Handle escape key and click outside
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -108,8 +108,23 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
       }
     };
 
+    const handleClickOutside = (e: MouseEvent) => {
+      if (isOpen && sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
+        // Don't close if clicking on the menu toggle button
+        const target = e.target as Element;
+        if (!target.closest('[data-sidebar-toggle]')) {
+          onToggle();
+        }
+      }
+    };
+
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [isOpen, onToggle]);
 
   // Prevent body scroll when sidebar is open on mobile
@@ -149,7 +164,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
       {/* Sidebar with enhanced animations and touch support */}
       <aside 
         ref={sidebarRef}
-        className="h-full bg-card border-r border-border w-64 relative z-50 transition-transform duration-300 ease-in-out"
+        className="h-full bg-card border-r border-border w-64 relative z-50 transition-all duration-300 ease-in-out transform"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -179,6 +194,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
                 size="sm"
                 className="lg:hidden"
                 onClick={onToggle}
+                data-sidebar-toggle
               >
                 <AnimatedIcon
                   icon={Menu}
@@ -211,13 +227,12 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
                 <li key={item.id} role="none">
                   <Button
                     variant={activeTab === item.id ? 'secondary' : 'ghost'}
-                    className="w-full justify-start hover:scale-[1.02] transition-all duration-200 bg-transparent hover:bg-[#f5f5f5] dark:hover:bg-accent focus:bg-[#f5f5f5] dark:focus:bg-accent active:scale-[0.98]"
+                    className="w-full justify-start hover:scale-[1.02] transition-all duration-300 ease-out bg-transparent hover:bg-[#f5f5f5] dark:hover:bg-accent focus:bg-[#f5f5f5] dark:focus:bg-accent active:scale-[0.98] hover:shadow-sm"
                     onClick={() => {
                       measureAction(`navigate_to_${item.id}`, () => {
                         onTabChange(item.id);
-                        if (window.innerWidth < 1024) {
-                          onToggle();
-                        }
+                        // Always close sidebar when selecting an item (both mobile and desktop)
+                        onToggle();
                       });
                     }}
                     onMouseEnter={() => {
@@ -260,7 +275,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
           <div className="p-4 border-t border-border bg-card">
             <Button
               variant="ghost"
-              className="w-full justify-start hover:scale-[1.02] transition-all duration-200 bg-transparent hover:bg-[#f5f5f5] dark:hover:bg-accent focus:bg-[#f5f5f5] dark:focus:bg-accent active:scale-[0.98]"
+              className="w-full justify-start hover:scale-[1.02] transition-all duration-300 ease-out bg-transparent hover:bg-[#f5f5f5] dark:hover:bg-accent focus:bg-[#f5f5f5] dark:focus:bg-accent active:scale-[0.98] hover:shadow-sm"
               onClick={handleLogout}
               role="button"
               aria-label="Fazer logout da aplicação"

@@ -413,39 +413,44 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
             >
                 <Card className="shadow-2xl border-2 bg-background backdrop-blur-none border-border ring-1 ring-black/10 dark:ring-white/20">
                     <CardHeader className="pb-3 px-4 pt-4 bg-muted border-b border-border">
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg flex items-center space-x-2">
-                                <Bell className="h-5 w-5 text-foreground" />
-                                <span className="font-semibold">Notificações</span>
-                                {unreadCount > 0 && (
-                                    <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 animate-pulse">
-                                        {unreadCount}
-                                    </Badge>
-                                )}
-                            </CardTitle>
-                            <div className="flex items-center space-x-1">
-                                {unreadCount > 0 && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={markAllAsRead}
-                                        disabled={isLoading}
-                                        className="text-xs hover:bg-muted/80 transition-colors disabled:opacity-50"
-                                        aria-label="Marcar todas as notificações como lidas"
-                                    >
-                                        {isLoading ? 'Processando...' : 'Marcar todas como lidas'}
-                                    </Button>
-                                )}
+                        <div className="flex flex-col space-y-3">
+                            {/* Header com título e botão fechar */}
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg flex items-center space-x-2">
+                                    <Bell className="h-5 w-5 text-foreground" />
+                                    <span className="font-semibold">Notificações</span>
+                                    {unreadCount > 0 && (
+                                        <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 animate-pulse">
+                                            {unreadCount}
+                                        </Badge>
+                                    )}
+                                </CardTitle>
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={onClose}
-                                    className="hover:bg-muted/80 transition-colors"
+                                    className="hover:bg-muted/80 transition-colors flex-shrink-0"
                                     aria-label="Fechar notificações"
                                 >
                                     <X className="h-4 w-4" />
                                 </Button>
                             </div>
+                            
+                            {/* Botão "Marcar todas como lidas" em linha separada */}
+                            {unreadCount > 0 && (
+                                <div className="flex justify-start">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={markAllAsRead}
+                                        disabled={isLoading}
+                                        className="text-xs hover:bg-muted/80 transition-colors disabled:opacity-50 px-3 py-1.5 h-auto text-muted-foreground hover:text-foreground"
+                                        aria-label="Marcar todas as notificações como lidas"
+                                    >
+                                        {isLoading ? 'Processando...' : 'Marcar todas como lidas'}
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </CardHeader>
 

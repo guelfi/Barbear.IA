@@ -43,3 +43,114 @@
     overflow-x: hidden; /* Previne scroll horizontal */
   }
 }
+
+/* Correções específicas para responsividade mobile */
+@media (max-width: 768px) {
+  /* Correção para tabs de navegação no SuperAdminDashboard */
+  [data-slot="tabs-list"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    padding: 4px !important;
+  }
+  
+  [data-slot="tabs-list"]::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  
+  [data-slot="tabs-trigger"] {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    min-width: fit-content !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Garantir que containers não excedam a viewport */
+  .space-y-6,
+  .space-y-4,
+  .grid {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Correção para cards e tabelas */
+  .relative.w-full.overflow-x-auto {
+    max-width: calc(100vw - 2rem) !important;
+  }
+  
+  /* Correção para inputs de busca */
+  .relative.w-72 {
+    width: 100% !important;
+    max-width: 280px !important;
+  }
+  
+  /* Garantir que motion.div não cause overflow */
+  [class*="motion-"] {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}
+
+/* Correções adicionais para dispositivos muito pequenos */
+@media (max-width: 480px) {
+  [data-slot="tabs-trigger"] {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+  }
+  
+  .text-2xl {
+    font-size: 1.25rem !important; /* 20px */
+  }
+  
+  .p-4 {
+    padding: 0.75rem !important; /* 12px */
+  }
+  
+  .lg\\:p-6 {
+    padding: 0.75rem !important; /* 12px em mobile */
+  }
+}
+
+/* Correções específicas para NotificationDropdown */
+@media (max-width: 640px) {
+  /* Notification dropdown responsivo */
+  .absolute.top-full.right-0 {
+    right: 0.5rem !important;
+    left: 0.5rem !important;
+    width: auto !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+  
+  /* Hover cards e popovers responsivos */
+  [data-radix-hover-card-content],
+  [data-radix-popover-content] {
+    max-width: calc(100vw - 2rem) !important;
+    width: auto !important;
+  }
+  
+  /* Dropdowns e menus responsivos */
+  [data-radix-dropdown-menu-content],
+  [data-radix-menubar-content],
+  [data-radix-select-content],
+  [data-radix-context-menu-content] {
+    max-width: calc(100vw - 2rem) !important;
+    min-width: 8rem !important;
+  }
+  
+  /* Cards e containers gerais */
+  .w-80, .w-96 {
+    width: 100% !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+  
+  /* Correção para elementos com min-width */
+  .min-w-64, .min-w-72, .min-w-80, .min-w-96 {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+}
