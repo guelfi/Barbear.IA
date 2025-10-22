@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { mockDashboardStats } from '../../lib/mock-data';
 import { useAuth } from '../../contexts/AuthContext';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 const statusColors = {
   scheduled: 'bg-blue-100 text-blue-800',

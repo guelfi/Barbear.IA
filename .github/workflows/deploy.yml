@@ -44,8 +44,34 @@ jobs:
     - name: Run tests
       run: npm test -- --coverage --watchAll=false
     
-    - name: Build application (force clean)
-      run: npm run build -- --force --no-cache
+    - name: Build application (force clean & debug)
+      run: |
+        echo "=== Node / npm versions ==="
+        node -v
+        npm -v
+        echo "=== Listing project files ==="
+        ls -la
+        echo "=== Running Vite build with DEBUG=vite:* ==="
+        export DEBUG=vite:*
+        # executar build e, em caso de falha, imprimir arquivos de configuração relevantes
+        if npm run build; then
+          echo "✅ Build concluído com sucesso"
+        else
+          echo "❌ Build falhou — exibindo debug"
+          echo "--- package.json ---"
+          cat package.json || true
+          echo "--- vite.config.* ---"
+          ls -la vite.config.* || true
+          cat vite.config.ts || true
+          echo "--- tsconfig.json ---"
+          cat tsconfig.json || true
+          echo "--- Últimos arquivos de log / npm list ---"
+          npm ls --depth=0 || true
+          echo "--- Verificando node_modules ---"
+          ls -la node_modules/@vitejs/ || true
+          echo "--- Finalizando com exit 1 ---"
+          exit 1
+        fi
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

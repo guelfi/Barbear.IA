@@ -7,7 +7,7 @@ import { Badge } from '../ui/badge';
 import { Switch } from '../ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import { AnimatedIcon } from '../ui/animated-icon';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { mockServices } from '../../lib/mock-data';
 import { Service } from '../../types';
 

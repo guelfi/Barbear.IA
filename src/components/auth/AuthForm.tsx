@@ -16,7 +16,7 @@ import {
   TabsTrigger,
 } from "../ui/tabs";
 import { ThemeToggle } from "../ui/theme-toggle";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 // ImageWithFallback import removed as it is unused
 import { useAuth } from "../../contexts/AuthContext";
 import {

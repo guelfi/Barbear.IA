@@ -6,7 +6,7 @@ import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { UserManagement } from '../admin/UserManagement';
 import { AnimatedIcon } from '../ui/animated-icon';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import {
   Table,
   TableBody,

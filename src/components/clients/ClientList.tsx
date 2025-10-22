@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { AnimatedIcon } from '../ui/animated-icon';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { mockClients } from '../../lib/mock-data';
 import { Client } from '../../types';
 
