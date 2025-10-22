@@ -250,7 +250,7 @@ SLACK_WEBHOOK=your-slack-webhook-url
 ### 🚀 Deploy Automático
 
 #### Trigger do Deploy:
-- Push para branch `main` ou `master`
+- Push para branch `fix/jsx-typescript-errors`
 - Pull requests (apenas build e test)
 
 #### Processo do Deploy:
@@ -271,7 +271,7 @@ cd /opt/barbear-ia
 
 #### 2. Baixar docker-compose:
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/guelfi/Barbear.IA/main/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/guelfi/Barbear.IA/fix/jsx-typescript-errors/docker-compose.yml
 ```
 
 #### 3. Configurar nginx proxy (opcional):

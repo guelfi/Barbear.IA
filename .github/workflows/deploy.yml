@@ -2,7 +2,7 @@ name: 🚀 Deploy Barbear.IA para OCI
 
 on:
   push:
-    branches: [ master ]  # Alterado de main para master
+    branches: [ fix/jsx-typescript-errors ]  # Branch principal atual
   workflow_dispatch:
 
 env:
@@ -46,7 +46,7 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/fix/jsx-typescript-errors'
     
     steps:
     - name: Checkout code
