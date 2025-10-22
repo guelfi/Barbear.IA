@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 import { cn } from "../ui/utils";
 

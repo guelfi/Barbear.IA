@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { Switch } from '../ui/switch';
 import { AnimatedIcon } from '../ui/animated-icon';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { mockBarbers, mockServices } from '../../lib/mock-data';
 import { Barber } from '../../types';
 

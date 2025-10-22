@@ -6,7 +6,7 @@ import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Calendar } from '../ui/calendar';
 import { AnimatedIcon } from '../ui/animated-icon';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { mockAppointments } from '../../lib/mock-data';
 import { Appointment } from '../../types';
 
