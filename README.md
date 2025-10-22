@@ -22,6 +22,8 @@ O **Barbear.IA** é uma plataforma SaaS (Software as a Service) moderna e comple
 
 > **⚠️ PROJETO EM DESENVOLVIMENTO - ATUALMENTE EM FREEZER**
 
+**🧪 TESTE DE WORKFLOW - 22/01/2025**: Testando disparo automático do GitHub Actions após correções implementadas.
+
 Este projeto encontra-se atualmente **pausado temporariamente** devido ao desenvolvedor principal estar envolvido em outros projetos prioritários. 
 
 ### 📋 Situação Atual
