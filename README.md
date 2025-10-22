@@ -25,7 +25,7 @@ O **Barbear.IA** é uma plataforma SaaS (Software as a Service) moderna e comple
 Este projeto encontra-se atualmente **pausado temporariamente** devido ao desenvolvedor principal estar envolvido em outros projetos prioritários. 
 
 ### 📋 Situação Atual
-- ✅ **Frontend Completo**: Interface do usuário totalmente desenvolvida e funcional
+- ✅ **Frontend Completo**: Interface do usuário totalmente desenvolvida e funcional.
 - ⏸️ **Backend Pendente**: Ainda não iniciado o desenvolvimento da API
 - 🎨 **Design Finalizado**: Todas as telas e componentes implementados
 - 📱 **Responsividade**: Interface adaptada para todos os dispositivos
