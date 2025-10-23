@@ -77,9 +77,10 @@ export function Header({ title, onMenuToggle }: HeaderProps) {
                 category="action"
                 size="sm"
                 intensity="medium"
+                className="text-red-500 hover:text-red-600 transition-colors duration-200"
               />
               {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 hover:bg-red-600 text-white animate-pulse">
+                <Badge className="absolute -top-1 -right-1 h-6 w-6 rounded-full p-0 flex items-center justify-center text-sm font-bold bg-red-500 hover:bg-red-600 text-white animate-pulse shadow-lg shadow-red-500/30 border-2 border-white dark:border-gray-800">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </Badge>
               )}
