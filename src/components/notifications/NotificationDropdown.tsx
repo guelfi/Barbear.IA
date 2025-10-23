@@ -423,10 +423,10 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
                             {/* Header com título e botão fechar */}
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-lg flex items-center space-x-2">
-                                    <Bell className="h-5 w-5 text-foreground" />
+                                    <Bell className="h-5 w-5 text-red-500" />
                                     <span className="font-semibold">Notificações</span>
                                     {unreadCount > 0 && (
-                                        <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 animate-pulse">
+                                        <Badge className="bg-red-500 hover:bg-red-600 text-white text-sm font-bold px-2 py-1 animate-pulse shadow-lg shadow-red-500/30">
                                             {unreadCount}
                                         </Badge>
                                     )}
