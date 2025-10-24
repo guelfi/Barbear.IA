@@ -9,20 +9,10 @@ RUN npm install -g npm@10
 # Copy package files
 COPY package*.json ./
 
-# Instalar dependências com fallback inteligente
-RUN if [ -f package-lock.json ]; then \
-      echo "📦 Usando npm ci (build reprodutível)"; \
-      if npm ci --no-audit --no-fund; then \
-        echo "✅ npm ci executado com sucesso"; \
-      else \
-        echo "⚠️ npm ci falhou, tentando npm install como fallback"; \
-        rm -f package-lock.json; \
-        npm install --no-audit --no-fund; \
-      fi; \
-    else \
-      echo "⚠️ package-lock.json ausente, usando npm install"; \
-      npm install --no-audit --no-fund; \
-    fi
+# Instalar dependências - forçar npm install para evitar bug do rollup
+RUN echo "📦 Removendo package-lock.json e usando npm install limpo" && \
+    rm -f package-lock.json && \
+    npm install --no-audit --no-fund
 
 # Copy source code
 COPY . .
