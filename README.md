@@ -484,5 +484,21 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 [🌟 Dar uma estrela](https://github.com/seu-usuario/barbear-ia) • [🐛 Reportar Bug](https://github.com/seu-usuario/barbear-ia/issues) • [💡 Sugerir Feature](https://github.com/seu-usuario/barbear-ia/issues)
 
 </div>
-  #   D e p l o y   T e s t  
+  #   D e p l o y   T e s t 
  
+ 
+## 
+🧪 Teste de Deploy Automático
+
+**Status**: Testando workflow do GitHub Actions - Deploy automático via CI/CD  
+**Data**: 24/10/2025 - 03:15 UTC  
+**Objetivo**: Verificar se o pipeline de deploy está funcionando corretamente após correção dos problemas de build
+
+### Alterações Realizadas:
+- ✅ Correção dos problemas de dependência do framer-motion
+- ✅ Build Docker funcionando corretamente
+- ✅ Container rodando na porta 3500
+- 🧪 Testando deploy automático via GitHub Actions
+
+---
+*Teste de deploy automático - Commit para trigger do workflow*
