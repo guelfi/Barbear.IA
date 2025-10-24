@@ -206,7 +206,7 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  Valor: R$ {formData.price.toFixed(2).replace('.', ',')}
+                  Valor: R$ {(formData.price || 0).toFixed(2).replace('.', ',')}
                 </p>
               </div>
             </div>
@@ -246,7 +246,7 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
                       </span>
                       <span className="flex items-center space-x-1">
                         <DollarSign className="h-4 w-4" />
-                        <span>R$ {formData.price.toFixed(2).replace('.', ',')}</span>
+                        <span>R$ {(formData.price || 0).toFixed(2).replace('.', ',')}</span>
                       </span>
                     </div>
                   </div>

@@ -1,41 +1,86 @@
 // Mock data for dashboard statistics
 export const mockDashboardStats = {
+  todayAppointments: 8,
+  weeklyRevenue: 2450.50,
+  totalClients: 156,
+  completionRate: 92,
   totalRevenue: 15420,
   totalAppointments: 89,
-  totalClients: 156,
   growthRate: 12.5,
-  recentAppointments: [
+  upcomingAppointments: [
     {
       id: '1',
-      clientName: 'João Silva',
-      service: 'Corte + Barba',
+      client: {
+        name: 'João Silva',
+        avatar: '/avatars/01.png'
+      },
+      service: {
+        name: 'Corte + Barba'
+      },
+      barber: {
+        name: 'João Barbeiro'
+      },
       time: '09:00',
-      status: 'confirmed' as const,
-      avatar: '/avatars/01.png'
+      price: 55.00,
+      status: 'confirmed' as const
     },
     {
       id: '2',
-      clientName: 'Pedro Santos',
-      service: 'Corte Simples',
+      client: {
+        name: 'Pedro Santos',
+        avatar: '/avatars/02.png'
+      },
+      service: {
+        name: 'Corte Simples'
+      },
+      barber: {
+        name: 'Pedro Silva'
+      },
       time: '10:30',
-      status: 'scheduled' as const,
-      avatar: '/avatars/02.png'
+      price: 35.00,
+      status: 'scheduled' as const
     },
     {
       id: '3',
-      clientName: 'Carlos Lima',
-      service: 'Barba',
+      client: {
+        name: 'Carlos Lima',
+        avatar: '/avatars/03.png'
+      },
+      service: {
+        name: 'Barba'
+      },
+      barber: {
+        name: 'João Barbeiro'
+      },
       time: '14:00',
-      status: 'in-progress' as const,
-      avatar: '/avatars/03.png'
+      price: 25.00,
+      status: 'in-progress' as const
+    }
+  ],
+  recentClients: [
+    {
+      id: '1',
+      name: 'Maria Silva',
+      email: 'maria@email.com',
+      avatar: '/avatars/client-01.png',
+      totalAppointments: 12,
+      lastVisit: '2024-01-18'
     },
     {
-      id: '4',
-      clientName: 'Roberto Costa',
-      service: 'Corte + Barba',
-      time: '15:30',
-      status: 'completed' as const,
-      avatar: '/avatars/04.png'
+      id: '2',
+      name: 'Ana Costa',
+      email: 'ana@email.com',
+      avatar: '/avatars/client-02.png',
+      totalAppointments: 8,
+      lastVisit: '2024-01-17'
+    },
+    {
+      id: '3',
+      name: 'Roberto Lima',
+      email: 'roberto@email.com',
+      avatar: '/avatars/client-03.png',
+      totalAppointments: 15,
+      lastVisit: '2024-01-16'
     }
   ]
 };
@@ -157,3 +202,93 @@ export const mockServices = [
     category: 'Pacote'
   }
 ];
+// 
+Dados adicionais para o Dashboard
+export const mockDashboardStatsComplete = {
+  ...mockDashboardStats,
+  upcomingAppointments: [
+    {
+      id: '1',
+      client: {
+        id: '1',
+        name: 'João Silva',
+        avatar: '/avatars/01.png'
+      },
+      service: {
+        id: '1',
+        name: 'Corte + Barba'
+      },
+      barber: {
+        id: '1',
+        name: 'João Barbeiro'
+      },
+      time: '09:00',
+      price: 55.00,
+      status: 'confirmed' as const
+    },
+    {
+      id: '2',
+      client: {
+        id: '2',
+        name: 'Pedro Santos',
+        avatar: '/avatars/02.png'
+      },
+      service: {
+        id: '2',
+        name: 'Corte Simples'
+      },
+      barber: {
+        id: '2',
+        name: 'Pedro Silva'
+      },
+      time: '10:30',
+      price: 35.00,
+      status: 'scheduled' as const
+    },
+    {
+      id: '3',
+      client: {
+        id: '3',
+        name: 'Carlos Lima',
+        avatar: '/avatars/03.png'
+      },
+      service: {
+        id: '3',
+        name: 'Barba'
+      },
+      barber: {
+        id: '1',
+        name: 'João Barbeiro'
+      },
+      time: '14:00',
+      price: 25.00,
+      status: 'in-progress' as const
+    }
+  ],
+  recentClients: [
+    {
+      id: '1',
+      name: 'Maria Silva',
+      email: 'maria@email.com',
+      avatar: '/avatars/client-01.png',
+      totalAppointments: 12,
+      lastVisit: '2024-01-18'
+    },
+    {
+      id: '2',
+      name: 'Ana Costa',
+      email: 'ana@email.com',
+      avatar: '/avatars/client-02.png',
+      totalAppointments: 8,
+      lastVisit: '2024-01-17'
+    },
+    {
+      id: '3',
+      name: 'Roberto Lima',
+      email: 'roberto@email.com',
+      avatar: '/avatars/client-03.png',
+      totalAppointments: 15,
+      lastVisit: '2024-01-16'
+    }
+  ]
+};
