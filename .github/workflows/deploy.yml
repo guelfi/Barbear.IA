@@ -2,7 +2,7 @@ name: 🚀 Deploy Barbear.IA para OCI
 
 on:
   push:
-    branches: [ fix/jsx-typescript-errors ]  # Branch principal atual
+    branches: [ freezer-project ]  # Branch principal atual
   workflow_dispatch:
 
 env:
@@ -83,7 +83,7 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/fix/jsx-typescript-errors'
+    if: github.ref == 'refs/heads/freezer-project'
     
     steps:
     - name: Checkout code
@@ -133,6 +133,7 @@ jobs:
           download_file "Dockerfile"
           download_file "nginx.conf"
           download_file "package.json"
+          download_file "package-lock.json"
           download_file ".dockerignore"
           
           echo "✅ Sincronização de arquivos concluída"
