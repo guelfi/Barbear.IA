@@ -61,6 +61,7 @@
             "dev": "vite",
             "build": "vite build",
             "build:debug": "cross-env DEBUG=vite:* vite build",
+            "preview": "vite preview --port 3501",
             "test": "echo \"No tests specified\" && exit 0",
             "lint": "echo \"No linting configured\" && exit 0"
       }
