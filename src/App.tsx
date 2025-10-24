@@ -152,8 +152,6 @@ function AppContent() {
   }, []);
 
   const renderContent = useCallback(() => {
-    console.log('App: renderContent chamado para usuário:', user?.role, 'activeTab:', activeTab);
-
     if (showAppointmentForm) {
       return (
         <AppointmentForm
@@ -196,7 +194,6 @@ function AppContent() {
 
     // Super Admin Routes
     if (user?.role === 'super_admin') {
-      console.log('App: Renderizando SuperAdmin para tab:', activeTab);
       switch (activeTab) {
         case 'dashboard':
         case 'tenants':
@@ -218,10 +215,8 @@ function AppContent() {
     }
 
     // Regular user routes
-    console.log('App: Renderizando usuário regular:', user?.role, 'para tab:', activeTab);
     switch (activeTab) {
       case 'dashboard':
-        console.log('App: Retornando Dashboard para usuário:', user?.role);
         return <Dashboard />;
       case 'appointments':
         return (
@@ -267,7 +262,6 @@ function AppContent() {
       case 'mobile-test':
         return <MobileResponsiveTest />;
       default:
-        console.log('App: Fallback para Dashboard, usuário:', user?.role);
         return <Dashboard />;
     }
   }, [
@@ -339,30 +333,7 @@ function AppContent() {
 
         <main className="flex-1 overflow-auto p-4 lg:p-6">
           {user?.role !== 'super_admin' && user?.role !== 'barber' && <TrialBanner />}
-          {(() => {
-            try {
-              const content = renderContent();
-              console.log('App: Conteúdo renderizado:', content ? 'OK' : 'NULL');
-              return content || (
-                <div className="flex items-center justify-center min-h-[400px]">
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold mb-2">Carregando...</h3>
-                    <p className="text-muted-foreground">Preparando dashboard para {user?.name}</p>
-                  </div>
-                </div>
-              );
-            } catch (error) {
-              console.error('App: Erro ao renderizar conteúdo:', error);
-              return (
-                <div className="flex items-center justify-center min-h-[400px]">
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold mb-2">Erro</h3>
-                    <p className="text-muted-foreground">Problema ao carregar dashboard</p>
-                  </div>
-                </div>
-              );
-            }
-          })()}
+          {renderContent()}
         </main>
       </div>
 
