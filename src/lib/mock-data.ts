@@ -204,8 +204,8 @@ export const mockServices = [
     category: 'Pacote'
   }
 ];
-// 
-Dados adicionais para o Dashboard
+
+// Dados adicionais para o Dashboard
 export const mockDashboardStatsComplete = {
   ...mockDashboardStats,
   upcomingAppointments: [
