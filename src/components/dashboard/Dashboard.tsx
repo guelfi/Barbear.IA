@@ -28,51 +28,8 @@ const statusLabels = {
 export function Dashboard() {
   const { user } = useAuth();
   
-  // Debug logs para produção
-  console.log('Dashboard: Renderizando para usuário:', user?.role);
-  console.log('Dashboard: Stats disponíveis:', mockDashboardStatsComplete);
-  
-  // Verificação de usuário
-  if (!user) {
-    console.error('Dashboard: Usuário não encontrado!');
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">Erro de Autenticação</h3>
-          <p className="text-muted-foreground">Usuário não encontrado</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // This component should only render for non-super_admin users
-  // Super admin routing is handled in App.tsx
+  // Versão simplificada - sem verificações excessivas
   const stats = mockDashboardStatsComplete;
-  
-  // Fallback de segurança mais robusto
-  if (!stats) {
-    console.error('Dashboard: Stats é undefined!');
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">Carregando Dashboard...</h3>
-          <p className="text-muted-foreground">Preparando dados para {user.name}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Garantir que todos os valores numéricos existem
-  const safeStats = {
-    todayAppointments: Number(stats.todayAppointments) || 0,
-    weeklyRevenue: Number(stats.weeklyRevenue) || 0,
-    totalClients: Number(stats.totalClients) || 0,
-    completionRate: Number(stats.completionRate) || 0,
-    upcomingAppointments: Array.isArray(stats.upcomingAppointments) ? stats.upcomingAppointments : [],
-    recentClients: Array.isArray(stats.recentClients) ? stats.recentClients : []
-  };
-  
-  console.log('Dashboard: SafeStats criado:', safeStats);
 
   return (
     <motion.div 
@@ -95,7 +52,7 @@ export function Dashboard() {
         >
           <StatsCard
             title="Agendamentos Hoje"
-            value={safeStats.todayAppointments}
+            value={stats.todayAppointments || 0}
             icon={Calendar}
             description="agendamentos para hoje"
             trend={{ value: 12, isPositive: true }}
@@ -108,7 +65,7 @@ export function Dashboard() {
         >
           <StatsCard
             title="Receita Semanal"
-            value={`R$ ${(safeStats.weeklyRevenue || 0).toFixed(2)}`}
+            value={`R$ ${(stats.weeklyRevenue || 0).toFixed(2)}`}
             icon={DollarSign}
             description="últimos 7 dias"
             trend={{ value: 8, isPositive: true }}
@@ -121,7 +78,7 @@ export function Dashboard() {
         >
           <StatsCard
             title="Total de Clientes"
-            value={safeStats.totalClients}
+            value={stats.totalClients || 0}
             icon={Users}
             description="clientes cadastrados"
             trend={{ value: 5, isPositive: true }}
@@ -134,7 +91,7 @@ export function Dashboard() {
         >
           <StatsCard
             title="Taxa de Conclusão"
-            value={`${safeStats.completionRate}%`}
+            value={`${stats.completionRate || 0}%`}
             icon={TrendingUp}
             description="agendamentos concluídos"
             trend={{ value: 2, isPositive: true }}
@@ -154,7 +111,7 @@ export function Dashboard() {
             <MaterialCardTitle>Próximos Agendamentos</MaterialCardTitle>
           </MaterialCardHeader>
           <MaterialCardContent className="space-y-4">
-            {safeStats.upcomingAppointments.map((appointment, index) => (
+            {(stats.upcomingAppointments || []).map((appointment: any, index: number) => (
               <motion.div 
                 key={appointment.id} 
                 className="flex items-center space-x-4 p-3 rounded-lg hover:bg-accent/50 transition-material interactive"
@@ -202,7 +159,7 @@ export function Dashboard() {
             <MaterialCardTitle>Clientes Recentes</MaterialCardTitle>
           </MaterialCardHeader>
           <MaterialCardContent className="space-y-4">
-            {safeStats.recentClients.map((client, index) => (
+            {(stats.recentClients || []).map((client: any, index: number) => (
               <motion.div 
                 key={client.id} 
                 className="flex items-center space-x-4 p-3 rounded-lg hover:bg-accent/50 transition-material interactive"
