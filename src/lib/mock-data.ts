@@ -1,3 +1,5 @@
+import { Dashboard } from "@/components/dashboard/Dashboard";
+
 // Mock data for dashboard statistics
 export const mockDashboardStats = {
   todayAppointments: 8,

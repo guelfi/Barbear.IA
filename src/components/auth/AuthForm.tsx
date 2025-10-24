@@ -718,6 +718,7 @@ export function AuthForm() {
                         required
                         disabled={!loginData.userType}
                         placeholder={loginData.userType ? "Sua senha" : "Selecione o tipo de usuário"}
+                        autoComplete="current-password"
                         className="transition-material hover:elevation-1 focus:elevation-2 w-full pr-12 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                       />
                       <button
@@ -1211,6 +1212,7 @@ export function AuthForm() {
                         required
                         disabled={!registerData.userType}
                         placeholder={registerData.userType ? "Mínimo 6 caracteres" : "Selecione o tipo de usuário"}
+                        autoComplete="new-password"
                         className="transition-material hover:elevation-1 focus:elevation-2 w-full pr-12 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                       />
                       <button

@@ -3,6 +3,7 @@ const STATIC_CACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/favicon.svg',
   '/icon-192x192.png',
   '/icon-512x512.png'
 ];
