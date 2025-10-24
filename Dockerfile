@@ -17,8 +17,13 @@ RUN echo "📦 Removendo package-lock.json e usando npm install limpo" && \
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build the application with debug info
+RUN echo "🏗️ Iniciando build de produção..." && \
+    npm run build && \
+    echo "✅ Build concluído. Verificando arquivos gerados:" && \
+    ls -la build/ && \
+    echo "📄 Conteúdo do index.html:" && \
+    head -20 build/index.html
 
 # Production stage
 FROM nginx:alpine
