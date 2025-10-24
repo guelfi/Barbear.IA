@@ -203,12 +203,12 @@ export const mockServices = [
   }
 ];
 
-// Dados adicionais para o Dashboard
+// Dados adicionais para o Dashboard - versão segura
 export const mockDashboardStatsComplete = {
-  todayAppointments: 8,
-  weeklyRevenue: 2450.50,
-  totalClients: 156,
-  completionRate: 92,
+  todayAppointments: 8 || 0,
+  weeklyRevenue: 2450.50 || 0,
+  totalClients: 156 || 0,
+  completionRate: 92 || 0,
   upcomingAppointments: [
     {
       id: '1',
