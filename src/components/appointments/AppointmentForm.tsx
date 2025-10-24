@@ -131,7 +131,7 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
                 <SelectContent>
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {service.name} - R$ {service.price.toFixed(2)} ({service.duration}min)
+                      {service.name} - R$ {(service.price || 0).toFixed(2)} ({service.duration}min)
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -204,7 +204,7 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
                 </div>
                 <div className="flex justify-between">
                   <span>Preço:</span>
-                  <span>R$ {selectedService.price.toFixed(2)}</span>
+                  <span>R$ {(selectedService.price || 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>

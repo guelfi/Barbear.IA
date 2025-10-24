@@ -198,7 +198,7 @@ export function BarbershopProfile() {
               <CreditCard className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Receita Mensal</p>
-                <p className="text-xl font-bold">R$ {profileData.monthlyRevenue.toFixed(2).replace('.', ',')}</p>
+                <p className="text-xl font-bold">R$ {(profileData.monthlyRevenue || 0).toFixed(2).replace('.', ',')}</p>
               </div>
             </div>
           </CardContent>

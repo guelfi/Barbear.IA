@@ -205,7 +205,10 @@ export const mockServices = [
 
 // Dados adicionais para o Dashboard
 export const mockDashboardStatsComplete = {
-  ...mockDashboardStats,
+  todayAppointments: 8,
+  weeklyRevenue: 2450.50,
+  totalClients: 156,
+  completionRate: 92,
   upcomingAppointments: [
     {
       id: '1',
