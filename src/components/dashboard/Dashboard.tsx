@@ -32,6 +32,19 @@ export function Dashboard() {
   console.log('Dashboard: Renderizando para usuário:', user?.role);
   console.log('Dashboard: Stats disponíveis:', mockDashboardStatsComplete);
   
+  // Verificação de usuário
+  if (!user) {
+    console.error('Dashboard: Usuário não encontrado!');
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Erro de Autenticação</h3>
+          <p className="text-muted-foreground">Usuário não encontrado</p>
+        </div>
+      </div>
+    );
+  }
+  
   // This component should only render for non-super_admin users
   // Super admin routing is handled in App.tsx
   const stats = mockDashboardStatsComplete;
@@ -42,8 +55,8 @@ export function Dashboard() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">Erro no Dashboard</h3>
-          <p className="text-muted-foreground">Dados não disponíveis</p>
+          <h3 className="text-lg font-semibold mb-2">Carregando Dashboard...</h3>
+          <p className="text-muted-foreground">Preparando dados para {user.name}</p>
         </div>
       </div>
     );
@@ -51,13 +64,15 @@ export function Dashboard() {
 
   // Garantir que todos os valores numéricos existem
   const safeStats = {
-    todayAppointments: stats.todayAppointments || 0,
-    weeklyRevenue: stats.weeklyRevenue || 0,
-    totalClients: stats.totalClients || 0,
-    completionRate: stats.completionRate || 0,
-    upcomingAppointments: stats.upcomingAppointments || [],
-    recentClients: stats.recentClients || []
+    todayAppointments: Number(stats.todayAppointments) || 0,
+    weeklyRevenue: Number(stats.weeklyRevenue) || 0,
+    totalClients: Number(stats.totalClients) || 0,
+    completionRate: Number(stats.completionRate) || 0,
+    upcomingAppointments: Array.isArray(stats.upcomingAppointments) ? stats.upcomingAppointments : [],
+    recentClients: Array.isArray(stats.recentClients) ? stats.recentClients : []
   };
+  
+  console.log('Dashboard: SafeStats criado:', safeStats);
 
   return (
     <motion.div 

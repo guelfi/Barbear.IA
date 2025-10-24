@@ -180,13 +180,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = useCallback(() => {
     try {
+      console.log('Logout: Iniciando processo de logout...');
       localStorage.removeItem('authToken');
       localStorage.removeItem('userEmail');
       setUser(null);
+      console.log('Logout: Concluído com sucesso');
+      
+      // Forçar recarregamento da página para limpar estado
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } catch (error) {
       console.error('Logout error:', error);
       // Fallback: still clear user state
       setUser(null);
+      // Forçar recarregamento mesmo com erro
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
   }, []);
 
