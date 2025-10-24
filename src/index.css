@@ -4212,7 +4212,7 @@ html {
   }
 }
 
-/* Badge de notificações - força estilo em todos os temas */
+/* Badge de notificações - força estilo em todos os temas - v2 */
 .notification-badge {
   background-color: #dc2626 !important;
   color: #ffffff !important;
@@ -4221,6 +4221,9 @@ html {
   z-index: 50 !important;
   min-width: 20px !important;
   min-height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .notification-badge span {
@@ -4228,13 +4231,17 @@ html {
   font-weight: bold !important;
   font-size: 12px !important;
   line-height: 1 !important;
+  text-align: center !important;
 }
 
-/* Força o estilo mesmo com cache */
+/* Força o estilo mesmo com cache - versão atualizada */
 [data-theme="light"] .notification-badge,
 [data-theme="dark"] .notification-badge,
 .light .notification-badge,
-.dark .notification-badge {
+.dark .notification-badge,
+html .notification-badge,
+body .notification-badge {
   background-color: #dc2626 !important;
   color: #ffffff !important;
+  border: 2px solid #ffffff !important;
 }

@@ -180,11 +180,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = useCallback(() => {
     try {
-      console.log('Performing logout...');
       localStorage.removeItem('authToken');
       localStorage.removeItem('userEmail');
       setUser(null);
-      console.log('Logout completed successfully');
     } catch (error) {
       console.error('Logout error:', error);
       // Fallback: still clear user state
