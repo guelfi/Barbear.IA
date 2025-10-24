@@ -29,11 +29,8 @@ const statusLabels = {
 export function Dashboard() {
   const { user } = useAuth();
   
-  // If user is super admin, show super admin dashboard
-  if (user?.role === 'super_admin') {
-    return <SuperAdminDashboard />;
-  }
-  
+  // This component should only render for non-super_admin users
+  // Super admin routing is handled in App.tsx
   const stats = mockDashboardStats;
 
   return (
