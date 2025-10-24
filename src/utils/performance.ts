@@ -23,7 +23,7 @@ export class PerformanceMonitor {
     const duration = endTime - startTime;
     
     this.metrics.set(name, duration);
-    console.log(`Performance: ${name} took ${duration.toFixed(2)}ms`);
+    console.log(`Performance: ${name} took ${(duration || 0).toFixed(2)}ms`);
     
     return duration;
   }
@@ -135,14 +135,14 @@ export function analyzeBundleSize(): void {
           .then(blob => {
             const size = blob.size / 1024; // KB
             totalSize += size;
-            console.log(`Script ${src}: ${size.toFixed(2)} KB`);
+            console.log(`Script ${src}: ${(size || 0).toFixed(2)} KB`);
           })
           .catch(console.error);
       }
     });
 
     setTimeout(() => {
-      console.log(`Total bundle size: ~${totalSize.toFixed(2)} KB`);
+      console.log(`Total bundle size: ~${(totalSize || 0).toFixed(2)} KB`);
     }, 1000);
   }
 }

@@ -37,18 +37,28 @@ export function Dashboard() {
   // Super admin routing is handled in App.tsx
   const stats = mockDashboardStatsComplete;
   
-  // Fallback de segurança
-  if (!stats || !stats.upcomingAppointments || !stats.recentClients) {
-    console.error('Dashboard: Dados mockados incompletos!', stats);
+  // Fallback de segurança mais robusto
+  if (!stats) {
+    console.error('Dashboard: Stats é undefined!');
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">Carregando Dashboard...</h3>
-          <p className="text-muted-foreground">Preparando seus dados</p>
+          <h3 className="text-lg font-semibold mb-2">Erro no Dashboard</h3>
+          <p className="text-muted-foreground">Dados não disponíveis</p>
         </div>
       </div>
     );
   }
+
+  // Garantir que todos os valores numéricos existem
+  const safeStats = {
+    todayAppointments: stats.todayAppointments || 0,
+    weeklyRevenue: stats.weeklyRevenue || 0,
+    totalClients: stats.totalClients || 0,
+    completionRate: stats.completionRate || 0,
+    upcomingAppointments: stats.upcomingAppointments || [],
+    recentClients: stats.recentClients || []
+  };
 
   return (
     <motion.div 
@@ -71,7 +81,7 @@ export function Dashboard() {
         >
           <StatsCard
             title="Agendamentos Hoje"
-            value={stats.todayAppointments}
+            value={safeStats.todayAppointments}
             icon={Calendar}
             description="agendamentos para hoje"
             trend={{ value: 12, isPositive: true }}
@@ -84,7 +94,7 @@ export function Dashboard() {
         >
           <StatsCard
             title="Receita Semanal"
-            value={`R$ ${(stats.weeklyRevenue || 0).toFixed(2)}`}
+            value={`R$ ${(safeStats.weeklyRevenue || 0).toFixed(2)}`}
             icon={DollarSign}
             description="últimos 7 dias"
             trend={{ value: 8, isPositive: true }}
@@ -97,7 +107,7 @@ export function Dashboard() {
         >
           <StatsCard
             title="Total de Clientes"
-            value={stats.totalClients}
+            value={safeStats.totalClients}
             icon={Users}
             description="clientes cadastrados"
             trend={{ value: 5, isPositive: true }}
@@ -110,7 +120,7 @@ export function Dashboard() {
         >
           <StatsCard
             title="Taxa de Conclusão"
-            value={`${stats.completionRate}%`}
+            value={`${safeStats.completionRate}%`}
             icon={TrendingUp}
             description="agendamentos concluídos"
             trend={{ value: 2, isPositive: true }}
@@ -130,7 +140,7 @@ export function Dashboard() {
             <MaterialCardTitle>Próximos Agendamentos</MaterialCardTitle>
           </MaterialCardHeader>
           <MaterialCardContent className="space-y-4">
-            {stats.upcomingAppointments.map((appointment, index) => (
+            {safeStats.upcomingAppointments.map((appointment, index) => (
               <motion.div 
                 key={appointment.id} 
                 className="flex items-center space-x-4 p-3 rounded-lg hover:bg-accent/50 transition-material interactive"
@@ -178,7 +188,7 @@ export function Dashboard() {
             <MaterialCardTitle>Clientes Recentes</MaterialCardTitle>
           </MaterialCardHeader>
           <MaterialCardContent className="space-y-4">
-            {stats.recentClients.map((client, index) => (
+            {safeStats.recentClients.map((client, index) => (
               <motion.div 
                 key={client.id} 
                 className="flex items-center space-x-4 p-3 rounded-lg hover:bg-accent/50 transition-material interactive"
