@@ -28,6 +28,9 @@ const statusLabels = {
 export function Dashboard() {
   const { user } = useAuth();
   
+  // Debug log
+  console.log('Dashboard: Renderizando para usuário:', user?.role);
+  
   // Versão simplificada - sem verificações excessivas
   const stats = mockDashboardStatsComplete;
 
@@ -144,8 +147,8 @@ export function Dashboard() {
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Badge className={statusColors[appointment.status]}>
-                    {statusLabels[appointment.status]}
+                  <Badge className={statusColors[appointment.status as keyof typeof statusColors]}>
+                    {statusLabels[appointment.status as keyof typeof statusLabels]}
                   </Badge>
                 </motion.div>
               </motion.div>

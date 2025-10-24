@@ -118,25 +118,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (mockUser && password === expectedPassword) {
         // Validate user type compatibility
         if (userType === 'client' && mockUser.role === 'client') {
-          // Client login
           localStorage.setItem('authToken', 'mock-token-client');
           localStorage.setItem('userEmail', email);
           setUser(mockUser);
           return true;
         } else if (userType === 'super_admin' && mockUser.role === 'super_admin') {
-          // Super Admin login
           localStorage.setItem('authToken', 'mock-token-super-admin');
           localStorage.setItem('userEmail', email);
           setUser(mockUser);
           return true;
         } else if (userType === 'barber' && mockUser.role === 'barber') {
-          // Barber login
           localStorage.setItem('authToken', 'mock-token-barber');
           localStorage.setItem('userEmail', email);
           setUser(mockUser);
           return true;
         } else if (userType === 'barbershop' && mockUser.role === 'admin') {
-          // Barbershop/Admin login
           localStorage.setItem('authToken', 'mock-token-barbershop');
           localStorage.setItem('userEmail', email);
           setUser(mockUser);
@@ -168,7 +164,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // In a real app, this would create the user in the database
       console.log('New user registration:', data);
       
-      // For now, just return success
       return true;
     } catch (error) {
       console.error('Registration error:', error);
@@ -180,24 +175,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = useCallback(() => {
     try {
-      console.log('Logout: Iniciando processo de logout...');
       localStorage.removeItem('authToken');
       localStorage.removeItem('userEmail');
       setUser(null);
-      console.log('Logout: Concluído com sucesso');
-      
-      // Forçar recarregamento da página para limpar estado
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
     } catch (error) {
       console.error('Logout error:', error);
-      // Fallback: still clear user state
       setUser(null);
-      // Forçar recarregamento mesmo com erro
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
     }
   }, []);
 
