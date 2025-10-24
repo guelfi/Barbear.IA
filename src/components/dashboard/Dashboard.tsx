@@ -29,9 +29,26 @@ const statusLabels = {
 export function Dashboard() {
   const { user } = useAuth();
   
+  // Debug logs para produção
+  console.log('Dashboard: Renderizando para usuário:', user?.role);
+  console.log('Dashboard: Stats disponíveis:', mockDashboardStatsComplete);
+  
   // This component should only render for non-super_admin users
   // Super admin routing is handled in App.tsx
   const stats = mockDashboardStatsComplete;
+  
+  // Fallback de segurança
+  if (!stats || !stats.upcomingAppointments || !stats.recentClients) {
+    console.error('Dashboard: Dados mockados incompletos!', stats);
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Carregando Dashboard...</h3>
+          <p className="text-muted-foreground">Preparando seus dados</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
