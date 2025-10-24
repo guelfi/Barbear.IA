@@ -17,7 +17,7 @@ import {
 } from "../ui/tabs";
 import { ThemeToggle } from "../ui/theme-toggle";
 import { motion } from "framer-motion";
-// ImageWithFallback import removed as it is unused
+// Force GitHub API cache refresh - 2025-10-24
 import { useAuth } from "../../contexts/AuthContext";
 import {
   Eye,
