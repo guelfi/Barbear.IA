@@ -484,4 +484,5 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 [🌟 Dar uma estrela](https://github.com/seu-usuario/barbear-ia) • [🐛 Reportar Bug](https://github.com/seu-usuario/barbear-ia/issues) • [💡 Sugerir Feature](https://github.com/seu-usuario/barbear-ia/issues)
 
 </div>
-  
+  #   D e p l o y   T e s t  
+ 
