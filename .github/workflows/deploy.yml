@@ -168,12 +168,19 @@ jobs:
           # Build new image with cache optimization
           echo "🏗️ Construindo nova imagem com build limpo..."
           
-          # Clean Docker build cache
-          docker system prune -f
-          docker builder prune -f
+          # FORÇA BUILD ULTRA LIMPO - Remove TUDO
+          echo "🧹 Limpeza completa do Docker..."
+          docker system prune -a -f --volumes
+          docker builder prune -a -f
+          docker image prune -a -f
           
-          # Build with no cache to ensure fresh build
-          docker-compose build --no-cache --pull ${{ env.CONTAINER_NAME }}
+          # Remove container antigo se existir
+          docker-compose down --remove-orphans
+          docker-compose rm -f ${{ env.CONTAINER_NAME }}
+          
+          # Build completamente limpo
+          echo "🏗️ Build ultra limpo sem cache..."
+          docker-compose build --no-cache --pull --force-rm ${{ env.CONTAINER_NAME }}
           
           if [ $? -ne 0 ]; then
             echo "❌ Erro no build da imagem"
