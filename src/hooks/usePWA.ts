@@ -88,16 +88,16 @@ export function usePWA() {
     document.addEventListener('scroll', handleUserInteraction, { once: true });
     document.addEventListener('keydown', handleUserInteraction, { once: true });
 
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then((registration) => {
-          console.log('PWA: Service Worker registered successfully', registration);
-        })
-        .catch((error) => {
-          console.error('PWA: Service Worker registration failed', error);
-        });
-    }
+    // Register service worker - TEMPORARIAMENTE DESABILITADO PARA DEBUG
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.register('/sw.js')
+    //     .then((registration) => {
+    //       console.log('PWA: Service Worker registered successfully', registration);
+    //     })
+    //     .catch((error) => {
+    //       console.error('PWA: Service Worker registration failed', error);
+    //     });
+    // }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
