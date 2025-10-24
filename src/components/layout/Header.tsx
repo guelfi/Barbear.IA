@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Menu, Bell } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
 import { ThemeToggle } from '../ui/theme-toggle';
 import { AnimatedIcon } from '../ui/animated-icon';
 import { NotificationDropdown } from '../notifications/NotificationDropdown';
@@ -13,7 +12,7 @@ interface HeaderProps {
 
 export function Header({ title, onMenuToggle }: HeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false);
-  
+
   // Mock unread count - in a real app, this would come from a context or API
   const unreadCount = 3;
 
@@ -56,15 +55,14 @@ export function Header({ title, onMenuToggle }: HeaderProps) {
 
         <div className="flex items-center space-x-2">
           <ThemeToggle />
-          
+
           {/* Notifications */}
           <div className="relative">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className={`relative hover:scale-105 transition-all duration-200 ${
-                showNotifications ? 'bg-muted/80' : ''
-              }`}
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`relative hover:scale-105 transition-all duration-200 ${showNotifications ? 'bg-muted/80' : ''
+                }`}
               onClick={handleNotificationToggle}
               onKeyDown={handleKeyDown}
               aria-label={`${unreadCount} notificações não lidas`}
@@ -77,15 +75,18 @@ export function Header({ title, onMenuToggle }: HeaderProps) {
                 category="action"
                 size="sm"
                 intensity="medium"
+                className="text-foreground hover:text-red-600 transition-colors duration-200"
               />
               {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 hover:bg-red-600 text-white animate-pulse">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </Badge>
+                <div className="notification-badge absolute -top-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold animate-pulse shadow-lg">
+                  <span>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                </div>
               )}
             </Button>
-            
-            <NotificationDropdown 
+
+            <NotificationDropdown
               isOpen={showNotifications}
               onClose={handleNotificationClose}
             />

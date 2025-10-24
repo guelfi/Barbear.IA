@@ -12,7 +12,13 @@ COPY package*.json ./
 # Instalar dependências com fallback inteligente
 RUN if [ -f package-lock.json ]; then \
       echo "📦 Usando npm ci (build reprodutível)"; \
-      npm ci --no-audit --no-fund; \
+      if npm ci --no-audit --no-fund; then \
+        echo "✅ npm ci executado com sucesso"; \
+      else \
+        echo "⚠️ npm ci falhou, tentando npm install como fallback"; \
+        rm -f package-lock.json; \
+        npm install --no-audit --no-fund; \
+      fi; \
     else \
       echo "⚠️ package-lock.json ausente, usando npm install"; \
       npm install --no-audit --no-fund; \

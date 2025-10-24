@@ -4211,3 +4211,30 @@ html {
     transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));
   }
 }
+
+/* Badge de notificações - força estilo em todos os temas */
+.notification-badge {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4) !important;
+  z-index: 50 !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+}
+
+.notification-badge span {
+  color: #ffffff !important;
+  font-weight: bold !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+
+/* Força o estilo mesmo com cache */
+[data-theme="light"] .notification-badge,
+[data-theme="dark"] .notification-badge,
+.light .notification-badge,
+.dark .notification-badge {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+}
