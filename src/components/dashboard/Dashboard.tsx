@@ -1,6 +1,5 @@
 import { Calendar, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { StatsCard } from './StatsCard';
-import { SuperAdminDashboard } from './SuperAdminDashboard';
 import { MaterialCard, MaterialCardContent, MaterialCardHeader, MaterialCardTitle } from '../ui/material-card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
