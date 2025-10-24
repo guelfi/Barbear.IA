@@ -4,7 +4,7 @@ import { SuperAdminDashboard } from './SuperAdminDashboard';
 import { MaterialCard, MaterialCardContent, MaterialCardHeader, MaterialCardTitle } from '../ui/material-card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
-import { mockDashboardStats } from '../../lib/mock-data';
+import { mockDashboardStatsComplete } from '../../lib/mock-data';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 
@@ -31,7 +31,7 @@ export function Dashboard() {
   
   // This component should only render for non-super_admin users
   // Super admin routing is handled in App.tsx
-  const stats = mockDashboardStats;
+  const stats = mockDashboardStatsComplete;
 
   return (
     <motion.div 
@@ -67,7 +67,7 @@ export function Dashboard() {
         >
           <StatsCard
             title="Receita Semanal"
-            value={`R$ ${stats.weeklyRevenue.toFixed(2)}`}
+            value={`R$ ${(stats.weeklyRevenue || 0).toFixed(2)}`}
             icon={DollarSign}
             description="últimos 7 dias"
             trend={{ value: 8, isPositive: true }}
@@ -139,7 +139,7 @@ export function Dashboard() {
                     {appointment.service.name} com {appointment.barber.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {appointment.time} - R$ {appointment.price.toFixed(2)}
+                    {appointment.time} - R$ {(appointment.price || 0).toFixed(2)}
                   </p>
                 </div>
                 <motion.div

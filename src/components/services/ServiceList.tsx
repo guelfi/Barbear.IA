@@ -176,7 +176,7 @@ export function ServiceList({ onCreateService, onEditService }: ServiceListProps
                       />
                       <span>Preço:</span>
                     </div>
-                    <span className="font-medium">R$ {service.price.toFixed(2)}</span>
+                    <span className="font-medium">R$ {(service.price || 0).toFixed(2)}</span>
                   </motion.div>
 
                   <motion.div 
