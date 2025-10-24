@@ -152,6 +152,9 @@ function AppContent() {
   }, []);
 
   const renderContent = useCallback(() => {
+    // Debug logging
+    console.log('Rendering content for user:', user?.role, 'activeTab:', activeTab);
+    
     if (showAppointmentForm) {
       return (
         <AppointmentForm
@@ -194,6 +197,7 @@ function AppContent() {
 
     // Super Admin Routes
     if (user?.role === 'super_admin') {
+      console.log('Rendering SuperAdmin content for tab:', activeTab);
       switch (activeTab) {
         case 'dashboard':
         case 'tenants':
@@ -215,6 +219,7 @@ function AppContent() {
     }
 
     // Regular user routes
+    console.log('Rendering regular user content for role:', user?.role, 'tab:', activeTab);
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard />;
@@ -262,6 +267,7 @@ function AppContent() {
       case 'mobile-test':
         return <MobileResponsiveTest />;
       default:
+        console.log('Falling back to Dashboard for tab:', activeTab);
         return <Dashboard />;
     }
   }, [
