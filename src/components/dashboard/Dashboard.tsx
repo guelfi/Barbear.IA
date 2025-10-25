@@ -28,9 +28,26 @@ const statusLabels = {
 export function Dashboard() {
   const { user } = useAuth();
   
-  // Debug log para produção
+  // Debug logs específicos para produção
   console.log('Dashboard: Renderizando para usuário:', user?.role);
+  console.log('Dashboard: Usuário completo:', user);
   console.log('Dashboard: Stats carregados:', mockDashboardStatsComplete);
+  console.log('Dashboard: Ambiente:', process.env.NODE_ENV);
+  console.log('Dashboard: Dados mockados disponíveis:', {
+    hasStats: !!mockDashboardStatsComplete,
+    todayAppointments: mockDashboardStatsComplete?.todayAppointments,
+    upcomingAppointments: mockDashboardStatsComplete?.upcomingAppointments?.length,
+    recentClients: mockDashboardStatsComplete?.recentClients?.length
+  });
+  
+  // Verificação específica de role
+  console.log('Dashboard: Verificando role do usuário:', {
+    userRole: user?.role,
+    isSuperAdmin: user?.role === 'super_admin',
+    isAdmin: user?.role === 'admin',
+    isBarber: user?.role === 'barber',
+    isClient: user?.role === 'client'
+  });
   
   // Verificações de segurança para evitar erros em produção
   const stats = {
@@ -41,6 +58,19 @@ export function Dashboard() {
     upcomingAppointments: mockDashboardStatsComplete?.upcomingAppointments ?? [],
     recentClients: mockDashboardStatsComplete?.recentClients ?? []
   };
+  
+  // Log dos stats processados
+  console.log('Dashboard: Stats processados:', stats);
+  
+  // Log adicional para verificar se os dados foram processados
+  console.log('Dashboard: Stats processados:', {
+    todayAppointments: stats.todayAppointments,
+    weeklyRevenue: stats.weeklyRevenue,
+    totalClients: stats.totalClients,
+    completionRate: stats.completionRate,
+    upcomingAppointmentsCount: stats.upcomingAppointments.length,
+    recentClientsCount: stats.recentClients.length
+  });
 
   return (
     <motion.div 

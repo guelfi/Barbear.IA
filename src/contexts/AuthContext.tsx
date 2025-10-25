@@ -97,16 +97,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null;
       
       console.log('AuthContext: Verificando token armazenado:', { token: !!token, userEmail });
+      console.log('AuthContext: Ambiente:', process.env.NODE_ENV);
+      console.log('AuthContext: Window disponível:', typeof window !== 'undefined');
+      console.log('AuthContext: LocalStorage disponível:', typeof window !== 'undefined' && !!window.localStorage);
       
       if (token && userEmail && mockUsers[userEmail as keyof typeof mockUsers]) {
         const foundUser = mockUsers[userEmail as keyof typeof mockUsers];
         console.log('AuthContext: Usuário encontrado no localStorage:', foundUser.role);
+        console.log('AuthContext: Dados do usuário:', { id: foundUser.id, name: foundUser.name, role: foundUser.role });
         setUser(foundUser);
       } else {
         console.log('AuthContext: Nenhum usuário válido encontrado no localStorage');
+        console.log('AuthContext: Debug localStorage:', { 
+          hasToken: !!token, 
+          hasEmail: !!userEmail, 
+          emailExists: userEmail ? !!mockUsers[userEmail as keyof typeof mockUsers] : false 
+        });
       }
     } catch (error) {
       console.error('AuthContext: Erro ao acessar localStorage:', error);
+      console.error('AuthContext: Detalhes do erro:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
     }
     setIsLoading(false);
   }, []);
