@@ -28,11 +28,19 @@ const statusLabels = {
 export function Dashboard() {
   const { user } = useAuth();
   
-  // Debug log
+  // Debug log para produção
   console.log('Dashboard: Renderizando para usuário:', user?.role);
+  console.log('Dashboard: Stats carregados:', mockDashboardStatsComplete);
   
-  // Versão simplificada - sem verificações excessivas
-  const stats = mockDashboardStatsComplete;
+  // Verificações de segurança para evitar erros em produção
+  const stats = {
+    todayAppointments: mockDashboardStatsComplete?.todayAppointments ?? 0,
+    weeklyRevenue: mockDashboardStatsComplete?.weeklyRevenue ?? 0,
+    totalClients: mockDashboardStatsComplete?.totalClients ?? 0,
+    completionRate: mockDashboardStatsComplete?.completionRate ?? 0,
+    upcomingAppointments: mockDashboardStatsComplete?.upcomingAppointments ?? [],
+    recentClients: mockDashboardStatsComplete?.recentClients ?? []
+  };
 
   return (
     <motion.div 

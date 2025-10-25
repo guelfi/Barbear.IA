@@ -92,11 +92,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // Check for stored auth token
-    const token = localStorage.getItem('authToken');
-    const userEmail = localStorage.getItem('userEmail');
-    
-    if (token && userEmail && mockUsers[userEmail as keyof typeof mockUsers]) {
-      setUser(mockUsers[userEmail as keyof typeof mockUsers]);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+      const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null;
+      
+      console.log('AuthContext: Verificando token armazenado:', { token: !!token, userEmail });
+      
+      if (token && userEmail && mockUsers[userEmail as keyof typeof mockUsers]) {
+        const foundUser = mockUsers[userEmail as keyof typeof mockUsers];
+        console.log('AuthContext: Usuário encontrado no localStorage:', foundUser.role);
+        setUser(foundUser);
+      } else {
+        console.log('AuthContext: Nenhum usuário válido encontrado no localStorage');
+      }
+    } catch (error) {
+      console.error('AuthContext: Erro ao acessar localStorage:', error);
     }
     setIsLoading(false);
   }, []);
@@ -108,6 +118,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   ): Promise<boolean> => {
     setIsLoading(true);
     
+    console.log('AuthContext: Tentativa de login:', { email, userType });
+    
     try {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -115,34 +127,75 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const mockUser = mockUsers[email as keyof typeof mockUsers];
       const expectedPassword = mockPasswords[email as keyof typeof mockPasswords];
 
+      console.log('AuthContext: Verificando credenciais:', { 
+        userExists: !!mockUser, 
+        passwordMatch: password === expectedPassword,
+        userRole: mockUser?.role 
+      });
+
       if (mockUser && password === expectedPassword) {
         // Validate user type compatibility
         if (userType === 'client' && mockUser.role === 'client') {
-          localStorage.setItem('authToken', 'mock-token-client');
-          localStorage.setItem('userEmail', email);
-          setUser(mockUser);
-          return true;
+          try {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('authToken', 'mock-token-client');
+              localStorage.setItem('userEmail', email);
+            }
+            console.log('AuthContext: Login bem-sucedido como cliente');
+            setUser(mockUser);
+            return true;
+          } catch (error) {
+            console.error('AuthContext: Erro ao salvar dados do cliente:', error);
+            return false;
+          }
         } else if (userType === 'super_admin' && mockUser.role === 'super_admin') {
-          localStorage.setItem('authToken', 'mock-token-super-admin');
-          localStorage.setItem('userEmail', email);
-          setUser(mockUser);
-          return true;
+          try {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('authToken', 'mock-token-super-admin');
+              localStorage.setItem('userEmail', email);
+            }
+            console.log('AuthContext: Login bem-sucedido como super admin');
+            setUser(mockUser);
+            return true;
+          } catch (error) {
+            console.error('AuthContext: Erro ao salvar dados do super admin:', error);
+            return false;
+          }
         } else if (userType === 'barber' && mockUser.role === 'barber') {
-          localStorage.setItem('authToken', 'mock-token-barber');
-          localStorage.setItem('userEmail', email);
-          setUser(mockUser);
-          return true;
+          try {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('authToken', 'mock-token-barber');
+              localStorage.setItem('userEmail', email);
+            }
+            console.log('AuthContext: Login bem-sucedido como barbeiro');
+            setUser(mockUser);
+            return true;
+          } catch (error) {
+            console.error('AuthContext: Erro ao salvar dados do barbeiro:', error);
+            return false;
+          }
         } else if (userType === 'barbershop' && mockUser.role === 'admin') {
-          localStorage.setItem('authToken', 'mock-token-barbershop');
-          localStorage.setItem('userEmail', email);
-          setUser(mockUser);
-          return true;
+          try {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('authToken', 'mock-token-barbershop');
+              localStorage.setItem('userEmail', email);
+            }
+            console.log('AuthContext: Login bem-sucedido como admin da barbearia');
+            setUser(mockUser);
+            return true;
+          } catch (error) {
+            console.error('AuthContext: Erro ao salvar dados do admin:', error);
+            return false;
+          }
+        } else {
+          console.log('AuthContext: Tipo de usuário incompatível:', { userType, userRole: mockUser.role });
         }
       }
       
+      console.log('AuthContext: Login falhou - credenciais inválidas');
       return false;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('AuthContext: Erro no login:', error);
       return false;
     } finally {
       setIsLoading(false);
@@ -175,11 +228,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = useCallback(() => {
     try {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userEmail');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userEmail');
+      }
+      console.log('AuthContext: Logout realizado com sucesso');
       setUser(null);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('AuthContext: Erro no logout:', error);
       setUser(null);
     }
   }, []);
