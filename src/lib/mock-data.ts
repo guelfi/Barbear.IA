@@ -1,4 +1,7 @@
 // Mock data for dashboard statistics
+console.log('Mock Data: Carregando dados mockados...');
+console.log('Mock Data: Ambiente:', process.env.NODE_ENV);
+
 export const mockDashboardStats = {
   todayAppointments: 8,
   weeklyRevenue: 2450.50,
@@ -421,3 +424,17 @@ export const mockDashboardStatsComplete = {
     }
   ]
 };
+
+// ... Logs de debug para produção
+console.log('Mock Data: mockDashboardStatsComplete carregado:', !!mockDashboardStatsComplete);
+console.log('Mock Data: upcomingAppointments length:', mockDashboardStatsComplete?.upcomingAppointments?.length || 0);
+console.log('Mock Data: recentClients length:', mockDashboardStatsComplete?.recentClients?.length || 0);
+console.log('Mock Data: Todos os dados mockados carregados com sucesso');
+
+// Verificação de integridade dos dados
+if (typeof window !== 'undefined') {
+console.log('Mock Data: Executando no browser');
+console.log('Mock Data: mockDashboardStatsComplete:', mockDashboardStatsComplete);
+} else {
+console.log('Mock Data: Executando no servidor/build');
+}
