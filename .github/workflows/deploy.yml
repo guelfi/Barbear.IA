@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: '0 2 * * 0'  # Deploy semanal de manutenção (Domingo 2h)
 
+# Controle de concorrência para evitar deployments paralelos
+concurrency:
+  group: deploy-barbear-ia-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   PROJECT_NAME: "Barbear.IA"
   CONTAINER_NAME: "barbear-ia-frontend"
