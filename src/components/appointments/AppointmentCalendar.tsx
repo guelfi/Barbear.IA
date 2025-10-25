@@ -211,7 +211,7 @@ export function AppointmentCalendar({ onCreateAppointment, onEditAppointment }: 
                         whileHover={{ scale: 1.05 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <p className="font-medium">R$ {(appointment.price || 0).toFixed(2)}</p>
+                        <p className="font-medium">R$ {(appointment.service.price || 0).toFixed(2)}</p>
                         <Badge className={statusColors[appointment.status]}>
                           {statusLabels[appointment.status]}
                         </Badge>

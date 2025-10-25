@@ -41,6 +41,13 @@ function AppContent() {
   const [editingBarber, setEditingBarber] = useState<Barber | undefined>();
   const [editingService, setEditingService] = useState<Service | undefined>();
 
+  console.log('App: Estado atual:', { 
+    user: user ? { email: user.email, role: user.role } : null, 
+    isLoading, 
+    mounted,
+    activeTab 
+  });
+
   const titles = useMemo(() => ({
     dashboard: user?.role === 'super_admin' ? 'Super Dashboard' : 'Dashboard',
     appointments: 'Agendamentos',
@@ -152,6 +159,15 @@ function AppContent() {
   }, []);
 
   const renderContent = useCallback(() => {
+    console.log('App: renderContent chamado:', { 
+      showAppointmentForm, 
+      showClientForm, 
+      showBarberForm, 
+      showServiceForm,
+      userRole: user?.role,
+      activeTab 
+    });
+
     if (showAppointmentForm) {
       return (
         <AppointmentForm
@@ -194,6 +210,7 @@ function AppContent() {
 
     // Super Admin Routes
     if (user?.role === 'super_admin') {
+      console.log('App: Renderizando SuperAdminDashboard para:', activeTab);
       switch (activeTab) {
         case 'dashboard':
         case 'tenants':
@@ -215,8 +232,10 @@ function AppContent() {
     }
 
     // Regular user routes
+    console.log('App: Renderizando conteúdo para usuário regular:', { userRole: user?.role, activeTab });
     switch (activeTab) {
       case 'dashboard':
+        console.log('App: Renderizando Dashboard regular');
         return <Dashboard />;
       case 'appointments':
         return (

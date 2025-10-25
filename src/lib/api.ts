@@ -8,7 +8,15 @@ class ApiClient {
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
-    this.token = localStorage.getItem('authToken');
+    
+    // Verificação de segurança para localStorage
+    try {
+      this.token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+      console.log('ApiClient: Token carregado do localStorage:', !!this.token);
+    } catch (error) {
+      console.error('ApiClient: Erro ao acessar localStorage:', error);
+      this.token = null;
+    }
   }
 
   private async request<T>(
@@ -50,12 +58,26 @@ class ApiClient {
 
   setToken(token: string) {
     this.token = token;
-    localStorage.setItem('authToken', token);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('authToken', token);
+        console.log('ApiClient: Token salvo no localStorage');
+      }
+    } catch (error) {
+      console.error('ApiClient: Erro ao salvar token no localStorage:', error);
+    }
   }
 
   clearToken() {
     this.token = null;
-    localStorage.removeItem('authToken');
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+        console.log('ApiClient: Token removido do localStorage');
+      }
+    } catch (error) {
+      console.error('ApiClient: Erro ao remover token do localStorage:', error);
+    }
   }
 
   // Dashboard
