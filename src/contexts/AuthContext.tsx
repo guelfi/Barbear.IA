@@ -117,9 +117,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('AuthContext: Erro ao acessar localStorage:', error);
       console.error('AuthContext: Detalhes do erro:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
       });
     }
     setIsLoading(false);
