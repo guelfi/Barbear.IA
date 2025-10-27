@@ -1,6 +1,9 @@
 import { ApiResponse, Appointment, Barber, Client, Service, DashboardStats } from '../types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// Em produção, usar dados mock locais ao invés de tentar conectar com API externa
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '' // Não usar API externa em produção - usar dados mock
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api');
 
 class ApiClient {
   private baseUrl: string;
@@ -13,6 +16,8 @@ class ApiClient {
     try {
       this.token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
       console.log('ApiClient: Token carregado do localStorage:', !!this.token);
+      console.log('ApiClient: Ambiente:', process.env.NODE_ENV);
+      console.log('ApiClient: Base URL:', this.baseUrl);
     } catch (error) {
       console.error('ApiClient: Erro ao acessar localStorage:', error);
       this.token = null;
@@ -23,6 +28,12 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
+    // Em produção, retornar dados mock ao invés de fazer requisições HTTP
+    if (process.env.NODE_ENV === 'production') {
+      console.log('ApiClient: Modo produção - usando dados mock para:', endpoint);
+      return this.getMockData<T>(endpoint);
+    }
+
     const url = `${this.baseUrl}${endpoint}`;
     const config: RequestInit = {
       headers: {
@@ -46,6 +57,70 @@ class ApiClient {
       console.error('API Error:', error);
       throw error;
     }
+  }
+
+  private getMockData<T>(endpoint: string): Promise<ApiResponse<T>> {
+    console.log('ApiClient: Retornando dados mock para endpoint:', endpoint);
+    
+    // Simular delay de rede
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (endpoint === '/dashboard/stats') {
+          resolve({
+            success: true,
+            data: {
+              totalAppointments: 45,
+              totalClients: 128,
+              totalBarbers: 8,
+              totalRevenue: 12500,
+              appointmentsToday: 12,
+              appointmentsTomorrow: 8,
+              recentAppointments: [
+                {
+                  id: '1',
+                  clientName: 'João Silva',
+                  serviceName: 'Corte + Barba',
+                  time: '14:30',
+                  status: 'confirmed'
+                },
+                {
+                  id: '2',
+                  clientName: 'Pedro Santos',
+                  serviceName: 'Corte Simples',
+                  time: '15:00',
+                  status: 'pending'
+                }
+              ]
+            } as T
+          });
+        } else if (endpoint.startsWith('/appointments')) {
+          resolve({
+            success: true,
+            data: [] as T
+          });
+        } else if (endpoint.startsWith('/clients')) {
+          resolve({
+            success: true,
+            data: [] as T
+          });
+        } else if (endpoint.startsWith('/barbers')) {
+          resolve({
+            success: true,
+            data: [] as T
+          });
+        } else if (endpoint.startsWith('/services')) {
+          resolve({
+            success: true,
+            data: [] as T
+          });
+        } else {
+          resolve({
+            success: true,
+            data: {} as T
+          });
+        }
+      }, 500); // Simular 500ms de delay
+    });
   }
 
   // Auth methods

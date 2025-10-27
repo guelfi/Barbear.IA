@@ -23,6 +23,7 @@ import { InstallPrompt } from './components/pwa/InstallPrompt';
 import { AccessibilityChecker } from './components/accessibility/AccessibilityChecker';
 import { ResponsiveTestSuite } from './components/testing/ResponsiveTestSuite';
 import { MobileResponsiveTest } from './components/testing/MobileResponsiveTest';
+import { ProductionDebugPanel } from './components/debug/ProductionDebugPanel';
 import { toast } from 'sonner';
 import { Appointment, Client, Barber, Service } from './types';
 import './components/layout/layout.css';
@@ -382,6 +383,7 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <AppContent />
+          <ProductionDebugPanel />
         </AuthProvider>
       </ThemeProvider>
     </Suspense>

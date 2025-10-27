@@ -33,9 +33,11 @@ import { defineConfig } from 'vite';
       minify: 'terser',
       terserOptions: {
         compress: {
-          drop_console: true,
+          drop_console: false, // Manter console.log para depuração em produção
           drop_debugger: true
-        }
+        },
+        keep_fnames: true, // Preservar nomes de funções
+        keep_classnames: true // Preservar nomes de classes
       }
     },
     server: {

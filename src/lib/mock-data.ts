@@ -65,7 +65,11 @@ export const mockDashboardStats = {
       id: '1',
       name: 'Maria Silva',
       email: 'maria@email.com',
+      phone: '(11) 99999-1111',
       avatar: '/avatars/client-01.png',
+      tenantId: 'tenant-1',
+      isActive: true,
+      createdAt: new Date('2024-01-01'),
       totalAppointments: 12,
       lastVisit: '2024-01-18'
     },
@@ -73,7 +77,11 @@ export const mockDashboardStats = {
       id: '2',
       name: 'Ana Costa',
       email: 'ana@email.com',
+      phone: '(11) 99999-2222',
       avatar: '/avatars/client-02.png',
+      tenantId: 'tenant-1',
+      isActive: true,
+      createdAt: new Date('2024-01-01'),
       totalAppointments: 8,
       lastVisit: '2024-01-17'
     },
@@ -81,7 +89,11 @@ export const mockDashboardStats = {
       id: '3',
       name: 'Roberto Lima',
       email: 'roberto@email.com',
+      phone: '(11) 99999-3333',
       avatar: '/avatars/client-03.png',
+      tenantId: 'tenant-1',
+      isActive: true,
+      createdAt: new Date('2024-01-01'),
       totalAppointments: 15,
       lastVisit: '2024-01-16'
     }
@@ -341,60 +353,174 @@ export const mockDashboardStatsComplete = {
   upcomingAppointments: [
     {
       id: '1',
+      clientId: '1',
+      barberId: '1',
+      serviceId: '1',
+      date: '2024-01-20',
+      time: '09:00',
+      duration: 60,
+      status: 'confirmed' as const,
+      price: 55.00,
+      tenantId: 'tenant-1',
       client: {
         id: '1',
         name: 'João Silva',
-        avatar: '/avatars/01.png'
+        email: 'joao@email.com',
+        phone: '(11) 99999-9999',
+        avatar: '/avatars/01.png',
+        tenantId: 'tenant-1',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        totalAppointments: 5,
+        lastVisit: '2024-01-18'
       },
       service: {
         id: '1',
-        name: 'Corte + Barba'
+        name: 'Corte + Barba',
+        description: 'Corte de cabelo + barba',
+        price: 55.00,
+        duration: 60,
+        category: 'Combo',
+        tenantId: 'tenant-1',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01')
       },
       barber: {
         id: '1',
-        name: 'João Barbeiro'
-      },
-      time: '09:00',
-      price: 55.00,
-      status: 'confirmed' as const
+        name: 'João Barbeiro',
+        email: 'joao.barbeiro@email.com',
+        phone: '(11) 88888-8888',
+        avatar: '/avatars/barber-01.png',
+        specialties: ['Corte', 'Barba'],
+        workingHours: {
+          monday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+          tuesday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+          wednesday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+          thursday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+          friday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+          saturday: { isWorking: true, startTime: '08:00', endTime: '16:00' },
+          sunday: { isWorking: false }
+        },
+        tenantId: 'tenant-1',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01')
+      }
     },
     {
       id: '2',
+      clientId: '2',
+      barberId: '2',
+      serviceId: '2',
+      date: '2024-01-20',
+      time: '10:30',
+      duration: 30,
+      status: 'scheduled' as const,
+      price: 35.00,
+      tenantId: 'tenant-1',
       client: {
         id: '2',
         name: 'Pedro Santos',
-        avatar: '/avatars/02.png'
+        email: 'pedro@email.com',
+        phone: '(11) 77777-7777',
+        avatar: '/avatars/02.png',
+        tenantId: 'tenant-1',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        totalAppointments: 3,
+        lastVisit: '2024-01-15'
       },
       service: {
         id: '2',
-        name: 'Corte Simples'
+        name: 'Corte Simples',
+        description: 'Corte de cabelo tradicional',
+        price: 35.00,
+        duration: 30,
+        category: 'Corte',
+        tenantId: 'tenant-1',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01')
       },
       barber: {
         id: '2',
-        name: 'Pedro Silva'
-      },
-      time: '10:30',
-      price: 35.00,
-      status: 'scheduled' as const
+        name: 'Pedro Silva',
+        email: 'pedro.silva@email.com',
+        phone: '(11) 66666-6666',
+        avatar: '/avatars/barber-02.png',
+        specialties: ['Corte'],
+        workingHours: {
+          monday: { isWorking: true, startTime: '09:00', endTime: '17:00' },
+          tuesday: { isWorking: true, startTime: '09:00', endTime: '17:00' },
+          wednesday: { isWorking: true, startTime: '09:00', endTime: '17:00' },
+          thursday: { isWorking: true, startTime: '09:00', endTime: '17:00' },
+          friday: { isWorking: true, startTime: '09:00', endTime: '17:00' },
+          saturday: { isWorking: true, startTime: '09:00', endTime: '15:00' },
+          sunday: { isWorking: false }
+        },
+        tenantId: 'tenant-1',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01')
+      }
     },
     {
       id: '3',
+      clientId: '3',
+      barberId: '1',
+      serviceId: '3',
+      date: '2024-01-20',
+      time: '14:00',
+      duration: 20,
+      status: 'in-progress' as const,
+      price: 25.00,
+      tenantId: 'tenant-1',
       client: {
         id: '3',
         name: 'Carlos Lima',
-        avatar: '/avatars/03.png'
+        email: 'carlos@email.com',
+        phone: '(11) 55555-5555',
+        avatar: '/avatars/03.png',
+        tenantId: 'tenant-1',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        totalAppointments: 8,
+        lastVisit: '2024-01-20'
       },
       service: {
         id: '3',
-        name: 'Barba'
+        name: 'Barba',
+        description: 'Aparar e modelar barba',
+        price: 25.00,
+        duration: 20,
+        category: 'Barba',
+        tenantId: 'tenant-1',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01')
       },
       barber: {
         id: '1',
-        name: 'João Barbeiro'
-      },
-      time: '14:00',
-      price: 25.00,
-      status: 'in-progress' as const
+        name: 'João Barbeiro',
+        email: 'joao.barbeiro@email.com',
+        phone: '(11) 88888-8888',
+        avatar: '/avatars/barber-01.png',
+        specialties: ['Corte', 'Barba'],
+        workingHours: {
+          monday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+          tuesday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+          wednesday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+          thursday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+          friday: { isWorking: true, startTime: '08:00', endTime: '18:00' },
+          saturday: { isWorking: true, startTime: '08:00', endTime: '16:00' },
+          sunday: { isWorking: false }
+        },
+        tenantId: 'tenant-1',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01')
+      }
     }
   ],
   recentClients: [
@@ -402,7 +528,11 @@ export const mockDashboardStatsComplete = {
       id: '1',
       name: 'Maria Silva',
       email: 'maria@email.com',
+      phone: '(11) 99999-1111',
       avatar: '/avatars/client-01.png',
+      tenantId: 'tenant-1',
+      isActive: true,
+      createdAt: new Date('2024-01-01'),
       totalAppointments: 12,
       lastVisit: '2024-01-18'
     },
@@ -410,7 +540,11 @@ export const mockDashboardStatsComplete = {
       id: '2',
       name: 'Ana Costa',
       email: 'ana@email.com',
+      phone: '(11) 99999-2222',
       avatar: '/avatars/client-02.png',
+      tenantId: 'tenant-1',
+      isActive: true,
+      createdAt: new Date('2024-01-01'),
       totalAppointments: 8,
       lastVisit: '2024-01-17'
     },
@@ -418,7 +552,11 @@ export const mockDashboardStatsComplete = {
       id: '3',
       name: 'Roberto Lima',
       email: 'roberto@email.com',
+      phone: '(11) 99999-3333',
       avatar: '/avatars/client-03.png',
+      tenantId: 'tenant-1',
+      isActive: true,
+      createdAt: new Date('2024-01-01'),
       totalAppointments: 15,
       lastVisit: '2024-01-16'
     }
