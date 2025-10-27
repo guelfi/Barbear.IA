@@ -34,6 +34,7 @@ const menuItemsByRole = {
     { id: 'tenants', label: 'Barbearias', icon: Building2, animation: 'float' as const, category: 'navigation' as const },
     { id: 'users', label: 'Usuários', icon: Users, animation: 'wiggle' as const, category: 'user' as const },
     { id: 'billing', label: 'Faturamento', icon: CreditCard, animation: 'pulse' as const, category: 'action' as const },
+    { id: 'mobile-test', label: '🧪 Teste Mobile', icon: Smartphone, animation: 'bounce' as const, category: 'system' as const },
     { id: 'settings', label: 'Configurações', icon: Settings, animation: 'spin' as const, category: 'system' as const },
   ],
   admin: [
@@ -44,7 +45,6 @@ const menuItemsByRole = {
     { id: 'services', label: 'Serviços', icon: Scissors, animation: 'cut' as const, category: 'interactive' as const },
     { id: 'profile', label: 'Perfil da Barbearia', icon: Building2, animation: 'float' as const, category: 'user' as const },
     { id: 'settings', label: 'Configurações', icon: Settings, animation: 'spin' as const, category: 'system' as const },
-    { id: 'mobile-test', label: '🧪 Teste Mobile', icon: Smartphone, animation: 'bounce' as const, category: 'system' as const },
   ],
   barber: [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3, animation: 'scale' as const, category: 'stats' as const },
