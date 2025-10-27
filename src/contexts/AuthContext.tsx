@@ -91,69 +91,90 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored auth token
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-      const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null;
-      
-      console.log('AuthContext: Verificando token armazenado:', { token: !!token, userEmail });
-      console.log('AuthContext: Ambiente:', process.env.NODE_ENV);
-      console.log('AuthContext: Window disponível:', typeof window !== 'undefined');
-      console.log('AuthContext: LocalStorage disponível:', typeof window !== 'undefined' && !!window.localStorage);
-      
-      if (token && userEmail && mockUsers[userEmail as keyof typeof mockUsers]) {
-        const foundUser = mockUsers[userEmail as keyof typeof mockUsers];
-        console.log('AuthContext: Usuário encontrado no localStorage:', foundUser.role);
-        console.log('AuthContext: Dados do usuário:', { id: foundUser.id, name: foundUser.name, role: foundUser.role });
-        setUser(foundUser);
-      } else {
-        console.log('AuthContext: Nenhum usuário válido encontrado no localStorage');
-        console.log('AuthContext: Debug localStorage:', { 
-          hasToken: !!token, 
-          hasEmail: !!userEmail, 
-          emailExists: userEmail ? !!mockUsers[userEmail as keyof typeof mockUsers] : false 
+    const initAuth = async () => {
+      try {
+        console.log('AuthContext: Verificando autenticação...');
+        console.log('AuthContext: Ambiente:', process.env.NODE_ENV);
+        console.log('AuthContext: URL atual:', typeof window !== 'undefined' ? window.location.href : 'servidor');
+        
+        if (typeof window === 'undefined') {
+          console.log('AuthContext: Executando no servidor, pulando verificação');
+          return;
+        }
+
+        const token = localStorage.getItem('authToken');
+        const email = localStorage.getItem('userEmail');
+        
+        console.log('AuthContext: Dados do localStorage:', {
+          hasToken: !!token,
+          token: token,
+          hasEmail: !!email,
+          email: email
         });
+
+        if (token && email) {
+          const mockUser = mockUsers[email as keyof typeof mockUsers];
+          console.log('AuthContext: Usuário encontrado no mock:', {
+            found: !!mockUser,
+            email: email,
+            role: mockUser?.role,
+            name: mockUser?.name
+          });
+          
+          if (mockUser) {
+            console.log('AuthContext: Restaurando sessão para:', mockUser.role);
+            setUser(mockUser);
+          } else {
+            console.log('AuthContext: Usuário não encontrado no mock, limpando localStorage');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+          }
+        } else {
+          console.log('AuthContext: Sem token ou email no localStorage');
+        }
+      } catch (error) {
+        console.error('AuthContext: Erro ao verificar autenticação:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('AuthContext: Erro ao acessar localStorage:', error);
-      console.error('AuthContext: Detalhes do erro:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
-    }
-    setIsLoading(false);
+    };
+
+    initAuth();
   }, []);
 
-  const login = useCallback(async (
-    email: string, 
-    password: string, 
-    userType: 'barbershop' | 'client' | 'barber' | 'super_admin' = 'barbershop'
-  ): Promise<boolean> => {
+  const login = useCallback(async (email: string, password: string, userType?: 'super_admin' | 'barber' | 'client' | 'barbershop'): Promise<boolean> => {
     setIsLoading(true);
     
-    console.log('AuthContext: Tentativa de login:', { email, userType });
-    
     try {
+      console.log('AuthContext: Tentativa de login:', {
+        email,
+        userType,
+        ambiente: process.env.NODE_ENV,
+        url: typeof window !== 'undefined' ? window.location.href : 'servidor'
+      });
+      
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       const mockUser = mockUsers[email as keyof typeof mockUsers];
-      const expectedPassword = mockPasswords[email as keyof typeof mockPasswords];
-
-      console.log('AuthContext: Verificando credenciais:', { 
-        userExists: !!mockUser, 
-        passwordMatch: password === expectedPassword,
-        userRole: mockUser?.role 
+      const mockPassword = mockPasswords[email as keyof typeof mockPasswords];
+      
+      console.log('AuthContext: Verificando credenciais:', {
+        userFound: !!mockUser,
+        passwordMatch: mockPassword === password,
+        expectedUserType: mockUser?.role,
+        providedUserType: userType
       });
 
-      if (mockUser && password === expectedPassword) {
-        // Validate user type compatibility
+      if (mockUser && mockPassword === password) {
+        console.log('AuthContext: Credenciais válidas, verificando tipo de usuário');
+        
         if (userType === 'client' && mockUser.role === 'client') {
           try {
             if (typeof window !== 'undefined') {
               localStorage.setItem('authToken', 'mock-token-client');
               localStorage.setItem('userEmail', email);
+              console.log('AuthContext: Dados salvos no localStorage para cliente');
             }
             console.log('AuthContext: Login bem-sucedido como cliente');
             setUser(mockUser);
@@ -167,6 +188,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             if (typeof window !== 'undefined') {
               localStorage.setItem('authToken', 'mock-token-super-admin');
               localStorage.setItem('userEmail', email);
+              console.log('AuthContext: Dados salvos no localStorage para super admin');
             }
             console.log('AuthContext: Login bem-sucedido como super admin');
             setUser(mockUser);
@@ -180,6 +202,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             if (typeof window !== 'undefined') {
               localStorage.setItem('authToken', 'mock-token-barber');
               localStorage.setItem('userEmail', email);
+              console.log('AuthContext: Dados salvos no localStorage para barbeiro');
             }
             console.log('AuthContext: Login bem-sucedido como barbeiro');
             setUser(mockUser);
@@ -193,6 +216,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             if (typeof window !== 'undefined') {
               localStorage.setItem('authToken', 'mock-token-barbershop');
               localStorage.setItem('userEmail', email);
+              console.log('AuthContext: Dados salvos no localStorage para admin da barbearia');
             }
             console.log('AuthContext: Login bem-sucedido como admin da barbearia');
             setUser(mockUser);
@@ -263,14 +287,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [user]);
 
-  const value = React.useMemo(() => ({
+  const value = {
     user,
+    isLoading,
     login,
     register,
     logout,
-    isLoading,
-    updateLastLogin,
-  }), [user, login, register, logout, isLoading, updateLastLogin]);
+    updateLastLogin
+  };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
