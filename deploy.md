@@ -1,15 +1,488 @@
-Run time
-Learn about OS pricing on GitHub Actions
-Job	Run time	
-test
-38s	
-deploy
-2m 20s	
-production-tests
-1m 57s	
-post-deploy-monitoring
-4m 37s	
-9m 32s	
+# 🚀 DOCUMENTAÇÃO DE DEPLOY - BARBEAR.IA
+
+## 📋 Índice
+
+1. [Visão Geral](#visão-geral)
+2. [Arquitetura de Deploy](#arquitetura-de-deploy)
+3. [Pré-requisitos](#pré-requisitos)
+4. [Configuração de Segurança](#configuração-de-segurança)
+5. [Deploy Automatizado](#deploy-automatizado)
+6. [Scripts de Fallback Manual](#scripts-de-fallback-manual)
+7. [Procedimentos de Rollback](#procedimentos-de-rollback)
+8. [Monitoramento e Logs](#monitoramento-e-logs)
+9. [Troubleshooting](#troubleshooting)
+10. [Changelog](#changelog)
+
+---
+
+## 🎯 Visão Geral
+
+O sistema de deploy do Barbear.IA utiliza GitHub Actions para automatizar o processo de build, teste e deploy na Oracle Cloud Infrastructure (OCI). O workflow implementa verificações robustas de integridade, sistema de rollback automático e procedimentos de fallback manual.
+
+### ⏱️ Tempos de Execução dos Jobs
+
+| Job | Tempo Médio | Descrição |
+|-----|-------------|-----------|
+| `integrity-check` | 30s | Validação de integridade e preparação |
+| `test` | 38s | Testes automatizados e linting |
+| `deploy` | 4m 30s | Build e deploy completo com verificações |
+| `production-tests` | 1m 57s | Testes de produção |
+| `cleanup-and-verify` | 45s | Limpeza final e verificação |
+| **Total** | **~8m** | Tempo total do pipeline |
+
+---
+
+## 🏗️ Arquitetura de Deploy
+
+```mermaid
+graph TD
+    A[Push/Manual Trigger] --> B[Integrity Check]
+    B --> C[Tests & Linting]
+    C --> D[Deploy Job]
+    D --> E[Health Check]
+    E --> F{Deploy OK?}
+    F -->|Sim| G[Production Tests]
+    F -->|Não| H[Rollback Automático]
+    G --> I[Cleanup & Verify]
+    H --> J[Notificação de Falha]
+    
+    subgraph "Deploy Job Details"
+        D1[Backup Atual]
+        D2[Limpeza Completa]
+        D3[Build Nova Imagem]
+        D4[Deploy Container]
+        D5[Health Check]
+    end
+    
+    D --> D1 --> D2 --> D3 --> D4 --> D5
+```
+
+### 🔄 Fluxo de Deploy Detalhado
+
+1. **Preparação e Validação**
+   - Captura informações do commit (SHA, timestamp)
+   - Gera checksums SHA-256 de arquivos críticos
+   - Valida integridade do código-fonte
+
+2. **Backup e Limpeza**
+   - Backup da configuração atual
+   - Backup da imagem Docker em execução
+   - Limpeza completa do sistema Docker (opcional)
+
+3. **Build e Deploy**
+   - Build da nova imagem sem cache (force rebuild)
+   - Teste da imagem antes do deploy
+   - Deploy com zero downtime
+   - Verificações de saúde robustas
+
+4. **Verificação e Rollback**
+   - Health checks com retentativas
+   - Rollback automático em caso de falha
+   - Notificações de status
+
+---
+
+## ✅ Pré-requisitos
+
+### 🖥️ Ambiente Local
+
+- **Git**: Versão 2.25+
+- **Docker**: Versão 20.10+
+- **Docker Compose**: Versão 2.0+
+- **Node.js**: Versão 18.x (para desenvolvimento)
+- **SSH Client**: Para acesso à OCI
+
+### ☁️ Oracle Cloud Infrastructure (OCI)
+
+- **Instância Compute**: VM.Standard.E2.1.Micro (ou superior)
+- **Sistema Operacional**: Ubuntu 20.04+ ou Oracle Linux 8+
+- **Recursos Mínimos**:
+  - CPU: 1 vCPU
+  - RAM: 1GB
+  - Armazenamento: 50GB
+  - Rede: Acesso HTTP/HTTPS (portas 80, 443, 3500)
+
+### 🔐 Configurações de Segurança
+
+- **Firewall**: Portas 22 (SSH), 80 (HTTP), 443 (HTTPS), 3500 (App)
+- **SSH**: Acesso por chave pública/privada
+- **Docker**: Instalado e configurado
+- **Usuário**: Acesso root ou sudo
+
+---
+
+## 🔒 Configuração de Segurança
+
+### 🗝️ Secrets do GitHub
+
+Configure os seguintes secrets no repositório GitHub:
+
+| Secret | Descrição | Exemplo |
+|--------|-----------|---------|
+| `OCI_HOST` | IP ou hostname da instância OCI | `123.456.789.012` |
+| `OCI_USERNAME` | Usuário SSH (recomendado: root) | `root` |
+| `OCI_SSH_KEY` | Chave SSH privada (formato PEM) | `-----BEGIN OPENSSH PRIVATE KEY-----` |
+| `DEPLOY_TIMEOUT` | Timeout para operações (segundos) | `1800` |
+| `ROLLBACK_ENABLED` | Habilitar rollback automático | `true` |
+| `LOG_LEVEL` | Nível de log (debug/info/warn/error) | `info` |
+
+### 🔑 Configuração SSH
+
+1. **Gerar par de chaves SSH**:
+   ```bash
+   ssh-keygen -t rsa -b 4096 -C "deploy@barbear-ia" -f ~/.ssh/barbear-ia-deploy
+   ```
+
+2. **Copiar chave pública para OCI**:
+   ```bash
+   ssh-copy-id -i ~/.ssh/barbear-ia-deploy.pub root@<OCI_HOST>
+   ```
+
+3. **Testar conexão**:
+   ```bash
+   ssh -i ~/.ssh/barbear-ia-deploy root@<OCI_HOST>
+   ```
+
+### 🛡️ Permissões Mínimas
+
+**No GitHub Actions**:
+- `contents: read` - Leitura do repositório
+- `actions: write` - Upload de artefatos
+- `deployments: write` - Status de deploy
+
+**Na OCI**:
+- Acesso root ou usuário com sudo
+- Permissões para Docker (grupo `docker`)
+- Acesso de escrita em `/var/www/barbear-ia`
+
+---
+
+## 🤖 Deploy Automatizado
+
+### 🚀 Triggers de Deploy
+
+O deploy é executado automaticamente nos seguintes casos:
+
+1. **Push na branch `main`**
+2. **Execução manual** (workflow_dispatch)
+3. **Cron semanal** (domingos às 02:00 UTC)
+
+### ⚙️ Parâmetros de Execução Manual
+
+Ao executar manualmente, você pode configurar:
+
+- **Force Rebuild**: Força rebuild completo sem cache
+- **Skip Tests**: Pula execução de testes (não recomendado)
+
+### 📊 Verificações de Integridade
+
+O sistema implementa múltiplas verificações:
+
+1. **Checksum SHA-256**: Arquivos críticos (`package.json`, `Dockerfile`, etc.)
+2. **Git Commit**: Validação do commit exato
+3. **Timestamp**: Controle de versão temporal
+4. **Health Check**: Verificação de funcionamento da aplicação
+5. **Container Status**: Status do container Docker
+
+### 🔄 Processo de Deploy
+
+```bash
+# 1. Preparação
+- Captura commit SHA e timestamp
+- Gera checksums de integridade
+- Valida pré-requisitos
+
+# 2. Backup
+- Backup da configuração atual
+- Backup da imagem Docker
+- Backup de volumes (se existirem)
+
+# 3. Limpeza (se force rebuild)
+- Remove containers antigos
+- Remove imagens não utilizadas
+- Limpa cache do Docker
+
+# 4. Build
+- Build da nova imagem
+- Teste da imagem
+- Validação de integridade
+
+# 5. Deploy
+- Para versão atual
+- Inicia nova versão
+- Aguarda inicialização
+
+# 6. Verificação
+- Health checks HTTP
+- Verificação de logs
+- Validação de funcionamento
+
+# 7. Finalização
+- Limpeza de recursos
+- Salvamento de metadados
+- Notificação de sucesso
+```
+
+---
+
+## 🛠️ Scripts de Fallback Manual
+
+Em caso de falha do GitHub Actions, utilize os scripts de fallback manual:
+
+### 📜 Script Bash (`scripts/deploy-fallback.sh`)
+
+```bash
+# Deploy completo
+./scripts/deploy-fallback.sh --force-rebuild
+
+# Deploy sem backup
+./scripts/deploy-fallback.sh --skip-backup
+
+# Rollback
+./scripts/deploy-fallback.sh --rollback
+
+# Simulação (dry run)
+./scripts/deploy-fallback.sh --dry-run
+```
+
+### 🐍 Script Python (`scripts/deploy-fallback.py`)
+
+```bash
+# Instalar dependências
+pip install paramiko requests
+
+# Deploy completo
+python scripts/deploy-fallback.py --force-rebuild
+
+# Deploy sem backup
+python scripts/deploy-fallback.py --skip-backup
+
+# Rollback
+python scripts/deploy-fallback.py --rollback
+
+# Simulação (dry run)
+python scripts/deploy-fallback.py --dry-run
+```
+
+### ⚙️ Configuração dos Scripts
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+OCI_HOST=123.456.789.012
+OCI_USERNAME=root
+OCI_SSH_KEY=~/.ssh/barbear-ia-deploy
+PROJECT_NAME=barbear-ia
+CONTAINER_NAME=barbear-ia-app
+PORT=3500
+REMOTE_PATH=/var/www/barbear-ia
+```
+
+---
+
+## ↩️ Procedimentos de Rollback
+
+### 🔄 Rollback Automático
+
+O sistema implementa rollback automático em caso de:
+
+- Falha no health check após deploy
+- Container não inicia corretamente
+- Aplicação não responde HTTP
+- Erros críticos detectados nos logs
+
+### 🔧 Rollback Manual
+
+#### Via GitHub Actions:
+1. Execute o workflow manualmente
+2. Marque a opção "Rollback Mode"
+3. Aguarde a conclusão
+
+#### Via Script:
+```bash
+# Bash
+./scripts/deploy-fallback.sh --rollback
+
+# Python
+python scripts/deploy-fallback.py --rollback
+```
+
+#### Via SSH Direto:
+```bash
+# Conectar à OCI
+ssh -i ~/.ssh/barbear-ia-deploy root@<OCI_HOST>
+
+# Navegar para o diretório
+cd /var/www/barbear-ia
+
+# Restaurar backup mais recente
+LATEST_BACKUP=$(ls -t /var/backups/barbear-ia-snapshots/backup-*-docker-compose.yml | head -1)
+cp "$LATEST_BACKUP" docker-compose.yml
+
+# Reiniciar aplicação
+docker-compose down
+docker-compose up -d
+```
+
+### 📋 Verificação de Rollback
+
+Após o rollback, verifique:
+
+1. **Status do container**: `docker-compose ps`
+2. **Logs da aplicação**: `docker-compose logs -f barbear-ia-app`
+3. **Acesso HTTP**: `curl http://localhost:3500/`
+4. **Funcionalidade**: Teste manual da aplicação
+
+---
+
+## 📊 Monitoramento e Logs
+
+### 📈 Métricas de Deploy
+
+O sistema coleta as seguintes métricas:
+
+- **Tempo de deploy**: Duração total do processo
+- **Taxa de sucesso**: Percentual de deploys bem-sucedidos
+- **Frequência de rollback**: Número de rollbacks executados
+- **Tempo de downtime**: Tempo de indisponibilidade (objetivo: 0s)
+
+### 📝 Logs Disponíveis
+
+1. **GitHub Actions**: Logs detalhados de cada job
+2. **Container Logs**: `docker-compose logs barbear-ia-app`
+3. **Sistema**: `/var/log/syslog` na OCI
+4. **Deploy Metadata**: Arquivos JSON com informações do deploy
+
+### 🔍 Comandos de Monitoramento
+
+```bash
+# Status dos containers
+docker-compose ps
+
+# Logs em tempo real
+docker-compose logs -f barbear-ia-app
+
+# Uso de recursos
+docker stats
+
+# Espaço em disco
+df -h
+
+# Verificar saúde da aplicação
+curl -I http://localhost:3500/
+
+# Últimos deploys
+ls -la /var/backups/barbear-ia-snapshots/
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### ❌ Problemas Comuns
+
+#### 1. **Falha na Conexão SSH**
+```
+Erro: Permission denied (publickey)
+```
+**Solução**:
+- Verificar se a chave SSH está correta no GitHub Secrets
+- Testar conexão manual: `ssh -i ~/.ssh/key root@host`
+- Verificar permissões da chave: `chmod 600 ~/.ssh/key`
+
+#### 2. **Falha no Build Docker**
+```
+Erro: failed to solve: process "/bin/sh -c npm install" didn't complete successfully
+```
+**Solução**:
+- Verificar `package.json` e dependências
+- Limpar cache: `docker system prune -a`
+- Verificar espaço em disco na OCI
+
+#### 3. **Health Check Falha**
+```
+Erro: Health check failed after 10 retries
+```
+**Solução**:
+- Verificar logs do container: `docker-compose logs barbear-ia-app`
+- Verificar porta da aplicação (3500)
+- Verificar configuração do Nginx
+- Testar acesso local: `curl http://localhost:3500/`
+
+#### 4. **Rollback Falha**
+```
+Erro: No backup found for rollback
+```
+**Solução**:
+- Verificar backups disponíveis: `ls /var/backups/barbear-ia-snapshots/`
+- Deploy manual com versão anterior
+- Restaurar snapshot da OCI (se disponível)
+
+### 🆘 Procedimentos de Emergência
+
+#### 1. **Acesso Direto à OCI**
+```bash
+# Via Console OCI
+1. Acesse o Console da Oracle Cloud
+2. Navegue para Compute > Instances
+3. Conecte via Console Connection
+4. Execute comandos de recuperação
+```
+
+#### 2. **Restauração Manual**
+```bash
+# Parar todos os containers
+docker stop $(docker ps -q)
+
+# Remover containers problemáticos
+docker rm $(docker ps -aq)
+
+# Restaurar imagem de backup
+docker load -i /var/backups/barbear-ia-snapshots/backup-latest-image.tar
+
+# Reiniciar aplicação
+cd /var/www/barbear-ia
+docker-compose up -d
+```
+
+#### 3. **Contatos de Emergência**
+- **Desenvolvedor Principal**: [Inserir contato]
+- **DevOps**: [Inserir contato]
+- **Suporte OCI**: [Inserir contato]
+
+---
+
+## 📋 Changelog
+
+### Versão 2.0.0 (2025-01-XX)
+- ✅ Implementação de verificações de integridade robustas
+- ✅ Sistema de rollback automático
+- ✅ Scripts de fallback manual (Bash e Python)
+- ✅ Documentação completa de deploy
+- ✅ Melhorias na segurança SSH
+- ✅ Timeout configurável para operações
+- ✅ Limpeza completa opcional do Docker
+
+### Versão 1.0.0 (2024-XX-XX)
+- ✅ Deploy básico via GitHub Actions
+- ✅ Build e deploy na OCI
+- ✅ Testes automatizados
+- ✅ Configuração inicial do Docker
+
+---
+
+## 📚 Referências
+
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Docker Documentation](https://docs.docker.com/)
+- [Oracle Cloud Infrastructure](https://docs.oracle.com/en-us/iaas/)
+- [Nginx Configuration](https://nginx.org/en/docs/)
+
+---
+
+**📞 Suporte**: Para dúvidas ou problemas, abra uma issue no repositório ou entre em contato com a equipe de desenvolvimento.
+
+**🔄 Última Atualização**: Janeiro 2025
 
 test:
 Current runner version: '2.329.0'
