@@ -6,12 +6,14 @@ interface DebugLog {
   message: string;
   data: string | null;
   url: string;
+  level?: 'info' | 'warn' | 'error';
 }
 
 export const ProductionDebugPanel: React.FC = () => {
   const { user } = useAuth();
   const [authLogs, setAuthLogs] = useState<DebugLog[]>([]);
   const [dashboardLogs, setDashboardLogs] = useState<DebugLog[]>([]);
+  const [apiLogs, setApiLogs] = useState<DebugLog[]>([]);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -19,6 +21,7 @@ export const ProductionDebugPanel: React.FC = () => {
       try {
         const authLogsData = sessionStorage.getItem('auth_debug');
         const dashboardLogsData = sessionStorage.getItem('dashboard_debug');
+        const apiLogsData = sessionStorage.getItem('api_debug');
         
         if (authLogsData) {
           setAuthLogs(JSON.parse(authLogsData));
@@ -26,6 +29,10 @@ export const ProductionDebugPanel: React.FC = () => {
         
         if (dashboardLogsData) {
           setDashboardLogs(JSON.parse(dashboardLogsData));
+        }
+        
+        if (apiLogsData) {
+          setApiLogs(JSON.parse(apiLogsData));
         }
       } catch (error) {
         console.error('Erro ao carregar logs de debug:', error);
@@ -43,8 +50,10 @@ export const ProductionDebugPanel: React.FC = () => {
   const clearAllLogs = () => {
     sessionStorage.removeItem('auth_debug');
     sessionStorage.removeItem('dashboard_debug');
+    sessionStorage.removeItem('api_debug');
     setAuthLogs([]);
     setDashboardLogs([]);
+    setApiLogs([]);
     alert('Todos os logs foram limpos');
   };
 
@@ -60,7 +69,8 @@ export const ProductionDebugPanel: React.FC = () => {
         userRole: localStorage.getItem('userRole')
       },
       authLogs,
-      dashboardLogs
+      dashboardLogs,
+      apiLogs
     };
 
     const dataStr = JSON.stringify(allLogs, null, 2);
@@ -171,7 +181,7 @@ export const ProductionDebugPanel: React.FC = () => {
               </div>
 
               {/* Logs do dashboard */}
-              <div>
+              <div className="mb-6">
                 <h3 className="font-bold mb-2">Logs do Dashboard ({dashboardLogs.length})</h3>
                 <div className="bg-gray-50 p-3 rounded max-h-60 overflow-y-auto">
                   {dashboardLogs.length === 0 ? (
@@ -183,6 +193,36 @@ export const ProductionDebugPanel: React.FC = () => {
                           {new Date(log.timestamp).toLocaleString()}
                         </div>
                         <div className="font-semibold">{log.message}</div>
+                        {log.data && (
+                          <pre className="mt-1 text-gray-700 overflow-x-auto">
+                            {JSON.stringify(JSON.parse(log.data), null, 2)}
+                          </pre>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Logs de API */}
+              <div>
+                <h3 className="font-bold mb-2">Logs de API ({apiLogs.length})</h3>
+                <div className="bg-gray-50 p-3 rounded max-h-60 overflow-y-auto">
+                  {apiLogs.length === 0 ? (
+                    <p className="text-gray-500">Nenhum log de API</p>
+                  ) : (
+                    apiLogs.slice(-10).map((log, index) => (
+                      <div key={index} className="mb-2 p-2 bg-white rounded text-xs">
+                        <div className="font-mono text-gray-600">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </div>
+                        <div className={`font-semibold ${
+                          log.level === 'error' ? 'text-red-600' : 
+                          log.level === 'warn' ? 'text-yellow-600' : 
+                          'text-blue-600'
+                        }`}>
+                          {log.message}
+                        </div>
                         {log.data && (
                           <pre className="mt-1 text-gray-700 overflow-x-auto">
                             {JSON.stringify(JSON.parse(log.data), null, 2)}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Plus, Clock, User } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -7,8 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Calendar } from '../ui/calendar';
 import { AnimatedIcon } from '../ui/animated-icon';
 import { motion } from 'framer-motion';
-import { mockAppointments } from '../../lib/mock-data';
 import { Appointment } from '../../types';
+import { appointmentsAPI } from '../../api';
 
 interface AppointmentCalendarProps {
   onCreateAppointment: () => void;
@@ -35,12 +35,41 @@ const statusLabels = {
 
 export function AppointmentCalendar({ onCreateAppointment, onEditAppointment }: AppointmentCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [appointments] = useState(mockAppointments);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load appointments via API
+  useEffect(() => {
+    const loadAppointments = async () => {
+      try {
+        setLoading(true);
+        const allAppointments = await appointmentsAPI.getAll();
+        setAppointments(allAppointments);
+      } catch (error) {
+        console.error('Erro ao carregar agendamentos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAppointments();
+  }, []);
 
   const selectedDateString = selectedDate.toISOString().split('T')[0];
   const dayAppointments = appointments
     .filter(apt => apt.date === selectedDateString)
     .sort((a, b) => a.time.localeCompare(b.time));
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando agendamentos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
