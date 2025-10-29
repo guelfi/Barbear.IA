@@ -1,5 +1,4 @@
 import barbersData from '../database/barbers.json';
-import { jsonStore } from './jsonStore';
 import appointmentsData from '../database/appointments.json';
 import servicesData from '../database/services.json';
 
@@ -37,7 +36,7 @@ export const barbersAPI = {
     logBarberEvent('GET_ALL_BARBERS', {});
     await simulateNetworkDelay();
 
-    return jsonStore.getAll('barbers');
+    return barbersData.barbers;
   },
 
   async getBarbers(tenantId?: string): Promise<Barber[]> {

@@ -1,5 +1,4 @@
 import servicesData from '../database/services.json';
-import { jsonStore } from './jsonStore';
 
 interface Service {
   id: string;
@@ -28,7 +27,7 @@ export const servicesAPI = {
     logServiceEvent('GET_ALL_SERVICES', {});
     await simulateNetworkDelay();
 
-    return jsonStore.getAll('services').filter(service => service.isActive);
+    return servicesData.services.filter(service => service.isActive);
   },
 
   async getServices(tenantId?: string, category?: string): Promise<Service[]> {
