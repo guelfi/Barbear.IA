@@ -40,6 +40,28 @@ const logUserEvent = (event: string, data: any) => {
 
 export const usersAPI = {
   /**
+   * Obter todos os usuários (sem filtros)
+   */
+  async getAll(): Promise<Omit<User, 'password'>[]> {
+    logUserEvent('GET_ALL_USERS', {});
+    await simulateNetworkDelay();
+
+    try {
+      const usersWithoutPassword = usersData.users.map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+
+      logUserEvent('GET_ALL_USERS_SUCCESS', { count: usersWithoutPassword.length });
+      return usersWithoutPassword as Omit<User, 'password'>[];
+
+    } catch (error) {
+      logUserEvent('GET_ALL_USERS_ERROR', { error: error instanceof Error ? error.message : 'Erro desconhecido' });
+      throw new Error('Erro ao obter usuários');
+    }
+  },
+
+  /**
    * Listar usuários com filtros e paginação
    */
   async getUsers(filters: UserFilters = {}, pagination: PaginationOptions = {}): Promise<{
@@ -297,6 +319,11 @@ export const usersAPI = {
       logUserEvent('GET_USER_STATS_ERROR', { error: error instanceof Error ? error.message : 'Erro desconhecido' });
       throw new Error('Erro ao obter estatísticas de usuários');
     }
+  },
+
+  // Alias para compatibilidade
+  update: function(id: string, updates: Partial<Omit<User, 'id' | 'createdAt'>>) {
+    return this.updateUser(id, updates);
   }
 };
 

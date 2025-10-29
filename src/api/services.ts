@@ -23,6 +23,13 @@ const logServiceEvent = (event: string, data: any) => {
 };
 
 export const servicesAPI = {
+  async getAll(): Promise<Service[]> {
+    logServiceEvent('GET_ALL_SERVICES', {});
+    await simulateNetworkDelay();
+
+    return servicesData.services.filter(service => service.isActive);
+  },
+
   async getServices(tenantId?: string, category?: string): Promise<Service[]> {
     logServiceEvent('GET_SERVICES', { tenantId, category });
     await simulateNetworkDelay();

@@ -30,6 +30,13 @@ const logClientEvent = (event: string, data: any) => {
 };
 
 export const clientsAPI = {
+  async getAll(): Promise<Client[]> {
+    logClientEvent('GET_ALL_CLIENTS', {});
+    await simulateNetworkDelay();
+
+    return clientsData.clients;
+  },
+
   async getClients(tenantId?: string, search?: string): Promise<Client[]> {
     logClientEvent('GET_CLIENTS', { tenantId, search });
     await simulateNetworkDelay();

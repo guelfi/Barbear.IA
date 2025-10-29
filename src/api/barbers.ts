@@ -32,6 +32,13 @@ const logBarberEvent = (event: string, data: any) => {
 };
 
 export const barbersAPI = {
+  async getAll(): Promise<Barber[]> {
+    logBarberEvent('GET_ALL_BARBERS', {});
+    await simulateNetworkDelay();
+
+    return barbersData.barbers;
+  },
+
   async getBarbers(tenantId?: string): Promise<Barber[]> {
     logBarberEvent('GET_BARBERS', { tenantId });
     await simulateNetworkDelay();
