@@ -78,6 +78,19 @@ jobs:
         OCI_USER: ${{ secrets.OCI_USER }}
         OCI_SSH_KEY: ${{ secrets.OCI_SSH_KEY }}
       run: |
+        # Verificar se as secrets estão configuradas
+        if [ -z "$OCI_HOST" ] || [ -z "$OCI_USER" ] || [ -z "$OCI_SSH_KEY" ]; then
+          echo "❌ Secrets não configuradas corretamente:"
+          echo "OCI_HOST: ${OCI_HOST:-(vazio)}"
+          echo "OCI_USER: ${OCI_USER:-(vazio)}"
+          echo "OCI_SSH_KEY: ${OCI_SSH_KEY:+(configurado)}"
+          exit 1
+        fi
+        
+        echo "✅ Secrets configuradas:"
+        echo "OCI_HOST: $OCI_HOST"
+        echo "OCI_USER: $OCI_USER"
+        
         # Configurar SSH
         mkdir -p ~/.ssh
         echo "$OCI_SSH_KEY" > ~/.ssh/id_rsa
@@ -92,14 +105,23 @@ jobs:
             LogLevel ERROR
         SSH_CONFIG
         
-        # Testar conexão SSH
-        echo "🔍 Testando conexão SSH..."
-        ssh -i ~/.ssh/id_rsa -o ConnectTimeout=10 $OCI_USER@$OCI_HOST "echo 'SSH connection successful'" || {
-          echo "❌ Falha na conexão SSH"
-          echo "Verificando chave SSH..."
-          ssh-keygen -l -f ~/.ssh/id_rsa
+        # Verificar formato da chave SSH
+        echo "🔍 Verificando chave SSH..."
+        if ! ssh-keygen -l -f ~/.ssh/id_rsa; then
+          echo "❌ Chave SSH inválida"
           exit 1
-        }
+        fi
+        
+        # Testar conexão SSH
+        echo "🔍 Testando conexão SSH para $OCI_USER@$OCI_HOST..."
+        if ssh -i ~/.ssh/id_rsa -o ConnectTimeout=10 -o StrictHostKeyChecking=no "$OCI_USER@$OCI_HOST" "echo 'SSH connection successful'"; then
+          echo "✅ Conexão SSH estabelecida com sucesso"
+        else
+          echo "❌ Falha na conexão SSH"
+          echo "Tentando diagnóstico..."
+          ssh -i ~/.ssh/id_rsa -o ConnectTimeout=10 -o StrictHostKeyChecking=no -v "$OCI_USER@$OCI_HOST" "echo 'test'" 2>&1 | head -20
+          exit 1
+        fi
         
         # Criar script de deploy
         cat > deploy_script.sh << 'EOF'
@@ -207,11 +229,11 @@ jobs:
         EOF
         
         # Executar deploy via SSH
-        echo "📤 Enviando script de deploy..."
-        scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy_script.sh $OCI_USER@$OCI_HOST:/tmp/
+        echo "📤 Enviando script de deploy para $OCI_USER@$OCI_HOST..."
+        scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy_script.sh "$OCI_USER@$OCI_HOST:/tmp/"
         
         echo "🚀 Executando deploy remoto..."
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $OCI_USER@$OCI_HOST "chmod +x /tmp/deploy_script.sh && /tmp/deploy_script.sh"
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$OCI_USER@$OCI_HOST" "chmod +x /tmp/deploy_script.sh && /tmp/deploy_script.sh"
 
     - name: Cleanup
       if: always()
