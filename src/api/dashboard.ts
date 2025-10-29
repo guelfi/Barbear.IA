@@ -430,12 +430,17 @@ export const dashboardAPI = {
                     }
                     logDashboardEvent('CLIENT_STATS_FOUND', { userId, clientStats });
 
+                    // Buscar appointments reais do cliente
+                    const clientAppointments = appointmentsData.appointments.filter((apt: any) => 
+                        apt.clientId === userId && apt.status === 'scheduled'
+                    );
+
                     filteredStats = {
                         todayAppointments: clientStats.scheduledAppointments,
                         weeklyRevenue: 0, // Cliente não vê receita
                         totalClients: 0, // Cliente não vê total de clientes
                         completionRate: Math.round((clientStats.completedAppointments / clientStats.totalAppointments) * 100),
-                        upcomingAppointments: clientStats.upcomingAppointments,
+                        upcomingAppointments: enrichAppointments(clientAppointments),
                         recentClients: [] // Cliente não vê outros clientes
                     };
                     break;

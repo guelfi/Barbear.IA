@@ -6,8 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { mockClients, mockBarbers, mockServices } from '../../lib/mock-data';
-import { Appointment, Service } from '../../types';
+import { Appointment, Service, Client, Barber } from '../../types';
+import { clientsAPI, barbersAPI, servicesAPI, appointmentsAPI } from '../../api';
+import { toast } from 'sonner';
 
 interface AppointmentFormProps {
   appointment?: Appointment;
@@ -26,10 +27,37 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
     notes: appointment?.notes || '',
   });
 
-  const [clients] = useState(mockClients);
-  const [barbers] = useState(mockBarbers);
-  const [services] = useState(mockServices);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Carregar dados das APIs
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [clientsData, barbersData, servicesData] = await Promise.all([
+          clientsAPI.getAll(),
+          barbersAPI.getAll(),
+          servicesAPI.getAll()
+        ]);
+        
+        setClients(clientsData);
+        setBarbers(barbersData);
+        setServices(servicesData);
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        toast.error('Erro ao carregar dados do formulário');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   useEffect(() => {
     if (formData.serviceId) {
@@ -38,16 +66,40 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
     }
   }, [formData.serviceId, services]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (selectedService) {
+    if (!selectedService) {
+      toast.error('Selecione um serviço');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      
       const appointmentData = {
         ...formData,
         duration: selectedService.duration,
         price: selectedService.price,
+        tenantId: 'tenant-1' // TODO: Pegar do contexto do usuário
       };
+
+      if (appointment?.id) {
+        // Atualizar agendamento existente
+        await appointmentsAPI.updateAppointment(appointment.id, appointmentData);
+        toast.success('Agendamento atualizado com sucesso!');
+      } else {
+        // Criar novo agendamento
+        await appointmentsAPI.createAppointment(appointmentData as any);
+        toast.success('Agendamento criado com sucesso!');
+      }
+      
       onSave(appointmentData);
+    } catch (error) {
+      console.error('Erro ao salvar agendamento:', error);
+      toast.error('Erro ao salvar agendamento');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -70,6 +122,19 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
     }
     return slots;
   };
+
+  if (loading) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p>Carregando formulário...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="max-w-2xl mx-auto">
@@ -222,10 +287,10 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
           </div>
 
           <div className="flex space-x-2 pt-4">
-            <Button type="submit" className="flex-1">
-              {appointment ? 'Atualizar' : 'Criar'} Agendamento
+            <Button type="submit" className="flex-1" disabled={saving || loading}>
+              {saving ? 'Salvando...' : (appointment ? 'Atualizar' : 'Criar')} Agendamento
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} disabled={saving}>
               Cancelar
             </Button>
           </div>
