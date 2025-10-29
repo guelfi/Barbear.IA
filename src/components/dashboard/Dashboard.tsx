@@ -94,21 +94,45 @@ export function Dashboard() {
         debugLog('Usuário validado, carregando dados mockados', { role: user.role });
     
         // Carregar dados via API simulada baseados na role do usuário
-        debugLog('Carregando dados via API simulada', { role: user.role });
+        debugLog('Carregando dados via API simulada', { role: user.role, userId: user.id, tenantId: user.tenantId });
         
         const dashboardData = await dashboardAPI.getStats(user.role, user.id);
     
         debugLog('Dados carregados com sucesso', {
           role: user.role,
-          dataKeys: Object.keys(dashboardData),
-          appointmentsCount: dashboardData.upcomingAppointments?.length || 0
+          userId: user.id,
+          tenantId: user.tenantId,
+          dataKeys: Object.keys(dashboardData || {}),
+          appointmentsCount: dashboardData?.upcomingAppointments?.length || 0,
+          dashboardData: dashboardData
         });
+
+        if (!dashboardData) {
+          throw new Error('Nenhum dado retornado pela API');
+        }
     
         setStats(dashboardData);
         
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido ao carregar dashboard';
-        debugLog('Erro ao carregar dashboard', { error: errorMessage, stack: err instanceof Error ? err.stack : null });
+        debugLog('Erro ao carregar dashboard', { 
+          error: errorMessage, 
+          stack: err instanceof Error ? err.stack : null,
+          user: user ? { id: user.id, role: user.role, tenantId: user.tenantId } : null
+        });
+        console.error('Dashboard Error:', err);
+        
+        // Em caso de erro, mostrar dados vazios em vez de erro
+        setStats({
+          todayAppointments: 0,
+          weeklyRevenue: 0,
+          totalClients: 0,
+          completionRate: 0,
+          upcomingAppointments: [],
+          recentClients: []
+        });
+        
+        // Ainda definir o erro para debug
         setError(errorMessage);
       } finally {
         setLoading(false);
