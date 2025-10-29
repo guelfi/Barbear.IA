@@ -127,7 +127,9 @@
     - _Requisitos: 4.4_
 
 - [ ] 10. Documentar resultados da limpeza
-  - [ ] 10.1 Gerar relatório de limpeza
+  - [x] 10.1 Gerar relatório de limpeza
+
+
     - Documentar arquivos removidos
     - Calcular espaço economizado
     - Listar melhorias de organização
@@ -139,7 +141,9 @@
     - Remover referências a arquivos removidos
     - _Requisitos: 3.5_
 
-  - [-] 10.3 Fazer commit das alterações
+  - [x] 10.3 Fazer commit das alterações
+
+
 
     - Fazer commit organizado das mudanças
     - Usar mensagens descritivas para cada tipo de limpeza
