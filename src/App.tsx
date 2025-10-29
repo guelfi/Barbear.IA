@@ -232,10 +232,10 @@ function AppContent() {
     }
 
     // Regular user routes
-    console.log('App: Renderizando conteúdo para usuário regular:', { userRole: user?.role, activeTab });
+    console.log('App: Renderizando conteúdo para usuário regular:', { userRole: user?.role, activeTab, userId: user?.id, tenantId: user?.tenantId });
     switch (activeTab) {
       case 'dashboard':
-        console.log('App: Renderizando Dashboard regular');
+        console.log('App: Renderizando Dashboard regular para:', { userId: user?.id, role: user?.role, tenantId: user?.tenantId });
         return <Dashboard />;
       case 'appointments':
         return (

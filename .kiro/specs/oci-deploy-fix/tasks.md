@@ -213,7 +213,9 @@
     - Validar que simulação de API não impacta performance
     - _Requisitos: 4.5_
 
-- [ ] 7. Preparar para deploy
+- [x] 7. Preparar para deploy
+
+
   - [x] 7.1 Revisar e documentar todas as alterações
 
 
@@ -221,7 +223,8 @@
     - Validar que todos os arquivos necessários estão incluídos no build
     - _Requisitos: 1.4, 4.4_
 
-  - [ ] 7.2 Executar testes finais em ambiente local
+  - [x] 7.2 Executar testes finais em ambiente local
+
 
 
     - Executar suite completa de testes de autenticação
@@ -229,7 +232,8 @@
     - Testar que ProductionDebugPanel funciona em build de produção
     - _Requisitos: 1.3, 4.5_
 
-  - [ ] 7.3 Fazer merge da branch para principal
+  - [x] 7.3 Fazer merge da branch para principal
+
     - Revisar todas as alterações antes do merge
     - Executar merge para branch principal
     - Validar que CI/CD pipeline está funcionando

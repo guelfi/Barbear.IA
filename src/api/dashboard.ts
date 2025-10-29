@@ -289,8 +289,11 @@ export const dashboardAPI = {
         try {
             const user = usersData.users.find(u => u.id === userId);
             if (!user) {
+                logDashboardEvent('USER_NOT_FOUND', { userId });
                 throw new Error('Usuário não encontrado');
             }
+
+            logDashboardEvent('USER_FOUND', { userId, role: user.role, tenantId: user.tenantId });
 
             let filteredStats;
 
@@ -313,10 +316,13 @@ export const dashboardAPI = {
                 case 'admin':
                 case 'barber':
                     // Admin e barber veem dados da sua barbearia
+                    logDashboardEvent('LOADING_TENANT_STATS', { tenantId: user.tenantId, availableKeys: Object.keys(dashboardStatsData.barbershopStats) });
                     const tenantStats = dashboardStatsData.barbershopStats[user.tenantId as keyof typeof dashboardStatsData.barbershopStats];
                     if (!tenantStats) {
-                        throw new Error('Dados da barbearia não encontrados');
+                        logDashboardEvent('TENANT_STATS_NOT_FOUND', { tenantId: user.tenantId, availableKeys: Object.keys(dashboardStatsData.barbershopStats) });
+                        throw new Error(`Dados da barbearia não encontrados para tenantId: ${user.tenantId}`);
                     }
+                    logDashboardEvent('TENANT_STATS_FOUND', { tenantId: user.tenantId, tenantStats });
 
                     const tenantAppointments = appointmentsData.appointments.filter((apt: any) => 
                         apt.tenantId === user.tenantId
@@ -349,10 +355,13 @@ export const dashboardAPI = {
 
                 case 'client':
                     // Cliente vê apenas seus próprios dados
+                    logDashboardEvent('LOADING_CLIENT_STATS', { userId, availableKeys: Object.keys(dashboardStatsData.clientStats) });
                     const clientStats = dashboardStatsData.clientStats[userId as keyof typeof dashboardStatsData.clientStats];
                     if (!clientStats) {
-                        throw new Error('Dados do cliente não encontrados');
+                        logDashboardEvent('CLIENT_STATS_NOT_FOUND', { userId, availableKeys: Object.keys(dashboardStatsData.clientStats) });
+                        throw new Error(`Dados do cliente não encontrados para userId: ${userId}`);
                     }
+                    logDashboardEvent('CLIENT_STATS_FOUND', { userId, clientStats });
 
                     filteredStats = {
                         todayAppointments: clientStats.scheduledAppointments,
