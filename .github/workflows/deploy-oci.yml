@@ -150,8 +150,8 @@ jobs:
         # Parar containers existentes
         echo "🛑 Parando containers existentes..."
         sudo docker-compose down || true
-        sudo docker stop barbear-ia-app || true
-        sudo docker rm barbear-ia-app || true
+        sudo docker stop barbear-ia-frontend || true
+        sudo docker rm barbear-ia-frontend || true
         
         # Limpar imagens antigas (manter apenas as 3 mais recentes)
         echo "🧹 Limpando imagens antigas..."
@@ -226,16 +226,16 @@ jobs:
         echo "🔍 Verificando deploy..."
         sleep 10
         
-        if sudo docker ps | grep -q barbear-ia-app; then
+        if sudo docker ps | grep -q barbear-ia-frontend; then
           echo "✅ Deploy realizado com sucesso!"
           echo "🌐 Aplicação disponível em: http://$(curl -s ifconfig.me):3500"
           
           # Mostrar logs
           echo "📋 Últimos logs:"
-          sudo docker logs barbear-ia-app --tail 20
+          sudo docker logs barbear-ia-frontend --tail 20
         else
           echo "❌ Falha no deploy!"
-          sudo docker logs barbear-ia-app || true
+          sudo docker logs barbear-ia-frontend || true
           exit 1
         fi
         
