@@ -9,6 +9,7 @@ import { Badge } from '../ui/badge';
 import { Appointment, Service, Client, Barber } from '../../types';
 import { clientsAPI, barbersAPI, servicesAPI, appointmentsAPI } from '../../api';
 import { toast } from 'sonner';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface AppointmentFormProps {
   appointment?: Appointment;
@@ -17,6 +18,7 @@ interface AppointmentFormProps {
 }
 
 export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFormProps) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<Partial<Appointment>>({
     clientId: appointment?.clientId || '',
     barberId: appointment?.barberId || '',
@@ -39,11 +41,22 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
     const loadData = async () => {
       try {
         setLoading(true);
+        // Carregar dados filtrados por tenant do usuário logado
+        const tenantId = user?.tenantId;
+        console.log('[APPOINTMENT FORM] Carregando dados para tenantId:', tenantId);
+        
         const [clientsData, barbersData, servicesData] = await Promise.all([
-          clientsAPI.getAll(),
-          barbersAPI.getAll(),
-          servicesAPI.getAll()
+          clientsAPI.getClients(tenantId),
+          barbersAPI.getBarbers(tenantId),
+          servicesAPI.getServices(tenantId)
         ]);
+        
+        console.log('[APPOINTMENT FORM] Dados carregados:', {
+          clients: clientsData.length,
+          barbers: barbersData.length,
+          services: servicesData.length,
+          tenantId
+        });
         
         setClients(clientsData);
         setBarbers(barbersData);
@@ -81,7 +94,7 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
         ...formData,
         duration: selectedService.duration,
         price: selectedService.price,
-        tenantId: 'tenant-1' // TODO: Pegar do contexto do usuário
+        tenantId: user?.tenantId || 'tenant-1'
       };
 
       if (appointment?.id) {
