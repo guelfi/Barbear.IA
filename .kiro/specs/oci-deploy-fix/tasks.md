@@ -240,7 +240,8 @@
     - _Requisitos: 1.4, 3.1_
 
 - [ ] 8. Executar limpeza na OCI
-  - [-] 8.1 Conectar via SSH na instância OCI
+  - [x] 8.1 Conectar via SSH na instância OCI
+
 
     - Estabelecer conexão SSH segura com a instância
     - Navegar para diretório do projeto
@@ -258,7 +259,9 @@
     - _Requisitos: 2.2, 2.5_
 
 - [ ] 9. Executar deploy na OCI
-  - [ ] 9.1 Iniciar deploy via GitHub Actions
+  - [x] 9.1 Iniciar deploy via GitHub Actions
+
+
     - Triggerar workflow de deploy para OCI
     - Monitorar build em tempo real
     - _Requisitos: 3.1, 3.2_
