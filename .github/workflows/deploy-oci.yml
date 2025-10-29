@@ -82,7 +82,24 @@ jobs:
         mkdir -p ~/.ssh
         echo "$OCI_SSH_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H $OCI_HOST >> ~/.ssh/known_hosts
+        
+        # Configurar SSH client
+        cat > ~/.ssh/config << 'SSH_CONFIG'
+        Host *
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+            IdentitiesOnly yes
+            LogLevel ERROR
+        SSH_CONFIG
+        
+        # Testar conexão SSH
+        echo "🔍 Testando conexão SSH..."
+        ssh -i ~/.ssh/id_rsa -o ConnectTimeout=10 $OCI_USER@$OCI_HOST "echo 'SSH connection successful'" || {
+          echo "❌ Falha na conexão SSH"
+          echo "Verificando chave SSH..."
+          ssh-keygen -l -f ~/.ssh/id_rsa
+          exit 1
+        }
         
         # Criar script de deploy
         cat > deploy_script.sh << 'EOF'
@@ -190,8 +207,11 @@ jobs:
         EOF
         
         # Executar deploy via SSH
-        scp -i ~/.ssh/id_rsa deploy_script.sh $OCI_USER@$OCI_HOST:/tmp/
-        ssh -i ~/.ssh/id_rsa $OCI_USER@$OCI_HOST "chmod +x /tmp/deploy_script.sh && /tmp/deploy_script.sh"
+        echo "📤 Enviando script de deploy..."
+        scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy_script.sh $OCI_USER@$OCI_HOST:/tmp/
+        
+        echo "🚀 Executando deploy remoto..."
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $OCI_USER@$OCI_HOST "chmod +x /tmp/deploy_script.sh && /tmp/deploy_script.sh"
 
     - name: Cleanup
       if: always()
