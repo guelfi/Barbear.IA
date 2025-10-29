@@ -162,6 +162,16 @@ jobs:
         git fetch origin
         git reset --hard origin/main
         
+        # Verificar e instalar Node.js se necessário
+        if ! command -v npm &> /dev/null; then
+          echo "📦 Node.js não encontrado, instalando..."
+          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          echo "✅ Node.js $(node --version) e npm $(npm --version) instalados"
+        else
+          echo "✅ Node.js $(node --version) e npm $(npm --version) já instalados"
+        fi
+        
         # Instalar dependências e build
         echo "🔨 Fazendo build da aplicação..."
         rm -rf node_modules package-lock.json
