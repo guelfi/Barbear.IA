@@ -2,7 +2,6 @@ import appointmentsData from '../database/appointments.json';
 import barbersData from '../database/barbers.json';
 import clientsData from '../database/clients.json';
 import servicesData from '../database/services.json';
-import { jsonStore } from './jsonStore';
 
 interface Appointment {
   id: string;
@@ -118,7 +117,7 @@ export const appointmentsAPI = {
     await simulateNetworkDelay();
 
     try {
-      const appointments = jsonStore.getAll('appointments');
+      const appointments = appointmentsData.appointments;
       const enrichedAppointments = appointments.map(appointment => 
         enrichAppointmentWithDetails(appointment)
       );
@@ -284,8 +283,13 @@ export const appointmentsAPI = {
         throw new Error('Horário já ocupado para este barbeiro');
       }
 
-      // Salvar no arquivo JSON
-      const newAppointment = jsonStore.create('appointments', appointmentData);
+      // Simular criação (em produção, seria salvo no backend)
+      const newAppointment = {
+        ...appointmentData,
+        id: `appointment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
       
       logAppointmentEvent('APPOINTMENT_CREATED', { id: newAppointment.id });
       return enrichAppointmentWithDetails(newAppointment);
@@ -322,8 +326,9 @@ export const appointmentsAPI = {
         }
       }
 
-      // Atualizar no arquivo JSON
-      const updatedAppointment = jsonStore.update('appointments', id, updates);
+      // Simular atualização (em produção, seria salvo no backend)
+      const appointment = appointmentsData.appointments.find(a => a.id === id);
+      const updatedAppointment = appointment ? { ...appointment, ...updates, updatedAt: new Date().toISOString() } : null;
       
       if (!updatedAppointment) {
         return null;

@@ -266,7 +266,9 @@
     - Monitorar build em tempo real
     - _Requisitos: 3.1, 3.2_
 
-  - [ ] 9.2 Validar build e deploy
+  - [x] 9.2 Validar build e deploy
+
+
     - Confirmar que imagem Docker foi construída corretamente
     - Validar que container foi criado e está rodando
     - Verificar que porta 3500 está respondendo

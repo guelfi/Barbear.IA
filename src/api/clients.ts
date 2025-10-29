@@ -1,5 +1,4 @@
 import clientsData from '../database/clients.json';
-import { jsonStore } from './jsonStore';
 import appointmentsData from '../database/appointments.json';
 
 interface Client {
@@ -35,7 +34,7 @@ export const clientsAPI = {
     logClientEvent('GET_ALL_CLIENTS', {});
     await simulateNetworkDelay();
 
-    return jsonStore.getAll('clients');
+    return clientsData.clients;
   },
 
   async getClients(tenantId?: string, search?: string): Promise<Client[]> {
@@ -78,7 +77,12 @@ export const clientsAPI = {
       totalSpent: 0
     };
 
-    const newClient = jsonStore.create('clients', clientDataWithDefaults);
+    const newClient = {
+      ...clientDataWithDefaults,
+      id: `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
     logClientEvent('CLIENT_CREATED', { id: newClient.id });
     return newClient;
   },
@@ -87,7 +91,8 @@ export const clientsAPI = {
     logClientEvent('UPDATE_CLIENT', { id, updates });
     await simulateNetworkDelay();
 
-    const updatedClient = jsonStore.update('clients', id, updates);
+    const client = clientsData.clients.find(c => c.id === id);
+    const updatedClient = client ? { ...client, ...updates, updatedAt: new Date().toISOString() } : null;
     
     if (updatedClient) {
       logClientEvent('CLIENT_UPDATED', { id });
