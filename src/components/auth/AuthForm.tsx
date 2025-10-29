@@ -220,7 +220,7 @@ export function AuthForm() {
 
   return (
     <motion.div
-      className="min-h-screen flex items-center justify-center bg-background p-4 relative"
+      className="min-h-screen flex items-center justify-center bg-background p-1 sm:p-4 relative"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -241,13 +241,13 @@ export function AuthForm() {
         transition={{ duration: 0.6, delay: 0.1 }}
       >
         <motion.div
-          className="text-center mb-8"
+          className="text-center mb-5 sm:mb-8"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <motion.div
-            className="flex items-center justify-center mb-4"
+            className="flex items-center justify-center mb-1 sm:mb-4"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{
@@ -777,8 +777,8 @@ export function AuthForm() {
                       transition={{ duration: 0.4, delay: 0.7 }}
                     >
                       <p className="text-xs text-muted-foreground text-center mb-3">
-                        Acesso rápido para teste (REMOVER QUANDO ENTRAR EM PRODUÇÃO):
-                      </p>
+                         Acesso rápido (REMOVER QUANDO ENTRAR EM PRODUÇÃO):
+                       </p>
                       <div className="flex justify-center">
                         <MaterialButton
                           type="button"
