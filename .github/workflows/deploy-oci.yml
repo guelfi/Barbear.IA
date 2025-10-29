@@ -75,7 +75,7 @@ jobs:
     - name: Deploy to OCI
       env:
         OCI_HOST: ${{ secrets.OCI_HOST }}
-        OCI_USER: ${{ secrets.OCI_USER }}
+        OCI_USER: ${{ secrets.OCI_USERNAME }}
         OCI_SSH_KEY: ${{ secrets.OCI_SSH_KEY }}
       run: |
         # Verificar se as secrets estão configuradas
