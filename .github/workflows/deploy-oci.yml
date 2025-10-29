@@ -1,0 +1,203 @@
+name: Deploy to OCI
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build application
+      run: npm run build
+
+    - name: Create deployment package
+      run: |
+        # Criar estrutura para deploy
+        mkdir -p deploy
+        cp -r build/* deploy/
+        
+        # Criar Dockerfile para produção
+        cat > deploy/Dockerfile << 'EOF'
+        FROM nginx:alpine
+        
+        # Copiar arquivos build
+        COPY . /usr/share/nginx/html
+        
+        # Configuração do nginx para SPA
+        RUN echo 'server { \
+            listen 80; \
+            server_name _; \
+            root /usr/share/nginx/html; \
+            index index.html; \
+            location / { \
+                try_files $uri $uri/ /index.html; \
+            } \
+            location /api { \
+                return 404; \
+            } \
+            gzip on; \
+            gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript; \
+        }' > /etc/nginx/conf.d/default.conf
+        
+        EXPOSE 80
+        CMD ["nginx", "-g", "daemon off;"]
+        EOF
+        
+        # Criar docker-compose para deploy
+        cat > deploy/docker-compose.yml << 'EOF'
+        version: '3.8'
+        services:
+          barbear-ia:
+            build: .
+            ports:
+              - "3500:80"
+            restart: unless-stopped
+            container_name: barbear-ia-app
+        EOF
+
+    - name: Deploy to OCI
+      env:
+        OCI_HOST: ${{ secrets.OCI_HOST }}
+        OCI_USER: ${{ secrets.OCI_USER }}
+        OCI_SSH_KEY: ${{ secrets.OCI_SSH_KEY }}
+      run: |
+        # Configurar SSH
+        mkdir -p ~/.ssh
+        echo "$OCI_SSH_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $OCI_HOST >> ~/.ssh/known_hosts
+        
+        # Criar script de deploy
+        cat > deploy_script.sh << 'EOF'
+        #!/bin/bash
+        set -e
+        
+        echo "🚀 Iniciando deploy do Barbear.IA..."
+        
+        # Navegar para diretório do projeto
+        cd /home/ubuntu/Barbear.IA || { echo "❌ Diretório não encontrado"; exit 1; }
+        
+        # Fazer backup da versão atual
+        if [ -d "build" ]; then
+          echo "📦 Fazendo backup da versão atual..."
+          sudo mv build build_backup_$(date +%Y%m%d_%H%M%S) || true
+        fi
+        
+        # Parar containers existentes
+        echo "🛑 Parando containers existentes..."
+        sudo docker-compose down || true
+        sudo docker stop barbear-ia-app || true
+        sudo docker rm barbear-ia-app || true
+        
+        # Limpar imagens antigas (manter apenas as 3 mais recentes)
+        echo "🧹 Limpando imagens antigas..."
+        sudo docker image prune -f || true
+        
+        # Atualizar código
+        echo "📥 Atualizando código..."
+        git fetch origin
+        git reset --hard origin/main
+        
+        # Instalar dependências e build
+        echo "🔨 Fazendo build da aplicação..."
+        npm ci --production=false
+        npm run build
+        
+        # Copiar arquivos de deploy
+        echo "📋 Preparando deploy..."
+        cp -r build/* ./
+        
+        # Criar Dockerfile se não existir
+        if [ ! -f "Dockerfile" ]; then
+          cat > Dockerfile << 'DOCKERFILE'
+        FROM nginx:alpine
+        COPY . /usr/share/nginx/html
+        RUN echo 'server { \
+            listen 80; \
+            server_name _; \
+            root /usr/share/nginx/html; \
+            index index.html; \
+            location / { \
+                try_files $uri $uri/ /index.html; \
+            } \
+            gzip on; \
+            gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript; \
+        }' > /etc/nginx/conf.d/default.conf
+        EXPOSE 80
+        CMD ["nginx", "-g", "daemon off;"]
+        DOCKERFILE
+        fi
+        
+        # Criar docker-compose se não existir
+        if [ ! -f "docker-compose.yml" ]; then
+          cat > docker-compose.yml << 'COMPOSE'
+        version: '3.8'
+        services:
+          barbear-ia:
+            build: .
+            ports:
+              - "3500:80"
+            restart: unless-stopped
+            container_name: barbear-ia-app
+        COMPOSE
+        fi
+        
+        # Build e start da aplicação
+        echo "🐳 Construindo e iniciando containers..."
+        sudo docker-compose build --no-cache
+        sudo docker-compose up -d
+        
+        # Verificar se está rodando
+        echo "🔍 Verificando deploy..."
+        sleep 10
+        
+        if sudo docker ps | grep -q barbear-ia-app; then
+          echo "✅ Deploy realizado com sucesso!"
+          echo "🌐 Aplicação disponível em: http://$(curl -s ifconfig.me):3500"
+          
+          # Mostrar logs
+          echo "📋 Últimos logs:"
+          sudo docker logs barbear-ia-app --tail 20
+        else
+          echo "❌ Falha no deploy!"
+          sudo docker logs barbear-ia-app || true
+          exit 1
+        fi
+        
+        # Limpeza final
+        echo "🧹 Limpeza final..."
+        sudo docker system prune -f || true
+        
+        echo "🎉 Deploy concluído!"
+        EOF
+        
+        # Executar deploy via SSH
+        scp -i ~/.ssh/id_rsa deploy_script.sh $OCI_USER@$OCI_HOST:/tmp/
+        ssh -i ~/.ssh/id_rsa $OCI_USER@$OCI_HOST "chmod +x /tmp/deploy_script.sh && /tmp/deploy_script.sh"
+
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -rf ~/.ssh/id_rsa deploy_script.sh deploy/ || true
+
+    - name: Notify Success
+      if: success()
+      run: |
+        echo "✅ Deploy realizado com sucesso!"
+        echo "🌐 Aplicação disponível em produção"
+        echo "🐛 Debug panel disponível para monitoramento"
