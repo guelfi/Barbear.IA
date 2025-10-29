@@ -110,6 +110,27 @@ const enrichAppointmentWithDetails = (appointment: Appointment): AppointmentWith
 
 export const appointmentsAPI = {
   /**
+   * Obter todos os agendamentos (sem filtros)
+   */
+  async getAll(): Promise<AppointmentWithDetails[]> {
+    logAppointmentEvent('GET_ALL_APPOINTMENTS', {});
+    await simulateNetworkDelay();
+
+    try {
+      const enrichedAppointments = appointmentsData.appointments.map(appointment => 
+        enrichAppointmentWithDetails(appointment)
+      );
+
+      logAppointmentEvent('GET_ALL_APPOINTMENTS_SUCCESS', { count: enrichedAppointments.length });
+      return enrichedAppointments;
+
+    } catch (error) {
+      logAppointmentEvent('GET_ALL_APPOINTMENTS_ERROR', { error: error instanceof Error ? error.message : 'Erro desconhecido' });
+      throw new Error('Erro ao obter agendamentos');
+    }
+  },
+
+  /**
    * Listar agendamentos com filtros e paginação
    */
   async getAppointments(filters: AppointmentFilters = {}, pagination: PaginationOptions = {}): Promise<{

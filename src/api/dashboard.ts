@@ -280,6 +280,152 @@ export const dashboardAPI = {
     },
 
     /**
+     * Obter estatísticas do dashboard baseado na role do usuário
+     */
+    async getStats(userRole: string, userId: string): Promise<any> {
+        logDashboardEvent('GET_STATS', { userRole, userId });
+        await simulateNetworkDelay();
+
+        try {
+            const user = usersData.users.find(u => u.id === userId);
+            if (!user) {
+                throw new Error('Usuário não encontrado');
+            }
+
+            let filteredStats;
+
+            switch (userRole) {
+                case 'super_admin':
+                    // Super admin vê dados globais
+                    const globalStats = dashboardStatsData.globalStats;
+                    filteredStats = {
+                        todayAppointments: globalStats.totalAppointments,
+                        weeklyRevenue: globalStats.totalRevenue,
+                        totalClients: globalStats.totalUsers,
+                        completionRate: 85, // Simulado
+                        upcomingAppointments: appointmentsData.appointments.filter((apt: any) => 
+                            apt.status === 'scheduled'
+                        ).slice(0, 5),
+                        recentClients: usersData.users.filter((u: any) => u.role === 'client').slice(0, 5)
+                    };
+                    break;
+
+                case 'admin':
+                case 'barber':
+                    // Admin e barber veem dados da sua barbearia
+                    const tenantStats = dashboardStatsData.barbershopStats[user.tenantId as keyof typeof dashboardStatsData.barbershopStats];
+                    if (!tenantStats) {
+                        throw new Error('Dados da barbearia não encontrados');
+                    }
+
+                    const tenantAppointments = appointmentsData.appointments.filter((apt: any) => 
+                        apt.tenantId === user.tenantId
+                    );
+                    const tenantClients = usersData.users.filter((u: any) => 
+                        u.role === 'client' && u.tenantId === user.tenantId
+                    );
+
+                    filteredStats = {
+                        todayAppointments: tenantStats.scheduledAppointments,
+                        weeklyRevenue: tenantStats.monthlyRevenue,
+                        totalClients: tenantStats.totalClients,
+                        completionRate: Math.round((tenantStats.completedAppointments / tenantStats.totalAppointments) * 100),
+                        upcomingAppointments: tenantAppointments.filter((apt: any) => apt.status === 'scheduled'),
+                        recentClients: tenantClients
+                    };
+
+                    // Se for barbeiro, filtra apenas seus dados
+                    if (userRole === 'barber') {
+                        const barberStats = dashboardStatsData.barberStats[userId as keyof typeof dashboardStatsData.barberStats];
+                        if (barberStats) {
+                            filteredStats.todayAppointments = barberStats.scheduledAppointments;
+                            filteredStats.weeklyRevenue = barberStats.monthlyRevenue;
+                            filteredStats.upcomingAppointments = tenantAppointments.filter((apt: any) => 
+                                apt.barberId === userId && apt.status === 'scheduled'
+                            );
+                        }
+                    }
+                    break;
+
+                case 'client':
+                    // Cliente vê apenas seus próprios dados
+                    const clientStats = dashboardStatsData.clientStats[userId as keyof typeof dashboardStatsData.clientStats];
+                    if (!clientStats) {
+                        throw new Error('Dados do cliente não encontrados');
+                    }
+
+                    filteredStats = {
+                        todayAppointments: clientStats.scheduledAppointments,
+                        weeklyRevenue: 0, // Cliente não vê receita
+                        totalClients: 0, // Cliente não vê total de clientes
+                        completionRate: Math.round((clientStats.completedAppointments / clientStats.totalAppointments) * 100),
+                        upcomingAppointments: clientStats.upcomingAppointments,
+                        recentClients: [] // Cliente não vê outros clientes
+                    };
+                    break;
+
+                default:
+                    throw new Error(`Role não reconhecida: ${userRole}`);
+            }
+
+            logDashboardEvent('GET_STATS_SUCCESS', { userRole, statsCount: Object.keys(filteredStats).length });
+            return filteredStats;
+
+        } catch (error) {
+            logDashboardEvent('GET_STATS_ERROR', { error: error instanceof Error ? error.message : 'Erro desconhecido' });
+            throw error;
+        }
+    },
+
+    /**
+     * Obter estatísticas do super admin
+     */
+    async getSuperAdminStats(): Promise<any> {
+        logDashboardEvent('GET_SUPER_ADMIN_STATS', {});
+        await simulateNetworkDelay();
+
+        try {
+            const globalStats = dashboardStatsData.globalStats;
+            
+            // Construir estatísticas do super admin baseadas nos dados disponíveis
+            const superAdminStats = {
+                totalTenants: globalStats.totalBarbershops,
+                activeTenants: globalStats.activeSubscriptions,
+                pendingApprovals: globalStats.trialSubscriptions,
+                totalUsers: globalStats.totalUsers,
+                monthlyRevenue: globalStats.totalRevenue,
+                conversionRate: 78.5, // Simulado
+                recentTenants: Object.entries(dashboardStatsData.barbershopStats).map(([id, stats]: [string, any]) => ({
+                    id,
+                    name: stats.name,
+                    businessName: stats.name,
+                    status: 'approved',
+                    createdAt: '2024-01-15T14:20:00Z',
+                    totalUsers: stats.totalBarbers + stats.totalClients,
+                    totalAppointments: stats.totalAppointments,
+                    monthlyRevenue: stats.monthlyRevenue
+                })),
+                revenueByMonth: [
+                    { month: 'Jan', revenue: globalStats.totalRevenue * 0.8 },
+                    { month: 'Fev', revenue: globalStats.totalRevenue * 0.9 },
+                    { month: 'Mar', revenue: globalStats.totalRevenue }
+                ]
+            };
+            
+            logDashboardEvent('GET_SUPER_ADMIN_STATS_SUCCESS', { 
+                totalTenants: superAdminStats.totalTenants,
+                totalUsers: superAdminStats.totalUsers 
+            });
+            
+            return superAdminStats;
+
+        } catch (error) {
+            logDashboardEvent('GET_SUPER_ADMIN_STATS_ERROR', { error: error instanceof Error ? error.message : 'Erro desconhecido' });
+            throw new Error('Erro ao obter estatísticas do super admin');
+        }
+    },
+
+    /**
      * Obter métricas em tempo real
      */
     async getRealTimeMetrics(tenantId?: string): Promise<{

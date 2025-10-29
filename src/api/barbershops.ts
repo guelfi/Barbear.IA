@@ -25,6 +25,32 @@ const logBarbershopEvent = (event: string, data: any) => {
 };
 
 export const barbershopsAPI = {
+  async getAll(): Promise<any[]> {
+    logBarbershopEvent('GET_ALL_BARBERSHOPS', {});
+    await simulateNetworkDelay();
+
+    // Retorna todas as barbearias com dados formatados para o SuperAdminDashboard
+    return barbershopsData.barbershops.map(shop => ({
+      id: shop.id,
+      name: shop.name,
+      businessName: shop.name,
+      address: typeof shop.address === 'string' ? shop.address : 
+               `${shop.address?.street || ''}, ${shop.address?.city || ''}, ${shop.address?.state || ''}`,
+      phone: shop.phone,
+      email: shop.email,
+      logo: null, // Pode ser adicionado depois
+      settings: shop.settings,
+      subscription: shop.subscription,
+      status: shop.isActive ? 'approved' : 'suspended',
+      createdAt: shop.createdAt,
+      approvedAt: shop.updatedAt,
+      ownerId: `admin-${shop.id}`,
+      totalUsers: 3, // Simulado - pode ser calculado dos indexes
+      totalAppointments: 10, // Simulado
+      monthlyRevenue: 1500.00 // Simulado
+    }));
+  },
+
   async getBarbershops(): Promise<Barbershop[]> {
     logBarbershopEvent('GET_BARBERSHOPS', {});
     await simulateNetworkDelay();
