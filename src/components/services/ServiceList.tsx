@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Search, Clock, DollarSign, Edit, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -8,8 +8,8 @@ import { Switch } from '../ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import { AnimatedIcon } from '../ui/animated-icon';
 import { motion } from 'framer-motion';
-import { mockServices } from '../../lib/mock-data';
 import { Service } from '../../types';
+import { servicesAPI } from '../../api';
 
 interface ServiceListProps {
   onCreateService: () => void;
@@ -17,8 +17,26 @@ interface ServiceListProps {
 }
 
 export function ServiceList({ onCreateService, onEditService }: ServiceListProps) {
-  const [services, setServices] = useState(mockServices);
+  const [services, setServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // Load services via API
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setLoading(true);
+        const allServices = await servicesAPI.getAll();
+        setServices(allServices);
+      } catch (error) {
+        console.error('Erro ao carregar serviços:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadServices();
+  }, []);
 
   const filteredServices = services.filter(service =>
     service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -36,6 +54,17 @@ export function ServiceList({ onCreateService, onEditService }: ServiceListProps
   const deleteService = (id: string) => {
     setServices(prev => prev.filter(service => service.id !== id));
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando serviços...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 

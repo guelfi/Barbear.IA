@@ -4,7 +4,7 @@ import { StatsCard } from './StatsCard';
 import { MaterialCard, MaterialCardContent, MaterialCardHeader, MaterialCardTitle } from '../ui/material-card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
-import { mockDashboardStatsComplete } from '../../lib/mock-data';
+import { dashboardAPI } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { DashboardStats } from '../../types';
@@ -93,48 +93,10 @@ export function Dashboard() {
     
         debugLog('Usuário validado, carregando dados mockados', { role: user.role });
     
-        // Simular carregamento de dados (como seria uma API real)
-        await new Promise(resolve => setTimeout(resolve, 500));
-    
-        // Carregar dados baseados na role do usuário
-        let dashboardData: DashboardStats;
+        // Carregar dados via API simulada baseados na role do usuário
+        debugLog('Carregando dados via API simulada', { role: user.role });
         
-        switch (user.role) {
-          case 'super_admin':
-            dashboardData = {
-              ...mockDashboardStatsComplete,
-              upcomingAppointments: mockDashboardStatsComplete.upcomingAppointments.map(apt => ({
-                ...apt,
-                service: {
-                  ...apt.service,
-                  updatedAt: apt.service.updatedAt || new Date().toISOString()
-                }
-              }))
-            };
-            debugLog('Carregando dados completos para super_admin');
-            break;
-          case 'admin':
-          case 'barber':
-            dashboardData = mockDashboardStatsComplete;
-            debugLog('Carregando dados limitados para admin/barber');
-            break;
-          case 'client':
-            // Dados específicos para cliente
-            dashboardData = {
-              todayAppointments: mockDashboardStatsComplete.todayAppointments,
-              weeklyRevenue: 0, // Cliente não vê receita
-              totalClients: 0, // Cliente não vê total de clientes
-              completionRate: mockDashboardStatsComplete.completionRate,
-              upcomingAppointments: mockDashboardStatsComplete.upcomingAppointments.filter((apt: any) => 
-                apt.client.email === user.email || apt.client.name === user.name
-              ),
-              recentClients: [] // Cliente não vê outros clientes
-            };
-            debugLog('Carregando dados filtrados para client');
-            break;
-          default:
-            throw new Error(`Role não reconhecida: ${user.role}`);
-        }
+        const dashboardData = await dashboardAPI.getStats(user.role, user.id);
     
         debugLog('Dados carregados com sucesso', {
           role: user.role,
@@ -239,16 +201,16 @@ export function Dashboard() {
   // Debug logs específicos para produção
   console.log('Dashboard: Renderizando para usuário:', user?.role);
   console.log('Dashboard: Usuário completo:', user);
-  console.log('Dashboard: Stats carregados:', mockDashboardStatsComplete);
+  console.log('Dashboard: Stats carregados via API:', stats);
   console.log('Dashboard: Ambiente:', process.env.NODE_ENV);
   console.log('Dashboard: URL atual:', window.location.href);
   console.log('Dashboard: localStorage token:', localStorage.getItem('authToken'));
   console.log('Dashboard: localStorage email:', localStorage.getItem('userEmail'));
-  console.log('Dashboard: Dados mockados disponíveis:', {
-    hasStats: !!mockDashboardStatsComplete,
-    todayAppointments: mockDashboardStatsComplete?.todayAppointments,
-    upcomingAppointments: mockDashboardStatsComplete?.upcomingAppointments?.length,
-    recentClients: mockDashboardStatsComplete?.recentClients?.length
+  console.log('Dashboard: Dados da API disponíveis:', {
+    hasStats: !!stats,
+    todayAppointments: stats?.todayAppointments,
+    upcomingAppointments: stats?.upcomingAppointments?.length,
+    recentClients: stats?.recentClients?.length
   });
   
   // Verificação específica de role

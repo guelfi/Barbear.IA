@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Search, Phone, Mail, Calendar } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -7,8 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { AnimatedIcon } from '../ui/animated-icon';
 import { motion } from 'framer-motion';
-import { mockClients } from '../../lib/mock-data';
 import { Client } from '../../types';
+import { clientsAPI } from '../../api';
 
 interface ClientListProps {
   onCreateClient: () => void;
@@ -16,14 +16,43 @@ interface ClientListProps {
 }
 
 export function ClientList({ onCreateClient, onEditClient }: ClientListProps) {
-  const [clients] = useState(mockClients);
+  const [clients, setClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // Load clients via API
+  useEffect(() => {
+    const loadClients = async () => {
+      try {
+        setLoading(true);
+        const allClients = await clientsAPI.getAll();
+        setClients(allClients);
+      } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadClients();
+  }, []);
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.phone.includes(searchTerm)
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando clientes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Search, Phone, Mail, Clock } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -8,8 +8,8 @@ import { Badge } from '../ui/badge';
 import { Switch } from '../ui/switch';
 import { AnimatedIcon } from '../ui/animated-icon';
 import { motion } from 'framer-motion';
-import { mockBarbers, mockServices } from '../../lib/mock-data';
-import { Barber } from '../../types';
+import { Barber, Service } from '../../types';
+import { barbersAPI, servicesAPI } from '../../api';
 
 interface BarberListProps {
   onCreateBarber: () => void;
@@ -17,9 +17,31 @@ interface BarberListProps {
 }
 
 export function BarberList({ onCreateBarber, onEditBarber }: BarberListProps) {
-  const [barbers, setBarbers] = useState(mockBarbers);
-  const [services] = useState(mockServices);
+  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // Load barbers and services via API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [allBarbers, allServices] = await Promise.all([
+          barbersAPI.getAll(),
+          servicesAPI.getAll()
+        ]);
+        setBarbers(allBarbers);
+        setServices(allServices);
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const filteredBarbers = barbers.filter(barber =>
     barber.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -48,6 +70,17 @@ export function BarberList({ onCreateBarber, onEditBarber }: BarberListProps) {
       .map(s => days[s.dayOfWeek])
       .join(', ');
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando barbeiros...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 

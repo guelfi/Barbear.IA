@@ -1,4 +1,25 @@
 // API Central - Ponto de entrada para toda a API simulada
+
+// Debug logging for production
+const debugLog = (message: string, data?: any, level: 'info' | 'warn' | 'error' = 'info') => {
+  if (process.env.NODE_ENV === 'production') {
+    const debugLogs = JSON.parse(sessionStorage.getItem('api_debug') || '[]');
+    debugLogs.push({
+      timestamp: new Date().toISOString(),
+      message,
+      data: data ? JSON.stringify(data) : null,
+      url: window.location.href,
+      level
+    });
+    // Manter apenas os últimos 50 logs
+    if (debugLogs.length > 50) {
+      debugLogs.splice(0, debugLogs.length - 50);
+    }
+    sessionStorage.setItem('api_debug', JSON.stringify(debugLogs));
+  }
+  console.log(`[API ${level.toUpperCase()}] ${message}`, data);
+};
+
 import authAPI from './auth';
 import usersAPI from './users';
 import appointmentsAPI from './appointments';
@@ -433,6 +454,8 @@ export const apiCall = async <T = any>(
   params?: Record<string, any>,
   token?: string
 ): Promise<APIResponse<T>> => {
+  debugLog(`API Call: ${method} ${endpoint}`, { data, params }, 'info');
+  
   const headers: Record<string, string> = {
     'Content-Type': 'application/json'
   };
@@ -449,7 +472,14 @@ export const apiCall = async <T = any>(
     headers
   };
 
-  return await apiRouter.request<T>(request);
+  try {
+    const response = await apiRouter.request<T>(request);
+    debugLog(`API Response: ${method} ${endpoint}`, { success: response.success, status: response.status }, 'info');
+    return response;
+  } catch (error) {
+    debugLog(`API Error: ${method} ${endpoint}`, { error: error instanceof Error ? error.message : error }, 'error');
+    throw error;
+  }
 };
 
 // Exportar APIs individuais para uso direto

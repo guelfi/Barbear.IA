@@ -42,95 +42,17 @@ import {
 import { SuperAdminStats, Tenant } from '../../types';
 import { toast } from 'sonner';
 
-// Mock data for Super Admin
-const mockSuperAdminStats: SuperAdminStats = {
-  totalTenants: 45,
-  activeTenants: 38,
-  pendingApprovals: 7,
-  totalUsers: 312,
-  monthlyRevenue: 15420.50,
-  conversionRate: 78.5,
-  recentTenants: [
-    {
-      id: 'tenant-1',
-      name: 'João Silva',
-      businessName: 'Barbearia do João',
-      address: 'Rua das Flores, 123 - São Paulo, SP',
-      phone: '(11) 99999-1111',
-      email: 'joao@barbeariadojoao.com',
-      logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzIiIGZpbGw9IiM2MzY2RjEiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDE0IDIwSDEwTDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjIiLz4KPHBhdGggZD0iTTEyIDZWMTgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik04IDEwSDE2IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNOCAxNEgxNiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPg==',
-      settings: {
-        workingHours: { start: '08:00', end: '18:00' },
-        workingDays: [1, 2, 3, 4, 5, 6],
-        appointmentDuration: 30,
-        bookingAdvance: 30
-      },
-      subscription: {
-        id: 'sub-1',
-        tenantId: 'tenant-1',
-        plan: 'pro-monthly',
-        status: 'active',
-        trialEndsAt: '2024-03-15T00:00:00Z',
-        currentPeriodStart: '2024-03-08T00:00:00Z',
-        currentPeriodEnd: '2024-03-15T00:00:00Z',
-        cancelAtPeriodEnd: false
-      },
-      status: 'pending',
-      createdAt: '2024-03-08T10:30:00Z',
-      ownerId: 'user-1',
-      totalUsers: 3,
-      totalAppointments: 0,
-      monthlyRevenue: 0
-    },
-    {
-      id: 'tenant-2',
-      name: 'Maria Santos',
-      businessName: 'Studio Maria Hair',
-      address: 'Av. Paulista, 456 - São Paulo, SP',
-      phone: '(11) 99999-2222',
-      email: 'maria@studiomaria.com',
-      logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzIiIGZpbGw9IiNFRjQ0NDQiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDE0IDIwSDEwTDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjIiLz4KPHBhdGggZD0iTTEyIDZWMTgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik04IDEwSDE2IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNOCAxNEgxNiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPg==',
-      settings: {
-        workingHours: { start: '09:00', end: '19:00' },
-        workingDays: [1, 2, 3, 4, 5, 6],
-        appointmentDuration: 45,
-        bookingAdvance: 15
-      },
-      subscription: {
-        id: 'sub-2',
-        tenantId: 'tenant-2',
-        plan: 'pro-yearly',
-        status: 'active',
-        currentPeriodStart: '2024-02-01T00:00:00Z',
-        currentPeriodEnd: '2024-03-01T00:00:00Z',
-        stripeCustomerId: 'cus_123',
-        stripeSubscriptionId: 'sub_123',
-        cancelAtPeriodEnd: false
-      },
-      status: 'approved',
-      createdAt: '2024-01-15T14:20:00Z',
-      approvedAt: '2024-01-16T09:15:00Z',
-      ownerId: 'user-2',
-      totalUsers: 5,
-      totalAppointments: 157,
-      monthlyRevenue: 2450.00
-    }
-  ],
-  revenueByMonth: [
-    { month: 'Jan', revenue: 12500 },
-    { month: 'Fev', revenue: 14200 },
-    { month: 'Mar', revenue: 15420 }
-  ]
-};
+import { dashboardAPI, barbershopsAPI } from '../../api';
 
 interface SuperAdminDashboardProps {
   activeSection?: string;
 }
 
 export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminDashboardProps) {
-  const [stats] = useState<SuperAdminStats>(mockSuperAdminStats);
-  const [tenants, setTenants] = useState<Tenant[]>(mockSuperAdminStats.recentTenants);
+  const [stats, setStats] = useState<SuperAdminStats | null>(null);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
   
   // Map sidebar sections to internal tabs
   const getTabFromSection = (section: string) => {
@@ -149,6 +71,30 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
   React.useEffect(() => {
     setActiveTab(getTabFromSection(activeSection));
   }, [activeSection]);
+
+  // Load data via API
+  React.useEffect(() => {
+    const loadSuperAdminData = async () => {
+      try {
+        setLoading(true);
+        
+        // Load super admin stats
+        const superAdminStats = await dashboardAPI.getSuperAdminStats();
+        setStats(superAdminStats);
+        
+        // Load all tenants
+        const allTenants = await barbershopsAPI.getAll();
+        setTenants(allTenants);
+        
+      } catch (error) {
+        console.error('Erro ao carregar dados do super admin:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSuperAdminData();
+  }, []);
 
   const filteredTenants = tenants.filter(tenant =>
     tenant.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -243,6 +189,27 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
       minute: '2-digit'
     });
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando dados do super admin...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-gray-600">Erro ao carregar dados do super admin</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
