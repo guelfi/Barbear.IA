@@ -2,6 +2,9 @@ import dashboardStatsData from '../database/dashboard-stats.json';
 import appointmentsData from '../database/appointments.json';
 import usersData from '../database/users.json';
 import indexesData from '../database/indexes.json';
+import clientsData from '../database/clients.json';
+import barbersData from '../database/barbers.json';
+import servicesData from '../database/services.json';
 
 interface DashboardStats {
     totalAppointments: number;
@@ -48,6 +51,64 @@ const logDashboardEvent = (event: string, data: any) => {
             console.error('[DASHBOARD API] Erro ao salvar log:', error);
         }
     }
+};
+
+// Função para enriquecer appointments com dados de client, barber e service
+const enrichAppointments = (appointments: any[]) => {
+    return appointments.map(appointment => {
+        const client = clientsData.clients.find(c => c.id === appointment.clientId) || 
+                      usersData.users.find(u => u.id === appointment.clientId);
+        const barber = barbersData.barbers.find(b => b.id === appointment.barberId) ||
+                      usersData.users.find(u => u.id === appointment.barberId);
+        const service = servicesData.services.find(s => s.id === appointment.serviceId);
+
+        return {
+            ...appointment,
+            client: client ? {
+                id: client.id,
+                name: client.name,
+                email: client.email,
+                phone: client.phone,
+                avatar: client.avatar
+            } : {
+                id: appointment.clientId,
+                name: 'Cliente não encontrado',
+                email: '',
+                phone: '',
+                avatar: null
+            },
+            barber: barber ? {
+                id: barber.id,
+                name: barber.name,
+                email: barber.email,
+                phone: barber.phone,
+                avatar: barber.avatar
+            } : {
+                id: appointment.barberId,
+                name: 'Barbeiro não encontrado',
+                email: '',
+                phone: '',
+                avatar: null
+            },
+            service: service ? {
+                id: service.id,
+                name: service.name,
+                description: service.description,
+                duration: service.duration,
+                price: service.price,
+                category: service.category,
+                updatedAt: service.updatedAt
+            } : {
+                id: appointment.serviceId,
+                name: 'Serviço não encontrado',
+                description: '',
+                duration: 30,
+                price: appointment.price || 0,
+                category: 'outros',
+                updatedAt: new Date().toISOString()
+            }
+        };
+    });
 };
 
 export const dashboardAPI = {
@@ -306,9 +367,11 @@ export const dashboardAPI = {
                         weeklyRevenue: globalStats.totalRevenue,
                         totalClients: globalStats.totalUsers,
                         completionRate: 85, // Simulado
-                        upcomingAppointments: appointmentsData.appointments.filter((apt: any) => 
-                            apt.status === 'scheduled'
-                        ).slice(0, 5),
+                        upcomingAppointments: enrichAppointments(
+                            appointmentsData.appointments.filter((apt: any) => 
+                                apt.status === 'scheduled'
+                            ).slice(0, 5)
+                        ),
                         recentClients: usersData.users.filter((u: any) => u.role === 'client').slice(0, 5)
                     };
                     break;
@@ -336,7 +399,9 @@ export const dashboardAPI = {
                         weeklyRevenue: tenantStats.monthlyRevenue,
                         totalClients: tenantStats.totalClients,
                         completionRate: Math.round((tenantStats.completedAppointments / tenantStats.totalAppointments) * 100),
-                        upcomingAppointments: tenantAppointments.filter((apt: any) => apt.status === 'scheduled'),
+                        upcomingAppointments: enrichAppointments(
+                            tenantAppointments.filter((apt: any) => apt.status === 'scheduled')
+                        ),
                         recentClients: tenantClients
                     };
 
@@ -346,8 +411,10 @@ export const dashboardAPI = {
                         if (barberStats) {
                             filteredStats.todayAppointments = barberStats.scheduledAppointments;
                             filteredStats.weeklyRevenue = barberStats.monthlyRevenue;
-                            filteredStats.upcomingAppointments = tenantAppointments.filter((apt: any) => 
-                                apt.barberId === userId && apt.status === 'scheduled'
+                            filteredStats.upcomingAppointments = enrichAppointments(
+                                tenantAppointments.filter((apt: any) => 
+                                    apt.barberId === userId && apt.status === 'scheduled'
+                                )
                             );
                         }
                     }
