@@ -648,13 +648,15 @@ export function AuthForm() {
                   </MaterialButton>
                 </motion.div>
 
-                <motion.form
-                  onSubmit={handleLogin}
-                  className="space-y-4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4, delay: 0.3 }}
-                >
+                {/* Login Form - Área Verde - Exibir apenas após seleção do tipo */}
+                {loginData.userType && (
+                  <motion.form
+                    onSubmit={handleLogin}
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.3 }}
+                  >
                   <motion.div
                     className="flex items-center gap-2 sm:gap-3"
                     initial={{ x: -20, opacity: 0 }}
@@ -766,80 +768,45 @@ export function AuthForm() {
                     </MaterialButton>
                   </motion.div>
 
-                  {/* Quick Access Buttons */}
-                  <motion.div
-                    className="mt-6 pt-4 border-t border-border"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.7 }}
-                  >
-                    <p className="text-xs text-muted-foreground text-center mb-3">
-                      Acesso rápido para teste (REMOVER QUANDO ENTRAR EM PRODUÇÃO):
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <MaterialButton
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setLoginData({
-                            userType: "barbershop",
-                            email: "admin@barbearia.com",
-                            password: "admin123"
-                          });
-                        }}
-                        className="text-xs"
-                      >
-                        Admin
-                      </MaterialButton>
-                      <MaterialButton
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setLoginData({
-                            userType: "super_admin",
-                            email: "admin@barbear.ia",
-                            password: "super123"
-                          });
-                        }}
-                        className="text-xs"
-                      >
-                        Super Admin
-                      </MaterialButton>
-                      <MaterialButton
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setLoginData({
-                            userType: "barber",
-                            email: "barbeiro@barbearia.com",
-                            password: "barber123"
-                          });
-                        }}
-                        className="text-xs"
-                      >
-                        Barbeiro
-                      </MaterialButton>
-                      <MaterialButton
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setLoginData({
-                            userType: "client",
-                            email: "cliente@email.com",
-                            password: "cliente123"
-                          });
-                        }}
-                        className="text-xs"
-                      >
-                        Cliente
-                      </MaterialButton>
-                    </div>
-                  </motion.div>
+                  {/* Quick Access Buttons - Área Azul - Exibir apenas após seleção do tipo */}
+                  {loginData.userType && (
+                    <motion.div
+                      className="mt-6 pt-4 border-t border-border"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.7 }}
+                    >
+                      <p className="text-xs text-muted-foreground text-center mb-3">
+                        Acesso rápido para teste (REMOVER QUANDO ENTRAR EM PRODUÇÃO):
+                      </p>
+                      <div className="flex justify-center">
+                        <MaterialButton
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const credentials = {
+                              client: { email: "cliente@email.com", password: "cliente123" },
+                              barber: { email: "barbeiro@barbearia.com", password: "barber123" },
+                              barbershop: { email: "admin@barbearia.com", password: "admin123" },
+                              super_admin: { email: "admin@barbear.ia", password: "super123" }
+                            };
+                            const cred = credentials[loginData.userType as keyof typeof credentials];
+                            setLoginData({
+                              userType: loginData.userType,
+                              email: cred.email,
+                              password: cred.password
+                            });
+                          }}
+                          className="text-xs px-4"
+                        >
+                          Preenchimento Automático
+                        </MaterialButton>
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.form>
+              )}
 
               </TabsContent>
 
@@ -970,17 +937,6 @@ export function AuthForm() {
                       <Scissors className="h-4 w-4 mb-1 transition-all duration-300" />
                     </motion.div>
                     <span className="text-xs">Barbearia</span>
-                  </MaterialButton>
-
-                  {/* Barbear.AI - Disabled for registration */}
-                  <MaterialButton
-                    type="button"
-                    variant="outline"
-                    disabled
-                    className="flex-1 flex flex-col h-auto py-3 px-2 opacity-30 cursor-not-allowed"
-                  >
-                    <Shield className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Barbear.AI</span>
                   </MaterialButton>
                 </motion.div>
 
