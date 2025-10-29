@@ -273,12 +273,15 @@
 
 
 
+
     - Confirmar que imagem Docker foi construída corretamente
     - Validar que container foi criado e está rodando
     - Verificar que porta 3500 está respondendo
     - _Requisitos: 3.2, 3.3, 3.4, 3.5_
 
-  - [ ] 9.3 Executar healthcheck inicial
+  - [x] 9.3 Executar healthcheck inicial
+
+
     - Testar endpoint de health da aplicação
     - Validar que nginx está servindo arquivos corretamente
     - _Requisitos: 3.5, 6.1_
