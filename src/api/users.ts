@@ -1,4 +1,5 @@
 import usersData from '../database/users.json';
+import { jsonStore } from './jsonStore';
 
 interface User {
   id: string;

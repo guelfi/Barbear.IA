@@ -1,4 +1,5 @@
 import clientsData from '../database/clients.json';
+import { jsonStore } from './jsonStore';
 import appointmentsData from '../database/appointments.json';
 
 interface Client {
@@ -34,7 +35,7 @@ export const clientsAPI = {
     logClientEvent('GET_ALL_CLIENTS', {});
     await simulateNetworkDelay();
 
-    return clientsData.clients;
+    return jsonStore.getAll('clients');
   },
 
   async getClients(tenantId?: string, search?: string): Promise<Client[]> {
@@ -71,17 +72,14 @@ export const clientsAPI = {
     logClientEvent('CREATE_CLIENT', { name: clientData.name, email: clientData.email });
     await simulateNetworkDelay();
 
-    const newId = `client-${Date.now()}`;
-    const newClient: Client = {
+    const clientDataWithDefaults = {
       ...clientData,
-      id: newId,
       totalAppointments: 0,
-      totalSpent: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      totalSpent: 0
     };
 
-    logClientEvent('CLIENT_CREATED', { id: newId });
+    const newClient = jsonStore.create('clients', clientDataWithDefaults);
+    logClientEvent('CLIENT_CREATED', { id: newClient.id });
     return newClient;
   },
 
@@ -89,16 +87,12 @@ export const clientsAPI = {
     logClientEvent('UPDATE_CLIENT', { id, updates });
     await simulateNetworkDelay();
 
-    const client = clientsData.clients.find(c => c.id === id);
-    if (!client) return null;
-
-    const updatedClient = {
-      ...client,
-      ...updates,
-      updatedAt: new Date().toISOString()
-    };
-
-    logClientEvent('CLIENT_UPDATED', { id });
+    const updatedClient = jsonStore.update('clients', id, updates);
+    
+    if (updatedClient) {
+      logClientEvent('CLIENT_UPDATED', { id });
+    }
+    
     return updatedClient;
   },
 

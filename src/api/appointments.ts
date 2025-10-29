@@ -2,6 +2,7 @@ import appointmentsData from '../database/appointments.json';
 import barbersData from '../database/barbers.json';
 import clientsData from '../database/clients.json';
 import servicesData from '../database/services.json';
+import { jsonStore } from './jsonStore';
 
 interface Appointment {
   id: string;
@@ -117,7 +118,8 @@ export const appointmentsAPI = {
     await simulateNetworkDelay();
 
     try {
-      const enrichedAppointments = appointmentsData.appointments.map(appointment => 
+      const appointments = jsonStore.getAll('appointments');
+      const enrichedAppointments = appointments.map(appointment => 
         enrichAppointmentWithDetails(appointment)
       );
 
@@ -282,19 +284,10 @@ export const appointmentsAPI = {
         throw new Error('Horário já ocupado para este barbeiro');
       }
 
-      // Gerar ID único
-      const newId = `appointment-${Date.now()}`;
+      // Salvar no arquivo JSON
+      const newAppointment = jsonStore.create('appointments', appointmentData);
       
-      const newAppointment: Appointment = {
-        ...appointmentData,
-        id: newId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      // Em uma implementação real, salvaria no banco de dados
-      
-      logAppointmentEvent('APPOINTMENT_CREATED', { id: newId });
+      logAppointmentEvent('APPOINTMENT_CREATED', { id: newAppointment.id });
       return enrichAppointmentWithDetails(newAppointment);
 
     } catch (error) {
@@ -329,16 +322,15 @@ export const appointmentsAPI = {
         }
       }
 
-      const updatedAppointment = {
-        ...currentAppointment,
-        ...updates,
-        updatedAt: new Date().toISOString()
-      };
-
-      // Em uma implementação real, atualizaria no banco de dados
+      // Atualizar no arquivo JSON
+      const updatedAppointment = jsonStore.update('appointments', id, updates);
+      
+      if (!updatedAppointment) {
+        return null;
+      }
       
       logAppointmentEvent('APPOINTMENT_UPDATED', { id });
-      return enrichAppointmentWithDetails(updatedAppointment as Appointment);
+      return enrichAppointmentWithDetails(updatedAppointment);
 
     } catch (error) {
       logAppointmentEvent('UPDATE_APPOINTMENT_ERROR', { error: error instanceof Error ? error.message : 'Erro desconhecido' });
