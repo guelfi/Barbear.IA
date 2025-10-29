@@ -269,6 +269,8 @@
   - [x] 9.2 Validar build e deploy
 
 
+
+
     - Confirmar que imagem Docker foi construída corretamente
     - Validar que container foi criado e está rodando
     - Verificar que porta 3500 está respondendo
