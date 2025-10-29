@@ -130,8 +130,16 @@ jobs:
         
         echo "🚀 Iniciando deploy do Barbear.IA..."
         
-        # Navegar para diretório do projeto
-        cd /home/ubuntu/Barbear.IA || { echo "❌ Diretório não encontrado"; exit 1; }
+        # Verificar se o diretório do projeto existe, se não, clonar
+        if [ ! -d "/home/ubuntu/Barbear.IA" ]; then
+          echo "📁 Diretório não encontrado, clonando repositório..."
+          cd /home/ubuntu
+          git clone https://github.com/guelfi/Barbear.IA.git
+          cd Barbear.IA
+        else
+          echo "📁 Navegando para diretório do projeto..."
+          cd /home/ubuntu/Barbear.IA
+        fi
         
         # Fazer backup da versão atual
         if [ -d "build" ]; then
