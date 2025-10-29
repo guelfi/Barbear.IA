@@ -1,0 +1,82 @@
+{
+  "barbershops": [
+    {
+      "id": "tenant-1",
+      "name": "Barbearia Clássica",
+      "email": "contato@barbeariaclassica.com",
+      "phone": "(11) 3333-4444",
+      "address": {
+        "street": "Rua das Flores, 123",
+        "neighborhood": "Centro",
+        "city": "São Paulo",
+        "state": "SP",
+        "zipCode": "01234-567",
+        "country": "Brasil"
+      },
+      "businessHours": {
+        "monday": { "start": "08:00", "end": "18:00" },
+        "tuesday": { "start": "08:00", "end": "18:00" },
+        "wednesday": { "start": "08:00", "end": "18:00" },
+        "thursday": { "start": "08:00", "end": "18:00" },
+        "friday": { "start": "08:00", "end": "18:00" },
+        "saturday": { "start": "08:00", "end": "16:00" },
+        "sunday": null
+      },
+      "settings": {
+        "appointmentDuration": 30,
+        "advanceBookingDays": 30,
+        "cancellationHours": 2,
+        "currency": "BRL",
+        "timezone": "America/Sao_Paulo"
+      },
+      "subscription": {
+        "plan": "premium",
+        "status": "active",
+        "trialEndsAt": null,
+        "nextBillingDate": "2025-11-28T00:00:00Z"
+      },
+      "isActive": true,
+      "createdAt": "2024-01-15T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    },
+    {
+      "id": "tenant-2",
+      "name": "Barbearia Moderna",
+      "email": "contato@barbeariamoderna.com",
+      "phone": "(11) 5555-6666",
+      "address": {
+        "street": "Av. Paulista, 1000",
+        "neighborhood": "Bela Vista",
+        "city": "São Paulo",
+        "state": "SP",
+        "zipCode": "01310-100",
+        "country": "Brasil"
+      },
+      "businessHours": {
+        "monday": { "start": "09:00", "end": "19:00" },
+        "tuesday": { "start": "09:00", "end": "19:00" },
+        "wednesday": { "start": "09:00", "end": "19:00" },
+        "thursday": { "start": "09:00", "end": "19:00" },
+        "friday": { "start": "09:00", "end": "19:00" },
+        "saturday": { "start": "09:00", "end": "17:00" },
+        "sunday": { "start": "10:00", "end": "16:00" }
+      },
+      "settings": {
+        "appointmentDuration": 45,
+        "advanceBookingDays": 60,
+        "cancellationHours": 4,
+        "currency": "BRL",
+        "timezone": "America/Sao_Paulo"
+      },
+      "subscription": {
+        "plan": "basic",
+        "status": "trial",
+        "trialEndsAt": "2025-11-15T00:00:00Z",
+        "nextBillingDate": null
+      },
+      "isActive": true,
+      "createdAt": "2024-10-01T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "relationships": {
+    "usersByTenant": {
+      "tenant-1": ["admin-1", "barber-1", "client-1"],
+      "tenant-2": ["barber-3", "client-3"],
+      "global": ["super-1"]
+    },
+    "barbersByTenant": {
+      "tenant-1": ["barber-1", "barber-2"],
+      "tenant-2": ["barber-3"]
+    },
+    "clientsByTenant": {
+      "tenant-1": ["client-1", "client-2"],
+      "tenant-2": ["client-3"]
+    },
+    "servicesByTenant": {
+      "tenant-1": ["service-1", "service-2", "service-3", "service-4"],
+      "tenant-2": ["service-5", "service-6"]
+    },
+    "appointmentsByTenant": {
+      "tenant-1": ["appointment-1", "appointment-2", "appointment-3", "appointment-5"],
+      "tenant-2": ["appointment-4", "appointment-6"]
+    },
+    "appointmentsByBarber": {
+      "barber-1": ["appointment-1", "appointment-3", "appointment-5"],
+      "barber-2": ["appointment-2"],
+      "barber-3": ["appointment-4", "appointment-6"]
+    },
+    "appointmentsByClient": {
+      "client-1": ["appointment-1", "appointment-3"],
+      "client-2": ["appointment-2", "appointment-5"],
+      "client-3": ["appointment-4", "appointment-6"]
+    },
+    "appointmentsByService": {
+      "service-1": ["appointment-1", "appointment-5"],
+      "service-2": ["appointment-3"],
+      "service-3": ["appointment-2"],
+      "service-5": ["appointment-4"],
+      "service-6": ["appointment-6"]
+    },
+    "servicesByBarber": {
+      "barber-1": ["service-1", "service-2", "service-3", "service-4"],
+      "barber-2": ["service-1", "service-3"],
+      "barber-3": ["service-5", "service-6"]
+    }
+  },
+  "lookupTables": {
+    "userRoles": {
+      "super-1": "super_admin",
+      "admin-1": "admin",
+      "barber-1": "barber",
+      "client-1": "client"
+    },
+    "userEmails": {
+      "admin@barbear.ia": "super-1",
+      "admin@barbearia.com": "admin-1",
+      "barbeiro@barbearia.com": "barber-1",
+      "cliente@email.com": "client-1"
+    },
+    "tenantNames": {
+      "tenant-1": "Barbearia Clássica",
+      "tenant-2": "Barbearia Moderna"
+    },
+    "appointmentStatuses": {
+      "scheduled": ["appointment-1", "appointment-2", "appointment-4", "appointment-6"],
+      "completed": ["appointment-3"],
+      "cancelled": ["appointment-5"]
+    }
+  },
+  "counters": {
+    "totalUsers": 4,
+    "totalBarbershops": 2,
+    "totalBarbers": 3,
+    "totalClients": 3,
+    "totalServices": 6,
+    "totalAppointments": 6,
+    "activeAppointments": 4,
+    "completedAppointments": 1,
+    "cancelledAppointments": 1
+  },
+  "lastUpdated": "2025-10-28T23:36:00Z"
+}

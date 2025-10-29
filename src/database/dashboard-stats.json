@@ -1,0 +1,293 @@
+{
+  "globalStats": {
+    "totalBarbershops": 2,
+    "totalUsers": 4,
+    "totalAppointments": 6,
+    "totalRevenue": 290.00,
+    "activeSubscriptions": 1,
+    "trialSubscriptions": 1,
+    "lastUpdated": "2025-10-28T23:36:00Z"
+  },
+  "barbershopStats": {
+    "tenant-1": {
+      "name": "Barbearia Clássica",
+      "totalClients": 2,
+      "totalBarbers": 2,
+      "totalServices": 4,
+      "totalAppointments": 4,
+      "completedAppointments": 1,
+      "cancelledAppointments": 1,
+      "scheduledAppointments": 2,
+      "totalRevenue": 150.00,
+      "monthlyRevenue": 150.00,
+      "averageRating": 4.85,
+      "topBarber": {
+        "id": "barber-1",
+        "name": "João Barbeiro",
+        "appointments": 3
+      },
+      "topService": {
+        "id": "service-1",
+        "name": "Corte Masculino",
+        "bookings": 2
+      },
+      "recentAppointments": [
+        {
+          "id": "appointment-1",
+          "clientName": "Maria Cliente",
+          "barberName": "João Barbeiro",
+          "serviceName": "Corte Masculino",
+          "date": "2025-10-29",
+          "time": "10:00",
+          "status": "scheduled"
+        },
+        {
+          "id": "appointment-2",
+          "clientName": "Pedro Santos",
+          "barberName": "Carlos Silva",
+          "serviceName": "Corte + Barba",
+          "date": "2025-10-29",
+          "time": "14:00",
+          "status": "scheduled"
+        }
+      ],
+      "monthlyStats": {
+        "october2025": {
+          "appointments": 4,
+          "revenue": 150.00,
+          "newClients": 0,
+          "completionRate": 0.25
+        }
+      },
+      "lastUpdated": "2025-10-28T23:36:00Z"
+    },
+    "tenant-2": {
+      "name": "Barbearia Moderna",
+      "totalClients": 1,
+      "totalBarbers": 1,
+      "totalServices": 2,
+      "totalAppointments": 2,
+      "completedAppointments": 0,
+      "cancelledAppointments": 0,
+      "scheduledAppointments": 2,
+      "totalRevenue": 140.00,
+      "monthlyRevenue": 140.00,
+      "averageRating": 5.0,
+      "topBarber": {
+        "id": "barber-3",
+        "name": "Ricardo Moderno",
+        "appointments": 2
+      },
+      "topService": {
+        "id": "service-5",
+        "name": "Corte Premium",
+        "bookings": 1
+      },
+      "recentAppointments": [
+        {
+          "id": "appointment-4",
+          "clientName": "Ana Costa",
+          "barberName": "Ricardo Moderno",
+          "serviceName": "Corte Premium",
+          "date": "2025-10-30",
+          "time": "11:00",
+          "status": "scheduled"
+        },
+        {
+          "id": "appointment-6",
+          "clientName": "Ana Costa",
+          "barberName": "Ricardo Moderno",
+          "serviceName": "Tratamento Capilar",
+          "date": "2025-11-02",
+          "time": "14:30",
+          "status": "scheduled"
+        }
+      ],
+      "monthlyStats": {
+        "october2025": {
+          "appointments": 2,
+          "revenue": 140.00,
+          "newClients": 1,
+          "completionRate": 0.0
+        }
+      },
+      "lastUpdated": "2025-10-28T23:36:00Z"
+    }
+  },
+  "barberStats": {
+    "barber-1": {
+      "name": "João Barbeiro",
+      "tenantId": "tenant-1",
+      "totalAppointments": 3,
+      "completedAppointments": 1,
+      "cancelledAppointments": 1,
+      "scheduledAppointments": 1,
+      "totalRevenue": 95.00,
+      "monthlyRevenue": 95.00,
+      "rating": 4.8,
+      "todayAppointments": [
+        {
+          "id": "appointment-1",
+          "clientName": "Maria Cliente",
+          "serviceName": "Corte Masculino",
+          "time": "10:00",
+          "status": "scheduled"
+        }
+      ],
+      "upcomingAppointments": [
+        {
+          "id": "appointment-1",
+          "clientName": "Maria Cliente",
+          "serviceName": "Corte Masculino",
+          "date": "2025-10-29",
+          "time": "10:00"
+        }
+      ],
+      "lastUpdated": "2025-10-28T23:36:00Z"
+    },
+    "barber-2": {
+      "name": "Carlos Silva",
+      "tenantId": "tenant-1",
+      "totalAppointments": 1,
+      "completedAppointments": 0,
+      "cancelledAppointments": 0,
+      "scheduledAppointments": 1,
+      "totalRevenue": 55.00,
+      "monthlyRevenue": 55.00,
+      "rating": 4.9,
+      "todayAppointments": [],
+      "upcomingAppointments": [
+        {
+          "id": "appointment-2",
+          "clientName": "Pedro Santos",
+          "serviceName": "Corte + Barba",
+          "date": "2025-10-29",
+          "time": "14:00"
+        }
+      ],
+      "lastUpdated": "2025-10-28T23:36:00Z"
+    },
+    "barber-3": {
+      "name": "Ricardo Moderno",
+      "tenantId": "tenant-2",
+      "totalAppointments": 2,
+      "completedAppointments": 0,
+      "cancelledAppointments": 0,
+      "scheduledAppointments": 2,
+      "totalRevenue": 140.00,
+      "monthlyRevenue": 140.00,
+      "rating": 5.0,
+      "todayAppointments": [],
+      "upcomingAppointments": [
+        {
+          "id": "appointment-4",
+          "clientName": "Ana Costa",
+          "serviceName": "Corte Premium",
+          "date": "2025-10-30",
+          "time": "11:00"
+        },
+        {
+          "id": "appointment-6",
+          "clientName": "Ana Costa",
+          "serviceName": "Tratamento Capilar",
+          "date": "2025-11-02",
+          "time": "14:30"
+        }
+      ],
+      "lastUpdated": "2025-10-28T23:36:00Z"
+    }
+  },
+  "clientStats": {
+    "client-1": {
+      "name": "Maria Cliente",
+      "tenantId": "tenant-1",
+      "totalAppointments": 2,
+      "completedAppointments": 1,
+      "cancelledAppointments": 0,
+      "scheduledAppointments": 1,
+      "totalSpent": 60.00,
+      "favoriteBarber": "João Barbeiro",
+      "favoriteService": "Corte Masculino",
+      "upcomingAppointments": [
+        {
+          "id": "appointment-1",
+          "barberName": "João Barbeiro",
+          "serviceName": "Corte Masculino",
+          "date": "2025-10-29",
+          "time": "10:00"
+        }
+      ],
+      "appointmentHistory": [
+        {
+          "id": "appointment-3",
+          "barberName": "João Barbeiro",
+          "serviceName": "Barba Completa",
+          "date": "2025-10-28",
+          "time": "15:30",
+          "status": "completed"
+        }
+      ],
+      "lastUpdated": "2025-10-28T23:36:00Z"
+    },
+    "client-2": {
+      "name": "Pedro Santos",
+      "tenantId": "tenant-1",
+      "totalAppointments": 2,
+      "completedAppointments": 0,
+      "cancelledAppointments": 1,
+      "scheduledAppointments": 1,
+      "totalSpent": 55.00,
+      "favoriteBarber": "Carlos Silva",
+      "favoriteService": "Corte + Barba",
+      "upcomingAppointments": [
+        {
+          "id": "appointment-2",
+          "barberName": "Carlos Silva",
+          "serviceName": "Corte + Barba",
+          "date": "2025-10-29",
+          "time": "14:00"
+        }
+      ],
+      "appointmentHistory": [
+        {
+          "id": "appointment-5",
+          "barberName": "João Barbeiro",
+          "serviceName": "Corte Masculino",
+          "date": "2025-10-27",
+          "time": "09:00",
+          "status": "cancelled"
+        }
+      ],
+      "lastUpdated": "2025-10-28T23:36:00Z"
+    },
+    "client-3": {
+      "name": "Ana Costa",
+      "tenantId": "tenant-2",
+      "totalAppointments": 2,
+      "completedAppointments": 0,
+      "cancelledAppointments": 0,
+      "scheduledAppointments": 2,
+      "totalSpent": 140.00,
+      "favoriteBarber": "Ricardo Moderno",
+      "favoriteService": "Corte Premium",
+      "upcomingAppointments": [
+        {
+          "id": "appointment-4",
+          "barberName": "Ricardo Moderno",
+          "serviceName": "Corte Premium",
+          "date": "2025-10-30",
+          "time": "11:00"
+        },
+        {
+          "id": "appointment-6",
+          "barberName": "Ricardo Moderno",
+          "serviceName": "Tratamento Capilar",
+          "date": "2025-11-02",
+          "time": "14:30"
+        }
+      ],
+      "appointmentHistory": [],
+      "lastUpdated": "2025-10-28T23:36:00Z"
+    }
+  }
+}

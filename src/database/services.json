@@ -1,0 +1,76 @@
+{
+  "services": [
+    {
+      "id": "service-1",
+      "name": "Corte Masculino",
+      "description": "Corte de cabelo masculino tradicional",
+      "duration": 30,
+      "price": 35.00,
+      "category": "Cabelo",
+      "tenantId": "tenant-1",
+      "isActive": true,
+      "createdAt": "2024-01-15T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    },
+    {
+      "id": "service-2",
+      "name": "Barba Completa",
+      "description": "Aparar e modelar barba com navalha",
+      "duration": 25,
+      "price": 25.00,
+      "category": "Barba",
+      "tenantId": "tenant-1",
+      "isActive": true,
+      "createdAt": "2024-01-15T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    },
+    {
+      "id": "service-3",
+      "name": "Corte + Barba",
+      "description": "Pacote completo: corte de cabelo + barba",
+      "duration": 50,
+      "price": 55.00,
+      "category": "Pacote",
+      "tenantId": "tenant-1",
+      "isActive": true,
+      "createdAt": "2024-01-15T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    },
+    {
+      "id": "service-4",
+      "name": "Bigode",
+      "description": "Aparar e modelar bigode",
+      "duration": 15,
+      "price": 15.00,
+      "category": "Barba",
+      "tenantId": "tenant-1",
+      "isActive": true,
+      "createdAt": "2024-01-15T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    },
+    {
+      "id": "service-5",
+      "name": "Corte Premium",
+      "description": "Corte moderno com styling",
+      "duration": 45,
+      "price": 60.00,
+      "category": "Cabelo",
+      "tenantId": "tenant-2",
+      "isActive": true,
+      "createdAt": "2024-10-01T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    },
+    {
+      "id": "service-6",
+      "name": "Tratamento Capilar",
+      "description": "Hidratação e tratamento do couro cabeludo",
+      "duration": 60,
+      "price": 80.00,
+      "category": "Tratamento",
+      "tenantId": "tenant-2",
+      "isActive": true,
+      "createdAt": "2024-10-01T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    }
+  ]
+}

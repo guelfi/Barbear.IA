@@ -8,8 +8,7 @@ import {
   LogOut,
   Menu,
   Building2,
-  CreditCard,
-  Smartphone
+  CreditCard
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -34,7 +33,6 @@ const menuItemsByRole = {
     { id: 'tenants', label: 'Barbearias', icon: Building2, animation: 'float' as const, category: 'navigation' as const },
     { id: 'users', label: 'Usuários', icon: Users, animation: 'wiggle' as const, category: 'user' as const },
     { id: 'billing', label: 'Faturamento', icon: CreditCard, animation: 'pulse' as const, category: 'action' as const },
-    { id: 'mobile-test', label: '🧪 Teste Mobile', icon: Smartphone, animation: 'bounce' as const, category: 'system' as const },
     { id: 'settings', label: 'Configurações', icon: Settings, animation: 'spin' as const, category: 'system' as const },
   ],
   admin: [

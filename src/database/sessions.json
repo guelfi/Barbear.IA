@@ -1,0 +1,104 @@
+{
+  "sessionTemplates": {
+    "super_admin": {
+      "permissions": [
+        "view_all_barbershops",
+        "manage_barbershops",
+        "view_all_users",
+        "manage_users",
+        "view_global_stats",
+        "manage_subscriptions",
+        "view_billing",
+        "manage_system_settings"
+      ],
+      "dashboardSections": [
+        "dashboard",
+        "tenants",
+        "users",
+        "billing",
+        "settings"
+      ],
+      "dataAccess": {
+        "scope": "global",
+        "tenantId": null
+      }
+    },
+    "admin": {
+      "permissions": [
+        "view_barbershop_stats",
+        "manage_barbershop_settings",
+        "view_barbers",
+        "manage_barbers",
+        "view_clients",
+        "manage_clients",
+        "view_services",
+        "manage_services",
+        "view_appointments",
+        "manage_appointments"
+      ],
+      "dashboardSections": [
+        "dashboard",
+        "appointments",
+        "clients",
+        "barbers",
+        "services",
+        "profile",
+        "settings"
+      ],
+      "dataAccess": {
+        "scope": "tenant",
+        "tenantId": "required"
+      }
+    },
+    "barber": {
+      "permissions": [
+        "view_own_stats",
+        "view_own_appointments",
+        "manage_own_appointments",
+        "view_assigned_clients",
+        "view_services",
+        "update_own_profile"
+      ],
+      "dashboardSections": [
+        "dashboard",
+        "appointments",
+        "clients",
+        "services",
+        "settings"
+      ],
+      "dataAccess": {
+        "scope": "barber",
+        "tenantId": "required",
+        "barberId": "required"
+      }
+    },
+    "client": {
+      "permissions": [
+        "view_own_appointments",
+        "create_appointments",
+        "cancel_own_appointments",
+        "view_barbers",
+        "view_services",
+        "update_own_profile"
+      ],
+      "dashboardSections": [
+        "dashboard",
+        "appointments",
+        "barbers",
+        "services",
+        "profile"
+      ],
+      "dataAccess": {
+        "scope": "client",
+        "tenantId": "required",
+        "clientId": "required"
+      }
+    }
+  },
+  "sessionDefaults": {
+    "tokenExpiry": 86400,
+    "refreshTokenExpiry": 604800,
+    "maxConcurrentSessions": 3,
+    "sessionTimeout": 3600
+  }
+}

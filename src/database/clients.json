@@ -1,0 +1,101 @@
+{
+  "clients": [
+    {
+      "id": "client-1",
+      "userId": "client-1",
+      "name": "Maria Cliente",
+      "email": "cliente@email.com",
+      "phone": "(11) 99999-3333",
+      "avatar": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNFRjQ0NDQiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo8L3N2Zz4K",
+      "tenantId": "tenant-1",
+      "dateOfBirth": "1985-03-15",
+      "address": {
+        "street": "Rua das Palmeiras, 456",
+        "neighborhood": "Vila Madalena",
+        "city": "São Paulo",
+        "state": "SP",
+        "zipCode": "05435-010",
+        "country": "Brasil"
+      },
+      "preferences": {
+        "favoriteBarber": "barber-1",
+        "preferredServices": ["service-1", "service-2"],
+        "notifications": {
+          "email": true,
+          "sms": false,
+          "push": true
+        }
+      },
+      "totalAppointments": 25,
+      "totalSpent": 875.00,
+      "lastVisit": "2025-10-15T14:30:00Z",
+      "isActive": true,
+      "createdAt": "2024-02-01T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    },
+    {
+      "id": "client-2",
+      "name": "Pedro Santos",
+      "email": "pedro.santos@email.com",
+      "phone": "(11) 98888-9999",
+      "avatar": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiMzQjgyRjYiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K",
+      "tenantId": "tenant-1",
+      "dateOfBirth": "1990-07-22",
+      "address": {
+        "street": "Av. Brigadeiro Faria Lima, 2000",
+        "neighborhood": "Itaim Bibi",
+        "city": "São Paulo",
+        "state": "SP",
+        "zipCode": "01451-000",
+        "country": "Brasil"
+      },
+      "preferences": {
+        "favoriteBarber": "barber-2",
+        "preferredServices": ["service-3"],
+        "notifications": {
+          "email": true,
+          "sms": true,
+          "push": true
+        }
+      },
+      "totalAppointments": 18,
+      "totalSpent": 990.00,
+      "lastVisit": "2025-10-20T16:00:00Z",
+      "isActive": true,
+      "createdAt": "2024-03-10T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    },
+    {
+      "id": "client-3",
+      "name": "Ana Costa",
+      "email": "ana.costa@email.com",
+      "phone": "(11) 97777-6666",
+      "avatar": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiM4QjVDRjYiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo8L3N2Zz4K",
+      "tenantId": "tenant-2",
+      "dateOfBirth": "1988-11-05",
+      "address": {
+        "street": "Rua Augusta, 1500",
+        "neighborhood": "Consolação",
+        "city": "São Paulo",
+        "state": "SP",
+        "zipCode": "01305-100",
+        "country": "Brasil"
+      },
+      "preferences": {
+        "favoriteBarber": "barber-3",
+        "preferredServices": ["service-5", "service-6"],
+        "notifications": {
+          "email": true,
+          "sms": false,
+          "push": true
+        }
+      },
+      "totalAppointments": 12,
+      "totalSpent": 840.00,
+      "lastVisit": "2025-10-25T11:00:00Z",
+      "isActive": true,
+      "createdAt": "2024-10-15T00:00:00Z",
+      "updatedAt": "2025-10-28T23:36:00Z"
+    }
+  ]
+}
