@@ -1,75 +1,20 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { User, RegisterData } from '../types';
-
-// Mock users for development
-const mockUsers = {
-  // Super Admin
-  'admin@barbear.ia': {
-    id: 'super-1',
-    name: 'Super Administrador',
-    email: 'admin@barbear.ia',
-    role: 'super_admin' as const,
-    avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiM2MzY2RjEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo8L3N2Zz4K',
-    phone: '(11) 99999-0000',
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00Z',
-    lastLogin: new Date().toISOString(),
-  },
-  // Barbershop Admin
-  'admin@barbearia.com': {
-    id: 'admin-1',
-    name: 'Administrador Barbearia',
-    email: 'admin@barbearia.com',
-    role: 'admin' as const,
-    tenantId: 'tenant-1',
-    avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNGNTk3MzEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo8L3N2Zz4K',
-    phone: '(11) 99999-1111',
-    isActive: true,
-    createdAt: '2024-01-15T00:00:00Z',
-    lastLogin: new Date().toISOString(),
-  },
-  // Barber
-  'barbeiro@barbearia.com': {
-    id: 'barber-1',
-    name: 'João Barbeiro',
-    email: 'barbeiro@barbearia.com',
-    role: 'barber' as const,
-    tenantId: 'tenant-1',
-    avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiMxMEI5ODEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo8L3N2Zz4K',
-    phone: '(11) 99999-2222',
-    isActive: true,
-    createdAt: '2024-01-20T00:00:00Z',
-    lastLogin: new Date().toISOString(),
-  },
-  // Client
-  'cliente@email.com': {
-    id: 'client-1',
-    name: 'Maria Cliente',
-    email: 'cliente@email.com',
-    role: 'client' as const,
-    tenantId: 'tenant-1',
-    avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNFRjQ0NDQiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo8L3N2Zz4K',
-    phone: '(11) 99999-3333',
-    isActive: true,
-    createdAt: '2024-02-01T00:00:00Z',
-    lastLogin: new Date().toISOString(),
-  }
-};
-
-const mockPasswords = {
-  'admin@barbear.ia': 'super123',
-  'admin@barbearia.com': 'admin123',
-  'barbeiro@barbearia.com': 'barber123',
-  'cliente@email.com': 'cliente123',
-};
+import { authAPI } from '../api';
+import sessionStore from '../api/sessionStore';
+import type { SessionState } from '../api/sessionStore';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  permissions: string[];
+  dashboardSections: string[];
   login: (email: string, password: string, userType?: 'barbershop' | 'client' | 'barber' | 'super_admin') => Promise<boolean>;
   register: (data: RegisterData) => Promise<boolean>;
   logout: () => void;
   updateLastLogin: () => void;
+  hasPermission: (permission: string) => boolean;
+  canAccessTenant: (tenantId: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -89,11 +34,13 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const [dashboardSections, setDashboardSections] = useState<string[]>([]);
 
   useEffect(() => {
     const initAuth = async () => {
       try {
-        console.log('AuthContext: Verificando autenticação...');
+        console.log('AuthContext: Inicializando autenticação com API simulada...');
         console.log('AuthContext: Ambiente:', process.env.NODE_ENV);
         console.log('AuthContext: URL atual:', typeof window !== 'undefined' ? window.location.href : 'servidor');
         
@@ -102,38 +49,63 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
 
-        const token = localStorage.getItem('authToken');
-        const email = localStorage.getItem('userEmail');
+        // Tentar restaurar sessão do localStorage
+        const token = await sessionStore.restoreSessionFromStorage();
         
-        console.log('AuthContext: Dados do localStorage:', {
+        console.log('AuthContext: Token do localStorage:', {
           hasToken: !!token,
-          token: token,
-          hasEmail: !!email,
-          email: email
+          tokenPreview: token ? token.substring(0, 20) + '...' : null
         });
 
-        if (token && email) {
-          const mockUser = mockUsers[email as keyof typeof mockUsers];
-          console.log('AuthContext: Usuário encontrado no mock:', {
-            found: !!mockUser,
-            email: email,
-            role: mockUser?.role,
-            name: mockUser?.name
-          });
-          
-          if (mockUser) {
-            console.log('AuthContext: Restaurando sessão para:', mockUser.role);
-            setUser(mockUser);
-          } else {
-            console.log('AuthContext: Usuário não encontrado no mock, limpando localStorage');
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userEmail');
+        if (token) {
+          try {
+            // Validar token com a API simulada
+            const validation = await authAPI.validateSession(token);
+            
+            console.log('AuthContext: Validação de sessão:', {
+              valid: validation.valid,
+              hasUser: !!validation.user,
+              hasSessionData: !!validation.sessionData
+            });
+
+            if (validation.valid && validation.user && validation.sessionData) {
+              // Restaurar sessão no store em memória
+              const sessionState: SessionState = {
+                userId: validation.user.id,
+                email: validation.user.email,
+                role: validation.user.role,
+                tenantId: validation.user.tenantId,
+                permissions: validation.sessionData.permissions,
+                dashboardSections: validation.sessionData.dashboardSections,
+                token: token,
+                createdAt: validation.sessionData.createdAt,
+                expiresAt: validation.sessionData.expiresAt,
+                lastActivity: new Date().toISOString()
+              };
+
+              sessionStore.setSession(sessionState);
+              setUser(validation.user);
+              setPermissions(validation.sessionData.permissions);
+              setDashboardSections(validation.sessionData.dashboardSections);
+
+              console.log('AuthContext: Sessão restaurada com sucesso:', {
+                userId: validation.user.id,
+                role: validation.user.role,
+                permissionsCount: validation.sessionData.permissions.length
+              });
+            } else {
+              console.log('AuthContext: Token inválido, limpando dados');
+              sessionStore.clearSession();
+            }
+          } catch (error) {
+            console.error('AuthContext: Erro na validação de token:', error);
+            sessionStore.clearSession();
           }
         } else {
-          console.log('AuthContext: Sem token ou email no localStorage');
+          console.log('AuthContext: Nenhum token encontrado no localStorage');
         }
       } catch (error) {
-        console.error('AuthContext: Erro ao verificar autenticação:', error);
+        console.error('AuthContext: Erro na inicialização:', error);
       } finally {
         setIsLoading(false);
       }
@@ -146,92 +118,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     
     try {
-      console.log('AuthContext: Tentativa de login:', {
+      console.log('AuthContext: Tentativa de login via API simulada:', {
         email,
         userType,
         ambiente: process.env.NODE_ENV,
         url: typeof window !== 'undefined' ? window.location.href : 'servidor'
       });
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      const mockUser = mockUsers[email as keyof typeof mockUsers];
-      const mockPassword = mockPasswords[email as keyof typeof mockPasswords];
-      
-      console.log('AuthContext: Verificando credenciais:', {
-        userFound: !!mockUser,
-        passwordMatch: mockPassword === password,
-        expectedUserType: mockUser?.role,
-        providedUserType: userType
+      // Chamar API de login simulada
+      const loginResult = await authAPI.login({
+        email,
+        password,
+        userType
       });
 
-      if (mockUser && mockPassword === password) {
-        console.log('AuthContext: Credenciais válidas, verificando tipo de usuário');
-        
-        if (userType === 'client' && mockUser.role === 'client') {
-          try {
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('authToken', 'mock-token-client');
-              localStorage.setItem('userEmail', email);
-              console.log('AuthContext: Dados salvos no localStorage para cliente');
-            }
-            console.log('AuthContext: Login bem-sucedido como cliente');
-            setUser(mockUser);
-            return true;
-          } catch (error) {
-            console.error('AuthContext: Erro ao salvar dados do cliente:', error);
-            return false;
-          }
-        } else if (userType === 'super_admin' && mockUser.role === 'super_admin') {
-          try {
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('authToken', 'mock-token-super-admin');
-              localStorage.setItem('userEmail', email);
-              console.log('AuthContext: Dados salvos no localStorage para super admin');
-            }
-            console.log('AuthContext: Login bem-sucedido como super admin');
-            setUser(mockUser);
-            return true;
-          } catch (error) {
-            console.error('AuthContext: Erro ao salvar dados do super admin:', error);
-            return false;
-          }
-        } else if (userType === 'barber' && mockUser.role === 'barber') {
-          try {
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('authToken', 'mock-token-barber');
-              localStorage.setItem('userEmail', email);
-              console.log('AuthContext: Dados salvos no localStorage para barbeiro');
-            }
-            console.log('AuthContext: Login bem-sucedido como barbeiro');
-            setUser(mockUser);
-            return true;
-          } catch (error) {
-            console.error('AuthContext: Erro ao salvar dados do barbeiro:', error);
-            return false;
-          }
-        } else if (userType === 'barbershop' && mockUser.role === 'admin') {
-          try {
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('authToken', 'mock-token-barbershop');
-              localStorage.setItem('userEmail', email);
-              console.log('AuthContext: Dados salvos no localStorage para admin da barbearia');
-            }
-            console.log('AuthContext: Login bem-sucedido como admin da barbearia');
-            setUser(mockUser);
-            return true;
-          } catch (error) {
-            console.error('AuthContext: Erro ao salvar dados do admin:', error);
-            return false;
-          }
-        } else {
-          console.log('AuthContext: Tipo de usuário incompatível:', { userType, userRole: mockUser.role });
-        }
+      console.log('AuthContext: Resultado do login:', {
+        success: loginResult.success,
+        hasUser: !!loginResult.user,
+        hasToken: !!loginResult.token,
+        error: loginResult.error
+      });
+
+      if (loginResult.success && loginResult.user && loginResult.token) {
+        // Criar sessão no store em memória
+        const sessionState: SessionState = {
+          userId: loginResult.user.id,
+          email: loginResult.user.email,
+          role: loginResult.user.role,
+          tenantId: loginResult.user.tenantId,
+          permissions: loginResult.permissions || [],
+          dashboardSections: loginResult.dashboardSections || [],
+          token: loginResult.token,
+          createdAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 horas
+          lastActivity: new Date().toISOString()
+        };
+
+        sessionStore.setSession(sessionState);
+        setUser(loginResult.user);
+        setPermissions(loginResult.permissions || []);
+        setDashboardSections(loginResult.dashboardSections || []);
+
+        console.log('AuthContext: Login bem-sucedido, sessão criada:', {
+          userId: loginResult.user.id,
+          role: loginResult.user.role,
+          tenantId: loginResult.user.tenantId,
+          permissionsCount: loginResult.permissions?.length || 0
+        });
+
+        return true;
+      } else {
+        console.log('AuthContext: Login falhou:', loginResult.error);
+        return false;
       }
-      
-      console.log('AuthContext: Login falhou - credenciais inválidas');
-      return false;
     } catch (error) {
       console.error('AuthContext: Erro no login:', error);
       return false;
@@ -247,11 +186,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Check if email already exists
-      if (mockUsers[data.email as keyof typeof mockUsers]) {
-        return false;
-      }
-
       // In a real app, this would create the user in the database
       console.log('New user registration:', data);
       
@@ -264,17 +198,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     try {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userEmail');
+      console.log('AuthContext: Iniciando logout...');
+      
+      // Obter token atual
+      const session = sessionStore.getSession();
+      const token = session?.token;
+
+      if (token) {
+        // Chamar API de logout
+        await authAPI.logout(token);
+        console.log('AuthContext: Logout via API concluído');
       }
-      console.log('AuthContext: Logout realizado com sucesso');
+
+      // Limpar estado local
+      sessionStore.clearSession();
       setUser(null);
+      setPermissions([]);
+      setDashboardSections([]);
+
+      console.log('AuthContext: Logout realizado com sucesso');
     } catch (error) {
       console.error('AuthContext: Erro no logout:', error);
+      
+      // Mesmo com erro, limpar estado local
+      sessionStore.clearSession();
       setUser(null);
+      setPermissions([]);
+      setDashboardSections([]);
     }
   }, []);
 
@@ -284,16 +236,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         ...user,
         lastLogin: new Date().toISOString()
       });
+      
+      // Atualizar atividade na sessão
+      sessionStore.updateLastActivity();
     }
   }, [user]);
+
+  const hasPermission = useCallback((permission: string): boolean => {
+    return sessionStore.hasPermission(permission);
+  }, []);
+
+  const canAccessTenant = useCallback((tenantId: string): boolean => {
+    return sessionStore.canAccessTenant(tenantId);
+  }, []);
 
   const value = {
     user,
     isLoading,
+    permissions,
+    dashboardSections,
     login,
     register,
     logout,
-    updateLastLogin
+    updateLastLogin,
+    hasPermission,
+    canAccessTenant
   };
 
   return (
