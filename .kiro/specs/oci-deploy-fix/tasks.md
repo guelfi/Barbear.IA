@@ -240,7 +240,8 @@
     - _Requisitos: 1.4, 3.1_
 
 - [ ] 8. Executar limpeza na OCI
-  - [ ] 8.1 Conectar via SSH na instância OCI
+  - [-] 8.1 Conectar via SSH na instância OCI
+
     - Estabelecer conexão SSH segura com a instância
     - Navegar para diretório do projeto
     - _Requisitos: 2.1, 2.2_
