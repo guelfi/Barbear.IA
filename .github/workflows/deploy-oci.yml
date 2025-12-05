@@ -13,132 +13,48 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-
-    - name: Clean install dependencies
-      run: |
-        rm -rf node_modules package-lock.json
-        npm install
-
-    - name: Build application
-      run: npm run build
-
-    - name: Create deployment package
-      run: |
-        # Criar estrutura para deploy
-        mkdir -p deploy
-        cp -r build/* deploy/
-        
-        # Criar Dockerfile para produção
-        cat > deploy/Dockerfile << 'EOF'
-        FROM nginx:alpine
-        
-        # Copiar arquivos build
-        COPY . /usr/share/nginx/html
-        
-        # Configuração do nginx para SPA
-        RUN echo 'server { \
-            listen 80; \
-            server_name _; \
-            root /usr/share/nginx/html; \
-            index index.html; \
-            location / { \
-                try_files $uri $uri/ /index.html; \
-            } \
-            location /api { \
-                return 404; \
-            } \
-            gzip on; \
-            gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript; \
-        }' > /etc/nginx/conf.d/default.conf
-        
-        EXPOSE 80
-        CMD ["nginx", "-g", "daemon off;"]
-        EOF
-        
-        # Criar docker-compose para deploy
-        cat > deploy/docker-compose.yml << 'EOF'
-        version: '3.8'
-        services:
-          barbear-ia:
-            build: .
-            ports:
-              - "3500:80"
-            restart: unless-stopped
-            container_name: barbear-ia-app
-        EOF
-
     - name: Deploy to OCI
       env:
         OCI_HOST: ${{ secrets.OCI_HOST }}
         OCI_USER: ${{ secrets.OCI_USERNAME }}
         OCI_SSH_KEY: ${{ secrets.OCI_SSH_KEY }}
       run: |
-        # Verificar se as secrets estão configuradas
+        # Verificar secrets
         if [ -z "$OCI_HOST" ] || [ -z "$OCI_USER" ] || [ -z "$OCI_SSH_KEY" ]; then
-          echo "❌ Secrets não configuradas corretamente:"
-          echo "OCI_HOST: ${OCI_HOST:-(vazio)}"
-          echo "OCI_USER: ${OCI_USER:-(vazio)}"
-          echo "OCI_SSH_KEY: ${OCI_SSH_KEY:+(configurado)}"
+          echo "❌ Secrets não configuradas."
           exit 1
         fi
-        
-        echo "✅ Secrets configuradas:"
-        echo "OCI_HOST: $OCI_HOST"
-        echo "OCI_USER: $OCI_USER"
         
         # Configurar SSH
         mkdir -p ~/.ssh
         echo "$OCI_SSH_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         
-        # Configurar SSH client
-        cat > ~/.ssh/config << 'SSH_CONFIG'
-        Host *
-            StrictHostKeyChecking no
-            UserKnownHostsFile /dev/null
-            IdentitiesOnly yes
-            LogLevel ERROR
-        SSH_CONFIG
-        
-        # Verificar formato da chave SSH
-        echo "🔍 Verificando chave SSH..."
-        if ! ssh-keygen -l -f ~/.ssh/id_rsa; then
-          echo "❌ Chave SSH inválida"
-          exit 1
-        fi
-        
-        # Testar conexão SSH
-        echo "🔍 Testando conexão SSH para $OCI_USER@$OCI_HOST..."
-        if ssh -i ~/.ssh/id_rsa -o ConnectTimeout=10 -o StrictHostKeyChecking=no "$OCI_USER@$OCI_HOST" "echo 'SSH connection successful'"; then
-          echo "✅ Conexão SSH estabelecida com sucesso"
-        else
-          echo "❌ Falha na conexão SSH"
-          echo "Tentando diagnóstico..."
-          ssh -i ~/.ssh/id_rsa -o ConnectTimeout=10 -o StrictHostKeyChecking=no -v "$OCI_USER@$OCI_HOST" "echo 'test'" 2>&1 | head -20
-          exit 1
-        fi
-        
-        # Criar script de deploy
+        # Script de Deploy
         cat > deploy_script.sh << 'EOF'
         #!/bin/bash
         set -e
         
+        PROJECT_DIR="/var/www/Barbear.IA"
+        REPO_URL="https://github.com/guelfi/Barbear.IA.git"
+        
         echo "🚀 Iniciando deploy do Barbear.IA..."
         
-        # Verificar se o diretório do projeto existe, se não, clonar
-        if [ ! -d "/home/ubuntu/Barbear.IA" ]; then
-          echo "📁 Diretório não encontrado, clonando repositório..."
-          cd /home/ubuntu
-          git clone https://github.com/guelfi/Barbear.IA.git
-          cd Barbear.IA
+        # Criar diretório se não existir
+        sudo mkdir -p /var/www
+        
+        # Clone ou Pull
+        if [ ! -d "$PROJECT_DIR" ]; then
+          echo "📁 Clonando repositório..."
+          cd /var/www
+          sudo git clone $REPO_URL
+          sudo chown -R ubuntu:ubuntu $PROJECT_DIR
+          cd $PROJECT_DIR
         else
-          echo "📁 Navegando para diretório do projeto..."
-          cd /home/ubuntu/Barbear.IA
+          echo "📁 Atualizando repositório..."
+          cd $PROJECT_DIR
+          sudo git fetch origin
+          sudo git reset --hard origin/main
         fi
         
         # Fazer backup da versão atual
@@ -153,14 +69,9 @@ jobs:
         sudo docker stop barbear-ia-frontend || true
         sudo docker rm barbear-ia-frontend || true
         
-        # Limpar imagens antigas (manter apenas as 3 mais recentes)
+        # Limpar imagens antigas
         echo "🧹 Limpando imagens antigas..."
         sudo docker image prune -f || true
-        
-        # Atualizar código
-        echo "📥 Atualizando código..."
-        git fetch origin
-        git reset --hard origin/main
         
         # Verificar e instalar Node.js se necessário
         if ! command -v npm &> /dev/null; then
@@ -178,89 +89,106 @@ jobs:
         npm install
         npm run build
         
-        # Copiar arquivos de deploy
-        echo "📋 Preparando deploy..."
-        cp -r build/* ./
-        
-        # Criar Dockerfile se não existir
+        # Garantir que Dockerfile e Compose existam
         if [ ! -f "Dockerfile" ]; then
-          cat > Dockerfile << 'DOCKERFILE'
-        FROM nginx:alpine
-        COPY . /usr/share/nginx/html
-        RUN echo 'server { \
-            listen 80; \
-            server_name _; \
-            root /usr/share/nginx/html; \
-            index index.html; \
-            location / { \
-                try_files $uri $uri/ /index.html; \
-            } \
-            gzip on; \
-            gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript; \
-        }' > /etc/nginx/conf.d/default.conf
-        EXPOSE 80
-        CMD ["nginx", "-g", "daemon off;"]
-        DOCKERFILE
+            echo "⚠️ Criando Dockerfile..."
+            cat > Dockerfile << 'DOCKERFILE'
+# Build stage
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Instalar versão estável do npm
+RUN npm install -g npm@10
+
+# Copy package files
+COPY package*.json ./
+
+# Instalar dependências
+RUN echo "📦 Removendo package-lock.json e usando npm install limpo" && \
+    rm -f package-lock.json && \
+    npm install --no-audit --no-fund
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN echo "🏗️ Iniciando build de produção..." && \
+    npm run build && \
+    echo "✅ Build concluído. Verificando arquivos gerados:" && \
+    ls -la build/
+
+# Production stage
+FROM nginx:alpine
+
+# Copy built application
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost/ || exit 1
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
+DOCKERFILE
         fi
         
-        # Criar docker-compose se não existir
         if [ ! -f "docker-compose.yml" ]; then
-          cat > docker-compose.yml << 'COMPOSE'
-        version: '3.8'
-        services:
-          barbear-ia:
-            build: .
-            ports:
-              - "3500:80"
-            restart: unless-stopped
-            container_name: barbear-ia-app
-        COMPOSE
+            echo "⚠️ Criando docker-compose.yml..."
+            cat > docker-compose.yml << 'COMPOSE'
+version: '3.3'
+
+services:
+  barbear-ia-frontend:
+    build: .
+    container_name: barbear-ia-frontend
+    ports:
+      - "3500:80"
+    networks:
+      - barbear-ia-net
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/ || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  barbear-ia-net:
+    driver: bridge
+COMPOSE
         fi
+
+        # Deploy
+        echo "🐳 Reconstruindo e iniciando..."
+        sudo docker-compose up -d --build
         
-        # Build e start da aplicação
-        echo "🐳 Construindo e iniciando containers..."
-        sudo docker-compose build --no-cache
-        sudo docker-compose up -d
-        
-        # Verificar se está rodando
-        echo "🔍 Verificando deploy..."
+        # Verificação
+        echo "🔍 Verificando status..."
         sleep 10
-        
         if sudo docker ps | grep -q barbear-ia-frontend; then
-          echo "✅ Deploy realizado com sucesso!"
-          echo "🌐 Aplicação disponível em: http://$(curl -s ifconfig.me):3500"
-          
-          # Mostrar logs
-          echo "📋 Últimos logs:"
-          sudo docker logs barbear-ia-frontend --tail 20
+            echo "✅ Barbear.IA rodando na porta 3500!"
+            echo "🌐 Aplicação disponível em: http://$(curl -s ifconfig.me):3500"
+            sudo docker logs barbear-ia-frontend --tail 20
         else
-          echo "❌ Falha no deploy!"
-          sudo docker logs barbear-ia-frontend || true
-          exit 1
+            echo "❌ Falha ao iniciar Barbear.IA."
+            sudo docker logs barbear-ia-frontend || true
+            exit 1
         fi
         
-        # Limpeza final
-        echo "🧹 Limpeza final..."
-        sudo docker system prune -f || true
-        
+        # Limpeza
+        sudo docker system prune -f
         echo "🎉 Deploy concluído!"
         EOF
         
-        # Executar deploy via SSH
-        echo "📤 Enviando script de deploy para $OCI_USER@$OCI_HOST..."
+        # Executar remotamente
         scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy_script.sh "$OCI_USER@$OCI_HOST:/tmp/"
-        
-        echo "🚀 Executando deploy remoto..."
         ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$OCI_USER@$OCI_HOST" "chmod +x /tmp/deploy_script.sh && /tmp/deploy_script.sh"
-
-    - name: Cleanup
-      if: always()
-      run: |
-        rm -rf ~/.ssh/id_rsa deploy_script.sh deploy/ || true
-
-    - name: Notify Success
-      if: success()
-      run: |
-        echo "✅ Deploy realizado com sucesso!"
-        echo "🌐 Aplicação disponível em produção"
-        echo "🐛 Debug panel disponível para monitoramento"
