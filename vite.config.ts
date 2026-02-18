@@ -42,11 +42,11 @@ export default defineConfig({
     }
   },
   server: {
-    port: 7001,
-    host: '0.0.0.0',
-    open: true,
+    port: 3500,
+    host: 'localhost',
+    open: false,
     hmr: {
-      port: 7002,
+      port: 3500,
       host: 'localhost'
     },
     watch: {
