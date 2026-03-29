@@ -8,6 +8,7 @@ services:
       - "3500:80"
     networks:
       - barbear-ia-net
+      - www_projetos-net
     environment:
       - NODE_ENV=production
     healthcheck:
@@ -21,3 +22,5 @@ services:
 networks:
   barbear-ia-net:
     driver: bridge
+  www_projetos-net:
+    external: true
