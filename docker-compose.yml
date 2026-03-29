@@ -4,8 +4,8 @@ services:
   barbear-ia-frontend:
     build: .
     container_name: barbear-ia-frontend
-    ports:
-      - "3500:80"
+    expose:
+      - "80"
     networks:
       - barbear-ia-net
       - www_projetos-net
