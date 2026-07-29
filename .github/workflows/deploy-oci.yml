@@ -7,6 +7,14 @@ on:
         description: 'Digite YES para confirmar o deploy na OCI'
         required: true
         default: ''
+  workflow_run:
+    workflows: ["CI - Build & Validate"]
+    types:
+      - completed
+
+concurrency:
+  group: deploy-oci-barbearia
+  cancel-in-progress: false
 
 jobs:
   validate:
@@ -15,16 +23,30 @@ jobs:
     steps:
       - name: Validate branch and confirmation
         run: |
-          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
-            echo "::error::Deploy permitido apenas a partir do branch 'main'. Branch atual: ${GITHUB_REF}"
-            exit 1
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+              echo "::error::Deploy permitido apenas a partir do branch 'main'. Branch atual: ${GITHUB_REF}"
+              exit 1
+            fi
+
+            CONFIRM_RAW="${{ github.event.inputs.confirm_deploy }}"
+            CONFIRM_CLEAN="$(echo "$CONFIRM_RAW" | tr -d '\r\n\t ' | tr '[:lower:]' '[:upper:]')"
+            if [ "$CONFIRM_CLEAN" != "YES" ]; then
+              echo "::error::Para executar o deploy, preencha confirm_deploy exatamente com YES."
+              exit 1
+            fi
           fi
 
-          CONFIRM_RAW="${{ github.event.inputs.confirm_deploy }}"
-          CONFIRM_CLEAN="$(echo "$CONFIRM_RAW" | tr -d '\r\n\t ' | tr '[:lower:]' '[:upper:]')"
-          if [ "$CONFIRM_CLEAN" != "YES" ]; then
-            echo "::error::Para executar o deploy, preencha confirm_deploy exatamente com YES."
-            exit 1
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
+              echo "::error::Deploy automático bloqueado: CI não está verde (conclusion=${{ github.event.workflow_run.conclusion }})."
+              exit 1
+            fi
+
+            if [ "${{ github.event.workflow_run.head_branch }}" != "main" ]; then
+              echo "::error::Deploy automático bloqueado: apenas push em 'main' dispara deploy (branch=${{ github.event.workflow_run.head_branch }})."
+              exit 1
+            fi
           fi
 
   deploy:
