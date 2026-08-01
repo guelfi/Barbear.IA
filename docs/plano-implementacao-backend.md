@@ -352,17 +352,19 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 ---
 ### E9 — Integração frontend + go-live
 
-**Status:** parcial — `VITE_API_URL` + client HTTP + remoção debug prod; publish API na OCI só no go-live final
+**Status:** parcial — stack front+API+Postgres+Redis **publicada na OCI** (2026-08-01); faltam harden/ZAP/Evolution/Stripe reais  
+**Paths públicos:** `/barbear-ia/` · `/barbear-ia/api/` · `/barbear-ia/swagger/` (não `/barbear-ia-api/`)
 
 **Entregáveis**
-- `VITE_API_URL` apontando para API real
-- Remover senhas/JSON mock do bundle de produção
-- Remover `ProductionDebugPanel` / test suites da build prod
-- CSP/HTTPS/HSTS no edge
-- Scan ZAP em staging
-- Runbook de deploy OCI da API + **Postgres** + secrets Evolution/Stripe
-- Location nginx `/barbear-ia-api/` no `nginx-proxy` + rede `www_projetos-net`
-- Smoke: OTP WhatsApp em staging com número de teste
+- [x] `VITE_API_URL` apontando para API real (prod: `https://batuara.org.br/barbear-ia/api/v1`)
+- [x] Front sem mock; client HTTP (`src/api/http.ts`)
+- [x] Deploy OCI API + Postgres + Redis + nginx (`deploy-oci.yml` + `deploy/apply-nginx-barbear-ia.py`)
+- [ ] Remover `ProductionDebugPanel` / resíduos cosméticos
+- [ ] Rotacionar secrets OCI (JWT / Postgres) — defaults do 1º deploy
+- [ ] CSP/HTTPS/HSTS no edge (revisão)
+- [ ] Scan ZAP em staging/prod
+- [ ] Smoke: OTP WhatsApp com Evolution real
+- [ ] Stripe real + webhook assinado
 
 ---
 
