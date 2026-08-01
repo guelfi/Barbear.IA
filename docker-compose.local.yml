@@ -1,7 +1,8 @@
 # Ambiente local — paridade com OCI (sem publicar porta no host).
 # Acesso via nginx-local na rede projetos-local:
 #   http://192.168.15.119/barbear-ia/
-#   http://localhost/barbear-ia/
+#   http://192.168.15.119/barbear-ia/swagger/index.html
+#   http://192.168.15.119/barbear-ia/api/v1/...
 #
 # Subir:
 #   docker compose -f docker-compose.local.yml up -d --build
@@ -14,6 +15,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://192.168.15.119/barbear-ia/api/v1
     container_name: barbear-ia-frontend
     expose:
       - "80"
@@ -29,6 +32,65 @@ services:
       retries: 3
       start_period: 20s
     restart: unless-stopped
+
+  barbear-ia-postgres:
+    image: postgres:16-alpine
+    container_name: barbear-ia-postgres
+    environment:
+      POSTGRES_DB: barbear_ia
+      POSTGRES_USER: barbear
+      POSTGRES_PASSWORD: barbear_dev
+    volumes:
+      - barbear_ia_pg:/var/lib/postgresql/data
+    networks:
+      - barbear-ia-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barbear -d barbear_ia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  barbear-ia-redis:
+    image: redis:7-alpine
+    container_name: barbear-ia-redis
+    networks:
+      - barbear-ia-net
+
+  barbear-ia-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: barbear-ia-api
+    depends_on:
+      barbear-ia-postgres:
+        condition: service_healthy
+      barbear-ia-redis:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: Host=barbear-ia-postgres;Port=5432;Database=barbear_ia;Username=barbear;Password=barbear_dev
+      ConnectionStrings__Redis: barbear-ia-redis:6379
+      Jwt__SigningKey: DEV_ONLY_CHANGE_ME_BarbearIA_Jwt_Signing_Key_32+
+      Seed__Enabled: "true"
+      Seed__SuperAdmin__Email: admin@barbear.ia
+      Seed__SuperAdmin__Password: Admin123#
+      Swagger__Enabled: "true"
+      Evolution__Enabled: "false"
+    expose:
+      - "8080"
+    networks:
+      - barbear-ia-net
+      - projetos-local
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+
+volumes:
+  barbear_ia_pg:
 
 networks:
   barbear-ia-net:

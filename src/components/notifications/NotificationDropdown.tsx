@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { toast } from 'sonner';
+import { notificationsAPI } from '../../api';
 
 /**
  * Configuration for notification types including icons, colors, and labels
@@ -99,57 +100,6 @@ interface NotificationDropdownProps {
     onClose: () => void;
 }
 
-const mockNotifications: Notification[] = [
-    {
-        id: '1',
-        type: 'appointment',
-        title: 'Novo Agendamento',
-        message: 'Pedro Santos agendou um corte para hoje às 14:00',
-        timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutos atrás
-        isRead: false,
-        priority: 'high',
-        clientName: 'Pedro Santos'
-    },
-    {
-        id: '2',
-        type: 'payment',
-        title: 'Pagamento Recebido',
-        message: 'Pagamento de R$ 45,00 confirmado - João Silva',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutos atrás
-        isRead: false,
-        priority: 'medium',
-        clientName: 'João Silva'
-    },
-    {
-        id: '3',
-        type: 'reminder',
-        title: 'Lembrete',
-        message: 'Você tem 3 agendamentos para amanhã',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas atrás
-        isRead: true,
-        priority: 'low'
-    },
-    {
-        id: '4',
-        type: 'client',
-        title: 'Novo Cliente',
-        message: 'Maria Oliveira se cadastrou na plataforma',
-        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 horas atrás
-        isRead: true,
-        priority: 'medium',
-        clientName: 'Maria Oliveira'
-    },
-    {
-        id: '5',
-        type: 'system',
-        title: 'Atualização do Sistema',
-        message: 'Nova versão disponível com melhorias de performance',
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 dia atrás
-        isRead: true,
-        priority: 'low'
-    }
-];
-
 /**
  * Enhanced NotificationDropdown Component
  * 
@@ -168,10 +118,35 @@ const mockNotifications: Notification[] = [
  * @param onClose - Callback to close the dropdown
  */
 export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownProps) {
-    const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [focusedIndex, setFocusedIndex] = useState(-1);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const loadNotifications = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const items = await notificationsAPI.list();
+            setNotifications(items.map((item) => ({
+                id: item.id,
+                type: NOTIFICATION_CONFIG[item.type as keyof typeof NOTIFICATION_CONFIG] ? item.type as Notification['type'] : 'system',
+                title: item.title,
+                message: item.message,
+                timestamp: new Date(item.createdAt),
+                isRead: item.isRead,
+                priority: item.type === 'appointment' ? 'high' : 'low',
+            })));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Erro ao carregar notificações.');
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isOpen) void loadNotifications();
+    }, [isOpen, loadNotifications]);
 
     // Memoized calculations for better performance
     const unreadCount = useMemo(() => 
@@ -184,7 +159,7 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
         [notifications]
     );
 
-    const markAsRead = useCallback((id: string) => {
+    const markAsRead = useCallback(async (id: string) => {
         try {
             const notification = notifications.find(n => n.id === id);
             if (!notification) {
@@ -197,22 +172,9 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
             setIsLoading(true);
             setError(null);
 
-            // Simulate API call delay
-            setTimeout(() => {
-                setNotifications(prev =>
-                    prev.map(notification =>
-                        notification.id === id
-                            ? { ...notification, isRead: true }
-                            : notification
-                    )
-                );
-                
-                setIsLoading(false);
-                toast.success('Notificação marcada como lida', {
-                    duration: 2000,
-                    position: 'bottom-right'
-                });
-            }, 100);
+            await notificationsAPI.read(id);
+            setNotifications(prev => prev.map(notification => notification.id === id ? { ...notification, isRead: true } : notification));
+            toast.success('Notificação marcada como lida', { duration: 2000, position: 'bottom-right' });
         } catch (error) {
             setIsLoading(false);
             setError('Erro ao marcar notificação como lida');
@@ -221,7 +183,7 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
         }
     }, [notifications]);
 
-    const markAllAsRead = useCallback(() => {
+    const markAllAsRead = useCallback(async () => {
         try {
             const unreadNotifications = notifications.filter(n => !n.isRead);
             if (unreadNotifications.length === 0) {
@@ -232,18 +194,9 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
             setIsLoading(true);
             setError(null);
 
-            // Simulate API call delay
-            setTimeout(() => {
-                setNotifications(prev =>
-                    prev.map(notification => ({ ...notification, isRead: true }))
-                );
-                
-                setIsLoading(false);
-                toast.success(`${unreadNotifications.length} notificações marcadas como lidas`, {
-                    duration: 3000,
-                    position: 'bottom-right'
-                });
-            }, 200);
+            await notificationsAPI.readAll();
+            setNotifications(prev => prev.map(notification => ({ ...notification, isRead: true })));
+            toast.success(`${unreadNotifications.length} notificações marcadas como lidas`, { duration: 3000, position: 'bottom-right' });
         } catch (error) {
             setIsLoading(false);
             setError('Erro ao marcar todas as notificações como lidas');
@@ -252,7 +205,7 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
         }
     }, [notifications]);
 
-    const deleteNotification = useCallback((id: string, title: string) => {
+    const deleteNotification = useCallback(async (id: string, title: string) => {
         try {
             const notification = notifications.find(n => n.id === id);
             if (!notification) {
@@ -263,27 +216,9 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
             setIsLoading(true);
             setError(null);
 
-            // Simulate API call delay
-            setTimeout(() => {
-                setNotifications(prev => prev.filter(n => n.id !== id));
-                setIsLoading(false);
-                
-                toast.success(`"${title}" removida`, {
-                    duration: 3000,
-                    position: 'bottom-right',
-                    action: {
-                        label: 'Desfazer',
-                        onClick: () => {
-                            // Restore notification (in a real app, this would restore from a backup)
-                            const deletedNotification = mockNotifications.find(n => n.id === id);
-                            if (deletedNotification) {
-                                setNotifications(prev => [...prev, deletedNotification]);
-                                toast.success('Notificação restaurada');
-                            }
-                        }
-                    }
-                });
-            }, 150);
+            await notificationsAPI.delete(id);
+            setNotifications(prev => prev.filter(n => n.id !== id));
+            toast.success(`"${title}" removida`, { duration: 3000, position: 'bottom-right' });
         } catch (error) {
             setIsLoading(false);
             setError('Erro ao remover notificação');
@@ -474,8 +409,7 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
                                     variant="outline" 
                                     size="sm"
                                     onClick={() => {
-                                        setError(null);
-                                        setNotifications(mockNotifications);
+                                        void loadNotifications();
                                     }}
                                     className="hover:bg-red-50 hover:border-red-200 dark:hover:bg-red-950/20"
                                 >

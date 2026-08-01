@@ -1,5 +1,6 @@
 using Barbear.IA.Domain.Common;
 using Barbear.IA.Domain.Entities;
+using Barbear.IA.Domain.Enums;
 using Barbear.IA.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -19,6 +20,14 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<TenantSubscription> TenantSubscriptions => Set<TenantSubscription>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<BarberProfile> BarberProfiles => Set<BarberProfile>();
+    public DbSet<ClientProfile> ClientProfiles => Set<ClientProfile>();
+    public DbSet<ServiceOffering> Services => Set<ServiceOffering>();
+    public DbSet<Appointment> Appointments => Set<Appointment>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<MessageOutbox> MessageOutbox => Set<MessageOutbox>();
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -43,7 +52,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
         {
             entity.ToTable("users");
             entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
-            entity.Property(x => x.Role).HasConversion<string>().HasMaxLength(32);
+            entity.Property(x => x.Role)
+                .HasConversion(
+                    v => RoleNames.ToApi(v),
+                    v => RoleNames.FromApi(v))
+                .HasMaxLength(32);
             entity.HasIndex(x => x.Email);
             entity.HasIndex(x => new { x.TenantId, x.Email });
             entity.HasIndex(x => x.PhoneNumber);

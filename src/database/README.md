@@ -93,7 +93,7 @@ Super Admin (global)
 ## Dados de Teste
 
 ### Credenciais de Login
-- **Super Admin**: admin@barbear.ia / super123
+- **Super Admin**: admin@barbear.ia / Admin123#
 - **Admin**: admin@barbearia.com / admin123
 - **Barber**: barbeiro@barbearia.com / barber123
 - **Client**: cliente@email.com / cliente123

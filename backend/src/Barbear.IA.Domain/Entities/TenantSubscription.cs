@@ -34,4 +34,24 @@ public class TenantSubscription : Entity, ITenantScoped
             CurrentPeriodEnd = now.AddDays(trialDays)
         };
     }
+
+    public void ApplyStripe(
+        string plan,
+        SubscriptionStatus status,
+        string? customerId,
+        string? subscriptionId,
+        DateTimeOffset periodStart,
+        DateTimeOffset periodEnd,
+        bool cancelAtPeriodEnd)
+    {
+        Plan = plan;
+        Status = status;
+        StripeCustomerId = customerId;
+        StripeSubscriptionId = subscriptionId;
+        CurrentPeriodStart = periodStart;
+        CurrentPeriodEnd = periodEnd;
+        CancelAtPeriodEnd = cancelAtPeriodEnd;
+        Touch();
+    }
 }
+

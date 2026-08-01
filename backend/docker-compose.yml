@@ -1,0 +1,84 @@
+# API + PostgreSQL + Redis — sem portas no host (paridade OCI).
+# Acesso via nginx-local / nginx-proxy:
+#   http://192.168.15.119/barbear-ia/swagger/index.html
+#   http://192.168.15.119/barbear-ia/api/v1/...
+#   http://129.153.86.168/barbear-ia/swagger/index.html
+#
+# Uso:
+#   cd backend && docker compose up -d --build
+# Pré-requisito local: rede projetos-local + nginx-local
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: barbear-ia-postgres
+    environment:
+      POSTGRES_DB: barbear_ia
+      POSTGRES_USER: barbear
+      POSTGRES_PASSWORD: barbear_dev
+    volumes:
+      - barbear_ia_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barbear -d barbear_ia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - barbear-ia-backend
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: barbear-ia-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - barbear-ia-backend
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: barbear-ia-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=barbear_ia;Username=barbear;Password=barbear_dev
+      ConnectionStrings__Redis: redis:6379
+      Jwt__Issuer: Barbear.IA
+      Jwt__Audience: Barbear.IA
+      Jwt__SigningKey: DEV_ONLY_CHANGE_ME_BarbearIA_Jwt_Signing_Key_32+
+      Seed__Enabled: "true"
+      Seed__SuperAdmin__Email: admin@barbear.ia
+      Seed__SuperAdmin__Password: Admin123#
+      Swagger__Enabled: "true"
+      Evolution__Enabled: "false"
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - barbear-ia-backend
+      - projetos-local
+    restart: unless-stopped
+
+volumes:
+  barbear_ia_pg:
+
+networks:
+  barbear-ia-backend:
+    driver: bridge
+  projetos-local:
+    external: true

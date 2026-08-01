@@ -225,6 +225,29 @@
   max-width: 28rem;
 }
 
+.auth-shell__alert {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.55rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(220, 38, 38, 0.55);
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  z-index: 5;
+}
+
+.auth-shell__alert--below-card {
+  margin-top: 1rem;
+}
+
 .auth-shell__panel .bg-card {
   background: rgba(28, 25, 23, 0.9) !important;
   backdrop-filter: blur(12px);

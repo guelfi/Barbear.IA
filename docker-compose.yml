@@ -1,9 +1,24 @@
 version: '3.3'
 
+# OCI — stack completa (frontend + API + Postgres + Redis).
+# Acesso público:
+#   https://batuara.org.br/barbear-ia/
+#   https://batuara.org.br/barbear-ia/api/v1/...
+#   http://129.153.86.168/barbear-ia/  (nginx-proxy, sem porta publicada)
+#
+# Secrets: sobrescreva via /var/www/Barbear.IA/.env (não versionado).
+
 services:
   barbear-ia-frontend:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-https://batuara.org.br/barbear-ia/api/v1}
     container_name: barbear-ia-frontend
+    depends_on:
+      barbear-ia-api:
+        condition: service_healthy
     expose:
       - "80"
     networks:
@@ -12,12 +27,77 @@ services:
     environment:
       - NODE_ENV=production
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 20s
     restart: unless-stopped
+
+  barbear-ia-postgres:
+    image: postgres:16-alpine
+    container_name: barbear-ia-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-barbear_ia}
+      POSTGRES_USER: ${POSTGRES_USER:-barbear}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-barbear_oci_change_me}
+    volumes:
+      - barbear_ia_pg:/var/lib/postgresql/data
+    networks:
+      - barbear-ia-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barbear -d barbear_ia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  barbear-ia-redis:
+    image: redis:7-alpine
+    container_name: barbear-ia-redis
+    networks:
+      - barbear-ia-net
+    restart: unless-stopped
+
+  barbear-ia-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: barbear-ia-api
+    depends_on:
+      barbear-ia-postgres:
+        condition: service_healthy
+      barbear-ia-redis:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: Host=barbear-ia-postgres;Port=5432;Database=${POSTGRES_DB:-barbear_ia};Username=${POSTGRES_USER:-barbear};Password=${POSTGRES_PASSWORD:-barbear_oci_change_me}
+      ConnectionStrings__Redis: barbear-ia-redis:6379
+      Jwt__SigningKey: ${Jwt__SigningKey:-CHANGE_ME_OCI_BarbearIA_Jwt_Signing_Key_32chars+}
+      Seed__Enabled: ${Seed__Enabled:-true}
+      Seed__SuperAdmin__Email: ${Seed__SuperAdmin__Email:-admin@barbear.ia}
+      Seed__SuperAdmin__Password: ${Seed__SuperAdmin__Password:-Admin123#}
+      Swagger__Enabled: ${Swagger__Enabled:-true}
+      Evolution__Enabled: ${Evolution__Enabled:-false}
+      Cors__Origins__0: https://batuara.org.br
+      Cors__Origins__1: https://www.batuara.org.br
+      Cors__Origins__2: http://129.153.86.168
+      Cors__Origins__3: http://batuara.org.br
+    expose:
+      - "8080"
+    networks:
+      - barbear-ia-net
+      - www_projetos-net
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+volumes:
+  barbear_ia_pg:
 
 networks:
   barbear-ia-net:

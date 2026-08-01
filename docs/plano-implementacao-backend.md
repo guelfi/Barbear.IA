@@ -1,7 +1,7 @@
 # Plano de Implementação — Backend Barbear.IA
 
-**Status:** Aguardando aprovação  
-**Versão:** 1.3  
+**Status:** Aprovado — em implementação  
+**Versão:** 1.4  
 **Data:** 2026-08-01  
 **Stack alvo:** .NET 10 LTS · ASP.NET Core · EF Core · **PostgreSQL** · Redis · **Evolution API (WhatsApp)** · Docker · OCI  
 **Frontend de referência:** SPA React existente (personas, telas e permissões em `src/`)
@@ -42,8 +42,8 @@ Implementar a API multi-tenant do Barbear.IA cobrindo todas as funcionalidades j
 
 | # | Pergunta | Proposta padrão |
 |---|----------|-----------------|
-| D1 | Cliente pode pertencer a **vários** tenants? | **Fase 1:** um client profile por tenant; discovery lista tenants ativos |
-| D2 | Barbeiro se auto-registra? | **Não** — admin convida/cria; register público só `barbershop` e `client` |
+| D1 | Cliente pode pertencer a **vários** tenants? | **Fase 1 (atual):** um client profile por tenant; discovery lista tenants ativos. **Futuro:** ver `backlog-fases-futuras.md` → **F-CLIENT-MT** (cadastro sem tenant; escolha da barbearia no agendamento) |
+| D2 | Barbeiro se auto-registra? | **Fase 1 (atual):** **Não** — admin convida/cria; register público só `barbershop` e `client`. **Futuro:** ver `backlog-fases-futuras.md` → **F-BARBER** (auto-cadastro + escolha do tenant + aceite do admin) |
 | D3 | Tenant `pending` usa o sistema (trial)? | Sim, trial limitado (N dias) até approve/reject do SA |
 | D4 | Walk-in (cliente sem login)? | Sim — `Client.UserId` nullable; só admin/barbeiro cria |
 | D5 | Soft-delete vs hard-delete? | Soft-delete (`IsActive` / `DeletedAt`) em entidades de negócio |
@@ -180,6 +180,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 
 ### E0 — Fundação
 
+**Status:** implementado (branch `feature/e0-e1-foundation-auth`)
+
 **Entregáveis**
 - Solution .NET 10 (`src/Api`, `Application`, `Domain`, `Infrastructure`, `tests/*`)
 - Docker Compose: API + **PostgreSQL** + Redis
@@ -194,6 +196,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 ---
 
 ### E1 — Identity, sessão e RBAC
+
+**Status:** implementado (endpoints auth + policies + seed SA)
 
 **Entregáveis**
 - Register: `barbershop` (User+Tenant pending+Subscription trial), `client`
@@ -210,6 +214,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 ---
 
 ### E1b — Evolution API (OTP + canal WhatsApp)
+
+**Status:** implementado (config Evolution OCI adiada; outbox + testes mock)
 
 **Dependências:** E0, E1 (usuário/telefone); Redis para OTP.
 
@@ -228,6 +234,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 
 ### E2 — Tenants (lifecycle multi-tenant)
 
+**Status:** implementado (middleware tenant suspenso)
+
 **Entregáveis**
 - CRUD/leitura conforme role
 - Approve / reject / suspend / reactivate (SA)
@@ -242,6 +250,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 
 ### E3 — Users (plataforma e tenant)
 
+**Status:** implementado
+
 **Entregáveis**
 - Listagem paginada + filtros (role, active, search)
 - Create/update/activate/deactivate
@@ -252,6 +262,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 ---
 
 ### E4 — Barbers, Clients, Services
+
+**Status:** implementado (CRUD base)
 
 **Entregáveis**
 - CRUD alinhado aos formulários do front
@@ -264,6 +276,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 ---
 
 ### E5 — Appointments
+
+**Status:** implementado
 
 **Entregáveis**
 - CRUD + cancel com motivo
@@ -278,6 +292,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 
 ### E6 — Dashboards
 
+**Status:** implementado
+
 **Entregáveis**
 - `GET /dashboard/stats` por role
 - `GET /dashboard/global` (SA)
@@ -287,6 +303,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 ---
 
 ### E7 — Billing
+
+**Status:** implementado (sandbox local; Stripe keys no go-live)
 
 **Entregáveis**
 - Planos Pro mensal/anual
@@ -299,6 +317,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 ---
 
 ### E8 — Notifications (in-app + WhatsApp)
+
+**Status:** implementado (in-app + outbox; Evolution config OCI adiada)
 
 **Entregáveis**
 - Modelo: appointment, payment, client, system, reminder
@@ -331,6 +351,8 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 
 ---
 ### E9 — Integração frontend + go-live
+
+**Status:** parcial — `VITE_API_URL` + client HTTP + remoção debug prod; publish API na OCI só no go-live final
 
 **Entregáveis**
 - `VITE_API_URL` apontando para API real
@@ -436,13 +458,18 @@ Meta ASVS: **nível 2** nos controles de auth, sessão, access control e crypto.
 
 ## 11. Fora de escopo (v1)
 
+Itens abaixo **não** entram na v1; o backlog vivo está em [`backlog-fases-futuras.md`](./backlog-fases-futuras.md).
+
 - App mobile nativo  
 - **WhatsApp próprio por tenant** (Fase 2 / D7) — v1 usa instância plataforma na OCI  
 - SMS clássico (fora Evolution)  
 - Fidelidade / gamificação  
 - Multi-unidade dentro do mesmo tenant (além de 1 barbearia = 1 tenant)  
 - Event Sourcing completo (mencionado no README antigo — **não** na v1)  
-- Cobertura 90% absoluta — meta pragmática: **críticos de auth/tenant ≥ 80%** + testes de integração RBAC
+- Cobertura 90% absoluta — meta pragmática: **críticos de auth/tenant ≥ 80%** + testes de integração RBAC  
+- **Auto-cadastro de barbeiro com aceite do admin do tenant** → **F-BARBER**  
+- **Cliente multi-barbearia (escolhe tenant no serviço/agendamento)** → **F-CLIENT-MT**  
+- **Pacotes/assinatura mensal de serviços cliente→barbearia** → **F-PKG**
 
 ---
 
@@ -467,6 +494,8 @@ Meta ASVS: **nível 2** nos controles de auth, sessão, access control e crypto.
 
 ## 13. Documentos relacionados
 
+- [`backlog-fases-futuras.md`](./backlog-fases-futuras.md) — **lista canônica de pendências / fases futuras**  
+- [`handoff-estado.md`](./handoff-estado.md) — estado da implementação na branch atual  
 - [`criterios-aceite-e-rbac.md`](./criterios-aceite-e-rbac.md) — template de AC + matriz RBAC / Evolution por endpoint  
 - [`oci-ambiente-atual.md`](./oci-ambiente-atual.md) — inspeção SSH da OCI (nginx, containers, Evolution)  
 - [`../README.md`](../README.md) — visão do produto (atualizar stack: .NET 10, PostgreSQL, Evolution)
