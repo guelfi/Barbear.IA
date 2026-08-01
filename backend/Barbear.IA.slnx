@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Barbear.IA.Api/Barbear.IA.Api.csproj" />
+    <Project Path="src/Barbear.IA.Application/Barbear.IA.Application.csproj" />
+    <Project Path="src/Barbear.IA.Domain/Barbear.IA.Domain.csproj" />
+    <Project Path="src/Barbear.IA.Infrastructure/Barbear.IA.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Barbear.IA.IntegrationTests/Barbear.IA.IntegrationTests.csproj" />
+    <Project Path="tests/Barbear.IA.UnitTests/Barbear.IA.UnitTests.csproj" />
+  </Folder>
+</Solution>

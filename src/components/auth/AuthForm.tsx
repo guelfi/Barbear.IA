@@ -31,9 +31,15 @@ import { AnimatedIcon } from "../ui/animated-icon";
 import { toast } from "sonner";
 import { LoginCredentials, RegisterData } from "../../types";
 import { formatPhoneBrazil, validateEmail, validatePhone } from "../../lib/validation";
+import "../../styles/marketing.css";
 
-export function AuthForm() {
-  const [activeTab, setActiveTab] = useState("login");
+interface AuthFormProps {
+  onBackToLanding?: () => void;
+  initialTab?: "login" | "register";
+}
+
+export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProps) {
+  const [activeTab, setActiveTab] = useState(initialTab);
   // unused state removed
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -220,14 +226,17 @@ export function AuthForm() {
 
   return (
     <motion.div
-      className="min-h-screen flex items-center justify-center bg-background p-1 sm:p-4 relative"
+      className="auth-shell"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <div className="auth-shell__media" aria-hidden="true" />
+      <div className="auth-shell__veil" aria-hidden="true" />
+
       {/* Theme Toggle */}
       <motion.div
-        className="fixed top-4 right-4 z-50"
+        className="theme-toggle-float"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.8 }}
@@ -235,11 +244,16 @@ export function AuthForm() {
         <ThemeToggle />
       </motion.div>
       <motion.div
-        className="w-full max-w-md"
+        className="auth-shell__panel"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.1 }}
       >
+        {onBackToLanding && (
+          <button type="button" className="auth-shell__back" onClick={onBackToLanding}>
+            ← Voltar à página inicial
+          </button>
+        )}
         <motion.div
           className="text-center mb-5 sm:mb-8"
           initial={{ y: -20, opacity: 0 }}
@@ -336,6 +350,7 @@ export function AuthForm() {
           interactive={false}
           animation="scaleIn"
           hoverElevation={3}
+          className="auth-shell__card"
         >
           <MaterialCardHeader className="text-center pb-4">
             <motion.div
@@ -528,7 +543,8 @@ export function AuthForm() {
                     size="sm"
                     onClick={() =>
                       setLoginData({
-                        ...loginData,
+                        email: "",
+                        password: "",
                         userType: "client",
                       })
                     }
@@ -559,7 +575,8 @@ export function AuthForm() {
                     size="sm"
                     onClick={() =>
                       setLoginData({
-                        ...loginData,
+                        email: "",
+                        password: "",
                         userType: "barber",
                       })
                     }
@@ -590,7 +607,8 @@ export function AuthForm() {
                     size="sm"
                     onClick={() =>
                       setLoginData({
-                        ...loginData,
+                        email: "",
+                        password: "",
                         userType: "barbershop",
                       })
                     }
@@ -627,7 +645,8 @@ export function AuthForm() {
                     size="sm"
                     onClick={() =>
                       setLoginData({
-                        ...loginData,
+                        email: "",
+                        password: "",
                         userType: "super_admin",
                       })
                     }
@@ -768,8 +787,8 @@ export function AuthForm() {
                     </MaterialButton>
                   </motion.div>
 
-                  {/* Quick Access Buttons - Área Azul - Exibir apenas após seleção do tipo */}
-                  {loginData.userType && (
+                  {/* Demo autofill: apenas em desenvolvimento local */}
+                  {import.meta.env.DEV && loginData.userType && (
                     <motion.div
                       className="mt-6 pt-4 border-t border-border"
                       initial={{ opacity: 0, y: 10 }}
@@ -777,8 +796,8 @@ export function AuthForm() {
                       transition={{ duration: 0.4, delay: 0.7 }}
                     >
                       <p className="text-xs text-muted-foreground text-center mb-3">
-                         Acesso rápido (REMOVER QUANDO ENTRAR EM PRODUÇÃO):
-                       </p>
+                        Dev only — preenchimento com usuários mock
+                      </p>
                       <div className="flex justify-center">
                         <MaterialButton
                           type="button"

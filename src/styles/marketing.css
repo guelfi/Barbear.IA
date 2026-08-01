@@ -1,0 +1,285 @@
+/* Landing + auth marketing surfaces — luxury barbershop direction */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap');
+
+:root {
+  --lp-ink: #0c0a09;
+  --lp-charcoal: #1c1917;
+  --lp-brass: #c4a574;
+  --lp-brass-bright: #e8d5b5;
+  --lp-smoke: #a8a29e;
+  --lp-cream: #f5f0e8;
+  --lp-font-display: 'Cormorant Garamond', Georgia, serif;
+  --lp-font-body: 'Manrope', system-ui, sans-serif;
+  --lp-hero-image: url('https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=2400&q=80');
+  --lp-auth-image: url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=2400&q=80');
+}
+
+.lp-root {
+  height: 100dvh;
+  overflow: hidden;
+  color: var(--lp-cream);
+  font-family: var(--lp-font-body);
+  background: var(--lp-ink);
+}
+
+.lp-hero {
+  position: relative;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(1.25rem, 4vw, 3.5rem);
+  overflow: hidden;
+}
+
+.lp-hero__media {
+  position: absolute;
+  inset: 0;
+  background-image: var(--lp-hero-image);
+  background-size: cover;
+  background-position: center 30%;
+  transform: scale(1.06);
+  animation: lp-kenburns 22s ease-in-out infinite alternate;
+}
+
+.lp-hero__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(12, 10, 9, 0.28) 0%, rgba(12, 10, 9, 0.48) 38%, rgba(12, 10, 9, 0.9) 100%),
+    linear-gradient(90deg, rgba(12, 10, 9, 0.72) 0%, rgba(12, 10, 9, 0.2) 52%, rgba(12, 10, 9, 0.55) 100%),
+    radial-gradient(ellipse 70% 50% at 72% 18%, rgba(196, 165, 116, 0.16), transparent 55%);
+}
+
+.lp-hero__stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: end;
+}
+
+.lp-hero__content {
+  max-width: 38rem;
+}
+
+.lp-hero__aside {
+  justify-self: end;
+  text-align: right;
+  max-width: 28rem;
+  padding-bottom: 0.15rem;
+  border-right: 2px solid rgba(196, 165, 116, 0.55);
+  padding-right: 1.15rem;
+}
+
+.lp-aside__title {
+  font-family: var(--lp-font-display);
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0 0 0.65rem;
+  color: var(--lp-cream);
+}
+
+.lp-aside__text {
+  margin: 0;
+  color: var(--lp-smoke);
+  font-size: clamp(0.88rem, 1.5vw, 1rem);
+  line-height: 1.55;
+  max-width: 34ch;
+  margin-left: auto;
+}
+
+.lp-brand {
+  font-family: var(--lp-font-display);
+  font-size: clamp(2.75rem, 8vw, 5.5rem);
+  font-weight: 600;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  color: var(--lp-cream);
+  margin: 0 0 0.85rem;
+}
+
+.lp-brand span {
+  color: var(--lp-brass);
+}
+
+.lp-headline {
+  font-family: var(--lp-font-display);
+  font-size: clamp(1.35rem, 3.2vw, 2.1rem);
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.2;
+  color: var(--lp-brass-bright);
+  margin: 0 0 0.75rem;
+  max-width: 22ch;
+}
+
+.lp-support {
+  font-size: clamp(0.92rem, 1.8vw, 1.05rem);
+  line-height: 1.55;
+  color: var(--lp-smoke);
+  margin: 0 0 1.4rem;
+  max-width: 36ch;
+}
+
+.lp-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.lp-btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--lp-font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.9rem 1.4rem;
+  transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.lp-btn:active {
+  transform: scale(0.98);
+}
+
+.lp-btn--primary {
+  background: var(--lp-brass);
+  color: var(--lp-ink);
+}
+
+.lp-btn--primary:hover {
+  background: var(--lp-brass-bright);
+}
+
+.lp-btn--ghost {
+  background: transparent;
+  color: var(--lp-cream);
+  border: 1px solid rgba(245, 240, 232, 0.35);
+}
+
+.lp-btn--ghost:hover {
+  border-color: var(--lp-brass);
+  color: var(--lp-brass-bright);
+}
+
+@media (max-width: 860px) {
+  .lp-hero__stage {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .lp-hero__aside {
+    justify-self: start;
+    text-align: left;
+    border-right: none;
+    border-left: 2px solid rgba(196, 165, 116, 0.55);
+    padding-right: 0;
+    padding-left: 1rem;
+    max-width: 36rem;
+  }
+
+  .lp-aside__text {
+    margin-left: 0;
+  }
+}
+
+.auth-shell {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+  overflow: auto;
+  font-family: var(--lp-font-body);
+}
+
+.auth-shell__media {
+  position: fixed;
+  inset: 0;
+  background-image: var(--lp-auth-image);
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+
+.auth-shell__veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(135deg, rgba(12, 10, 9, 0.82) 0%, rgba(12, 10, 9, 0.55) 45%, rgba(28, 25, 23, 0.78) 100%),
+    radial-gradient(ellipse at 20% 20%, rgba(196, 165, 116, 0.12), transparent 50%);
+}
+
+.auth-shell__panel {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.auth-shell__panel .bg-card {
+  background: rgba(28, 25, 23, 0.9) !important;
+  backdrop-filter: blur(12px);
+  border-color: rgba(196, 165, 116, 0.28) !important;
+  color: var(--lp-cream);
+}
+
+.auth-shell__panel h1,
+.auth-shell__panel h2,
+.auth-shell__panel h3,
+.auth-shell__panel label,
+.auth-shell__panel .text-primary {
+  color: var(--lp-cream) !important;
+}
+
+.auth-shell__panel .text-muted-foreground {
+  color: var(--lp-smoke) !important;
+}
+
+.auth-shell__back {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--lp-brass-bright);
+  font-family: var(--lp-font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.auth-shell__back:hover {
+  color: var(--lp-cream);
+}
+
+.auth-shell .theme-toggle-float {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50;
+}
+
+@keyframes lp-kenburns {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.14) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-hero__media {
+    animation: none;
+    transform: scale(1.04);
+  }
+}

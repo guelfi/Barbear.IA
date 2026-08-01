@@ -40,18 +40,22 @@ Este projeto encontra-se atualmente **pausado temporariamente** devido ao desenv
 Quando retomado, o backend será desenvolvido utilizando as melhores práticas do mercado:
 
 **🏗️ Tecnologias Planejadas:**
-- **.NET Core 8** - Framework principal
-- **Entity Framework Core** - ORM para acesso a dados
-- **SQL Server** - Banco de dados principal
-- **Redis** - Cache e sessões
+- **.NET 10 LTS** - Framework principal (substitui .NET 8; suporte até nov/2028)
+- **Entity Framework Core + Npgsql** - ORM e acesso a dados
+- **PostgreSQL** - Banco de dados principal
+- **Redis** - Cache, sessões e OTP
+- **Evolution API (OCI)** - WhatsApp: OTP/complemento de autenticação e notificações transacionais
+- **Stripe** - Billing SaaS (webhooks no backend)
 - **Docker** - Containerização
 
 **📐 Padrões de Arquitetura:**
 - **DDD (Domain Driven Design)** - Modelagem orientada ao domínio
 - **Clean Architecture** - Arquitetura limpa e desacoplada
 - **SOLID Principles** - Princípios de design orientado a objetos
-- **CQRS** - Separação de comandos e consultas
-- **Event Sourcing** - Rastreamento de eventos
+- **CQRS** - Separação de comandos e consultas (quando agregar valor)
+- **RBAC multi-tenant** - Permissões por role + isolamento por `TenantId`
+
+> Plano detalhado, critérios de aceite e matriz RBAC: [`docs/plano-implementacao-backend.md`](docs/plano-implementacao-backend.md) e [`docs/criterios-aceite-e-rbac.md`](docs/criterios-aceite-e-rbac.md).
 
 **🧪 Qualidade de Código:**
 - **TDD (Test Driven Development)** - Desenvolvimento orientado a testes
@@ -449,9 +453,12 @@ Senha: cliente123
 ## 📈 Roadmap
 
 - [ ] **App Mobile**: Desenvolvimento de aplicativo nativo
-- [ ] **Integração WhatsApp**: Notificações automáticas
-- [ ] **Sistema de Pagamento**: Integração com PIX e cartões
+- [ ] **Backend .NET 10 + PostgreSQL**: API multi-tenant com RBAC
+- [x] **Landing comercial**: LP antes do login + auth com visual de barbearia de luxo
+- [ ] **Evolution API (WhatsApp)**: OTP/auth complementar + notificações de agenda
+- [ ] **Sistema de Pagamento**: Stripe (assinatura SaaS) + evoluções PIX/cartão no tenant
 - [ ] **Relatórios Avançados**: Analytics detalhados
+- [ ] **WhatsApp por tenant**: número próprio da barbearia (Fase 2)
 - [ ] **API Pública**: Integração com sistemas externos
 - [ ] **Multi-idioma**: Suporte a múltiplos idiomas
 
