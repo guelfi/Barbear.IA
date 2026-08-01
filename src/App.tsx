@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { AuthForm } from './components/auth/AuthForm';
+import { LandingPage } from './components/marketing/LandingPage';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { Dashboard } from './components/dashboard/Dashboard';
@@ -28,9 +29,13 @@ import { toast } from 'sonner';
 import { Appointment, Client, Barber, Service } from './types';
 import './components/layout/layout.css';
 
+type GuestView = 'landing' | 'auth';
+
 function AppContent() {
   const { user, isLoading } = useAuth();
   const { mounted } = useTheme();
+  const [guestView, setGuestView] = useState<GuestView>('landing');
+  const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
@@ -329,7 +334,28 @@ function AppContent() {
   }
 
   if (!user) {
-    return <AuthForm />;
+    if (guestView === 'landing') {
+      return (
+        <LandingPage
+          onEnter={() => {
+            setAuthTab('login');
+            setGuestView('auth');
+          }}
+          onStartTrial={() => {
+            setAuthTab('register');
+            setGuestView('auth');
+          }}
+        />
+      );
+    }
+
+    return (
+      <AuthForm
+        key={authTab}
+        initialTab={authTab}
+        onBackToLanding={() => setGuestView('landing')}
+      />
+    );
   }
 
   return (
