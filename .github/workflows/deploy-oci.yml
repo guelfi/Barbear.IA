@@ -97,7 +97,7 @@ jobs:
 
             # Nginx: locations API/Swagger/front (IP :80 e batuara :443)
             if [ -f /var/www/nginx/nginx.conf ]; then
-              python3 deploy/apply-nginx-barbear-ia.py \
+              sudo python3 deploy/apply-nginx-barbear-ia.py \
                 /var/www/nginx/nginx.conf \
                 deploy/nginx-barbear-ia.locations.conf
               sudo docker exec nginx-proxy nginx -t
