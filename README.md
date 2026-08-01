@@ -20,15 +20,13 @@ O **Barbear.IA** é uma plataforma SaaS (Software as a Service) moderna e comple
 
 ## 🚧 Status do Projeto
 
-> **⚠️ PROJETO EM DESENVOLVIMENTO - ATUALMENTE EM FREEZER**
-
-Este projeto encontra-se atualmente **pausado temporariamente** devido ao desenvolvedor principal estar envolvido em outros projetos prioritários. 
+> **Em implementação ativa** — frontend em produção (LP + login) e API .NET 10 em construção (E0–E6 parciais).
 
 ### 📋 Situação Atual
-- ✅ **Frontend Completo**: Interface do usuário totalmente desenvolvida e funcional.
-- ⏸️ **Backend Pendente**: Ainda não iniciado o desenvolvimento da API
-- 🎨 **Design Finalizado**: Todas as telas e componentes implementados
-- 📱 **Responsividade**: Interface adaptada para todos os dispositivos
+- ✅ **Frontend**: SPA completa + landing comercial + login (mock API no browser até E9)
+- ✅ **Backend (base)**: .NET 10 Clean Architecture, Postgres, Redis, JWT/RBAC, tenants, catálogo, agenda, dashboard, OTP Evolution (client)
+- ⏳ **Pendente**: billing Stripe, notificações in-app, integração front→API real (E7–E9)
+- 📖 Detalhes da API: [`backend/README.md`](backend/README.md)
 
 ### 👨‍💻 Desenvolvedor Principal
 **Marco Guelfi** - Proprietário do repositório e conta GitHub
@@ -435,7 +433,7 @@ Sistema de autenticação robusto com:
 ```bash
 # Super Admin
 Email: admin@barbear.ia
-Senha: super123
+Senha: Admin123#
 
 # Admin Barbearia
 Email: admin@barbearia.com

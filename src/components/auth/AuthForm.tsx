@@ -138,19 +138,18 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
     e.preventDefault();
     setError("");
 
-    // Validar se um tipo de usuário foi selecionado
     if (!loginData.userType) {
       setError("Por favor, selecione o tipo de usuário");
       return;
     }
 
-    const success = await login(
+    const result = await login(
       loginData.email,
       loginData.password,
       loginData.userType,
     );
-    if (!success) {
-      setError("Email ou senha incorretos");
+    if (!result.success) {
+      setError("Usuário ou senha inválido");
     }
   };
 
@@ -207,8 +206,8 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
       return;
     }
 
-    const success = await register(registerData);
-    if (success) {
+    const result = await register(registerData);
+    if (result.success) {
       if (registerData.userType === "barbershop") {
         toast.success(
           "Cadastro realizado! Sua barbearia está em análise. Você tem 7 dias para testar o sistema.",
@@ -220,7 +219,7 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
       }
       setActiveTab("login");
     } else {
-      setError("Erro ao criar conta. Tente novamente.");
+      setError(result.error || "Erro ao criar conta. Tente novamente.");
     }
   };
 
@@ -759,17 +758,6 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                     </div>
                   </motion.div>
 
-                  {error && (
-                    <motion.div
-                      className="text-destructive text-sm text-center p-3 bg-destructive/10 rounded-md border border-destructive/20"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {error}
-                    </motion.div>
-                  )}
-
                   <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -787,6 +775,21 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                     </MaterialButton>
                   </motion.div>
 
+                  {error && (
+                    <motion.div
+                      role="alert"
+                      aria-live="assertive"
+                      className="auth-shell__alert"
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {error === "Por favor, selecione o tipo de usuário"
+                        ? error
+                        : "Usuário ou senha inválido"}
+                    </motion.div>
+                  )}
+
                   {/* Demo autofill: apenas em desenvolvimento local */}
                   {import.meta.env.DEV && loginData.userType && (
                     <motion.div
@@ -796,7 +799,7 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                       transition={{ duration: 0.4, delay: 0.7 }}
                     >
                       <p className="text-xs text-muted-foreground text-center mb-3">
-                        Dev only — preenchimento com usuários mock
+                        Desenvolvimento — preenchimento com usuários de demonstração
                       </p>
                       <div className="flex justify-center">
                         <MaterialButton
@@ -805,10 +808,10 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                           size="sm"
                           onClick={() => {
                             const credentials = {
-                              client: { email: "cliente@email.com", password: "cliente123" },
-                              barber: { email: "barbeiro@barbearia.com", password: "barber123" },
-                              barbershop: { email: "admin@barbearia.com", password: "admin123" },
-                              super_admin: { email: "admin@barbear.ia", password: "super123" }
+                              client: { email: "cliente.alpha@barbear.ia", password: "Demo@123456" },
+                              barber: { email: "barbeiro.alpha@barbear.ia", password: "Demo@123456" },
+                              barbershop: { email: "dono.alpha@barbear.ia", password: "Demo@123456" },
+                              super_admin: { email: "admin@barbear.ia", password: "Admin123#" }
                             };
                             const cred = credentials[loginData.userType as keyof typeof credentials];
                             setLoginData({
@@ -1239,6 +1242,21 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
             </Tabs>
           </MaterialCardContent>
         </MaterialCard>
+
+        {activeTab === "login" && error && (
+          <motion.div
+            role="alert"
+            aria-live="assertive"
+            className="auth-shell__alert auth-shell__alert--below-card"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            {error === "Por favor, selecione o tipo de usuário"
+              ? error
+              : "Usuário ou senha inválido"}
+          </motion.div>
+        )}
       </motion.div>
     </motion.div>
   );

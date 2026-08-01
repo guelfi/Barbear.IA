@@ -17,6 +17,10 @@ RUN echo "📦 Removendo package-lock.json e usando npm install limpo" && \
 # Copy source code
 COPY . .
 
+# Opcional: API real via proxy nginx (ex.: http://192.168.15.119/barbear-ia/api/v1)
+ARG VITE_API_URL=
+ENV VITE_API_URL=$VITE_API_URL
+
 # Build the application with debug info
 RUN echo "🏗️ Iniciando build de produção..." && \
     npm run build && \

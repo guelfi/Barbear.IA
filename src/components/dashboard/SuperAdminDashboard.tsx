@@ -96,56 +96,72 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
     loadSuperAdminData();
   }, []);
 
-  const filteredTenants = tenants.filter(tenant =>
-    tenant.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tenant.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTenants = tenants.filter((tenant) => {
+    const term = searchTerm.toLowerCase();
+    const businessName = (tenant.businessName || tenant.name || '').toLowerCase();
+    const name = (tenant.name || '').toLowerCase();
+    const email = (tenant.email || '').toLowerCase();
+    return businessName.includes(term) || name.includes(term) || email.includes(term);
+  });
 
   const pendingTenants = filteredTenants.filter(t => t.status === 'pending');
 
-  const handleApproveTenant = (tenantId: string) => {
-    setTenants(prev => 
-      prev.map(tenant => 
-        tenant.id === tenantId 
-          ? { ...tenant, status: 'approved' as const, approvedAt: new Date().toISOString() }
-          : tenant
-      )
-    );
-    toast.success('Barbearia aprovada com sucesso!');
+  const handleApproveTenant = async (tenantId: string) => {
+    try {
+      await barbershopsAPI.approve(tenantId);
+      setTenants((prev) =>
+        prev.map((tenant) =>
+          tenant.id === tenantId
+            ? { ...tenant, status: 'approved' as const, approvedAt: new Date().toISOString() }
+            : tenant
+        )
+      );
+      toast.success('Barbearia aprovada com sucesso!');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Falha ao aprovar barbearia.');
+    }
   };
 
-  const handleRejectTenant = (tenantId: string) => {
-    setTenants(prev => 
-      prev.map(tenant => 
-        tenant.id === tenantId 
-          ? { ...tenant, status: 'cancelled' as const }
-          : tenant
-      )
-    );
-    toast.success('Solicitação rejeitada.');
+  const handleRejectTenant = async (tenantId: string) => {
+    try {
+      await barbershopsAPI.reject(tenantId);
+      setTenants((prev) =>
+        prev.map((tenant) =>
+          tenant.id === tenantId ? { ...tenant, status: 'cancelled' as const } : tenant
+        )
+      );
+      toast.success('Solicitação rejeitada.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Falha ao rejeitar barbearia.');
+    }
   };
 
-  const handleSuspendTenant = (tenantId: string) => {
-    setTenants(prev => 
-      prev.map(tenant => 
-        tenant.id === tenantId 
-          ? { ...tenant, status: 'suspended' as const }
-          : tenant
-      )
-    );
-    toast.success('Barbearia suspensa.');
+  const handleSuspendTenant = async (tenantId: string) => {
+    try {
+      await barbershopsAPI.suspend(tenantId);
+      setTenants((prev) =>
+        prev.map((tenant) =>
+          tenant.id === tenantId ? { ...tenant, status: 'suspended' as const } : tenant
+        )
+      );
+      toast.success('Barbearia suspensa.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Falha ao suspender barbearia.');
+    }
   };
 
-  const handleReactivateTenant = (tenantId: string) => {
-    setTenants(prev => 
-      prev.map(tenant => 
-        tenant.id === tenantId 
-          ? { ...tenant, status: 'approved' as const }
-          : tenant
-      )
-    );
-    toast.success('Barbearia reativada.');
+  const handleReactivateTenant = async (tenantId: string) => {
+    try {
+      await barbershopsAPI.reactivate(tenantId);
+      setTenants((prev) =>
+        prev.map((tenant) =>
+          tenant.id === tenantId ? { ...tenant, status: 'approved' as const } : tenant
+        )
+      );
+      toast.success('Barbearia reativada.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Falha ao reativar barbearia.');
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -156,7 +172,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
       cancelled: { variant: 'outline' as const, label: 'Cancelado', icon: XCircle }
     };
     
-    const config = variants[status as keyof typeof variants];
+    const config = variants[status as keyof typeof variants] ?? variants.pending;
     const Icon = config.icon;
     
     return (
@@ -173,11 +189,11 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
     );
   };
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value?: number | null) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(value);
+    }).format(Number(value ?? 0));
   };
 
   const formatDate = (dateString: string) => {
@@ -275,9 +291,9 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                     />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalTenants}</div>
+                    <div className="text-2xl font-bold">{stats.totalTenants ?? 0}</div>
                     <p className="text-xs text-muted-foreground">
-                      {stats.activeTenants} ativas
+                      {stats.activeTenants ?? 0} ativas
                     </p>
                   </CardContent>
                 </Card>
@@ -387,7 +403,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {stats.recentTenants.slice(0, 5).map((tenant, index) => (
+                    {(stats.recentTenants ?? []).slice(0, 5).map((tenant, index) => (
                       <motion.div 
                         key={tenant.id} 
                         className="flex items-center space-x-4 p-2 rounded-lg hover:bg-accent/50 transition-colors"
@@ -415,7 +431,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{tenant.businessName}</p>
+                          <p className="font-medium truncate">{tenant.businessName || tenant.name}</p>
                           <p className="text-sm text-muted-foreground truncate">
                             {tenant.name} • {tenant.email}
                           </p>

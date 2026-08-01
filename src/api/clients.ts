@@ -1,5 +1,4 @@
-import clientsData from '../database/clients.json';
-import appointmentsData from '../database/appointments.json';
+import { del, get, post, put } from './http';
 
 interface Client {
   id: string;
@@ -20,114 +19,55 @@ interface Client {
   updatedAt: string;
 }
 
-const simulateNetworkDelay = (min: number = 300, max: number = 700): Promise<void> => {
-  const delay = Math.random() * (max - min) + min;
-  return new Promise(resolve => setTimeout(resolve, delay));
-};
-
-const logClientEvent = (event: string, data: any) => {
-  console.log(`[CLIENTS API] ${event}:`, data);
-};
+const map = (raw: any): Client => ({
+  ...raw,
+  avatar: raw.avatarUrl ?? raw.avatar ?? '',
+  tenantId: raw.tenantId ?? '',
+  preferences: raw.preferences ?? {},
+  totalAppointments: raw.totalAppointments ?? 0,
+  totalSpent: Number(raw.totalSpent ?? 0),
+  isActive: raw.isActive ?? true,
+  createdAt: raw.createdAt ?? new Date().toISOString(),
+  updatedAt: raw.updatedAt ?? new Date().toISOString(),
+});
 
 export const clientsAPI = {
   async getAll(): Promise<Client[]> {
-    logClientEvent('GET_ALL_CLIENTS', {});
-    await simulateNetworkDelay();
-
-    return clientsData.clients;
+    return (await get<any[]>('/clients')).map(map);
   },
-
   async getClients(tenantId?: string, search?: string): Promise<Client[]> {
-    logClientEvent('GET_CLIENTS', { tenantId, search });
-    await simulateNetworkDelay();
-
-    let clients = [...clientsData.clients];
-    
-    if (tenantId) {
-      clients = clients.filter(client => client.tenantId === tenantId);
-    }
-    
-    if (search) {
-      const searchLower = search.toLowerCase();
-      clients = clients.filter(client => 
-        client.name.toLowerCase().includes(searchLower) ||
-        client.email.toLowerCase().includes(searchLower) ||
-        client.phone.includes(search)
-      );
-    }
-
-    return clients;
+    return (await get<any[]>('/clients', { query: { tenantId, search } })).map(map);
   },
-
-  async getClientById(id: string): Promise<Client | null> {
-    logClientEvent('GET_CLIENT_BY_ID', { id });
-    await simulateNetworkDelay();
-
-    const client = clientsData.clients.find(c => c.id === id);
-    return client || null;
+  async getClientById(id: string): Promise<Client> {
+    const found = (await this.getAll()).find((item) => item.id === id);
+    if (!found) throw new Error('Cliente não encontrado.');
+    return found;
   },
-
-  async createClient(clientData: Omit<Client, 'id' | 'createdAt' | 'updatedAt' | 'totalAppointments' | 'totalSpent'>): Promise<Client> {
-    logClientEvent('CREATE_CLIENT', { name: clientData.name, email: clientData.email });
-    await simulateNetworkDelay();
-
-    const clientDataWithDefaults = {
-      ...clientData,
-      totalAppointments: 0,
-      totalSpent: 0
-    };
-
-    const newClient = {
-      ...clientDataWithDefaults,
-      id: `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    logClientEvent('CLIENT_CREATED', { id: newClient.id });
-    return newClient;
+  async createClient(
+    data: Omit<Client, 'id' | 'createdAt' | 'updatedAt' | 'totalAppointments' | 'totalSpent'>
+  ): Promise<Client> {
+    const created = await post<{ id: string }>('/clients', {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      notes: typeof data.preferences === 'string' ? data.preferences : undefined,
+      userId: data.userId || null,
+    });
+    return this.getClientById(created.id);
   },
-
-  async updateClient(id: string, updates: Partial<Client>): Promise<Client | null> {
-    logClientEvent('UPDATE_CLIENT', { id, updates });
-    await simulateNetworkDelay();
-
-    const client = clientsData.clients.find(c => c.id === id);
-    const updatedClient = client ? { ...client, ...updates, updatedAt: new Date().toISOString() } : null;
-    
-    if (updatedClient) {
-      logClientEvent('CLIENT_UPDATED', { id });
-    }
-    
-    return updatedClient;
+  async updateClient(id: string, updates: Partial<Client>): Promise<Client> {
+    await put(`/clients/${id}`, {
+      name: updates.name,
+      email: updates.email,
+      phone: updates.phone,
+      notes: typeof updates.preferences === 'string' ? updates.preferences : undefined,
+    });
+    return this.getClientById(id);
   },
-
-  async getClientStats(clientId: string): Promise<{
-    totalAppointments: number;
-    completedAppointments: number;
-    cancelledAppointments: number;
-    totalSpent: number;
-    favoriteBarber?: string;
-    lastVisit?: string;
-  }> {
-    logClientEvent('GET_CLIENT_STATS', { clientId });
-    await simulateNetworkDelay();
-
-    const appointments = appointmentsData.appointments.filter(apt => apt.clientId === clientId);
-    
-    const stats = {
-      totalAppointments: appointments.length,
-      completedAppointments: appointments.filter(apt => apt.status === 'completed').length,
-      cancelledAppointments: appointments.filter(apt => apt.status === 'cancelled').length,
-      totalSpent: appointments
-        .filter(apt => apt.status === 'completed')
-        .reduce((sum, apt) => sum + apt.price, 0),
-      lastVisit: appointments
-        .filter(apt => apt.status === 'completed')
-        .sort((a, b) => b.date.localeCompare(a.date))[0]?.date
-    };
-
-    return stats;
-  }
+  async deleteClient(id: string): Promise<boolean> {
+    await del<void>(`/clients/${id}`);
+    return true;
+  },
 };
 
 export default clientsAPI;

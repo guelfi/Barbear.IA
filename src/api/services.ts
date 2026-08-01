@@ -1,4 +1,4 @@
-import servicesData from '../database/services.json';
+import { del, get, post, put } from './http';
 
 interface Service {
   id: string;
@@ -13,106 +13,60 @@ interface Service {
   updatedAt: string;
 }
 
-const simulateNetworkDelay = (min: number = 200, max: number = 500): Promise<void> => {
-  const delay = Math.random() * (max - min) + min;
-  return new Promise(resolve => setTimeout(resolve, delay));
-};
-
-const logServiceEvent = (event: string, data: any) => {
-  console.log(`[SERVICES API] ${event}:`, data);
-};
+const map = (raw: any): Service => ({
+  ...raw,
+  description: raw.description ?? '',
+  duration: raw.durationMinutes ?? raw.duration ?? 30,
+  price: Number(raw.price ?? 0),
+  category: raw.category ?? 'geral',
+  tenantId: raw.tenantId ?? '',
+  isActive: raw.isActive ?? true,
+  createdAt: raw.createdAt ?? new Date().toISOString(),
+  updatedAt: raw.updatedAt ?? new Date().toISOString(),
+});
 
 export const servicesAPI = {
   async getAll(): Promise<Service[]> {
-    logServiceEvent('GET_ALL_SERVICES', {});
-    await simulateNetworkDelay();
-
-    return servicesData.services.filter(service => service.isActive);
+    return (await get<any[]>('/services')).map(map);
   },
-
   async getServices(tenantId?: string, category?: string): Promise<Service[]> {
-    logServiceEvent('GET_SERVICES', { tenantId, category });
-    await simulateNetworkDelay();
-
-    let services = [...servicesData.services];
-    
-    if (tenantId) {
-      services = services.filter(service => service.tenantId === tenantId);
-    }
-    
-    if (category) {
-      services = services.filter(service => service.category === category);
-    }
-
-    return services.filter(service => service.isActive);
+    const items = (await get<any[]>('/services', { query: { tenantId } })).map(map);
+    return category ? items.filter((service) => service.category === category) : items;
   },
-
-  async getServiceById(id: string): Promise<Service | null> {
-    logServiceEvent('GET_SERVICE_BY_ID', { id });
-    await simulateNetworkDelay();
-
-    const service = servicesData.services.find(s => s.id === id);
-    return service || null;
+  async getServiceById(id: string): Promise<Service> {
+    const found = (await this.getAll()).find((item) => item.id === id);
+    if (!found) throw new Error('Serviço não encontrado.');
+    return found;
   },
-
-  async createService(serviceData: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Promise<Service> {
-    logServiceEvent('CREATE_SERVICE', { name: serviceData.name, tenantId: serviceData.tenantId });
-    await simulateNetworkDelay();
-
-    const newId = `service-${Date.now()}`;
-    const newService: Service = {
-      ...serviceData,
-      id: newId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    logServiceEvent('SERVICE_CREATED', { id: newId });
-    return newService;
+  async createService(data: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Promise<Service> {
+    const created = await post<{ id: string }>('/services', {
+      name: data.name,
+      description: data.description,
+      category: data.category,
+      price: data.price,
+      durationMinutes: data.duration,
+    });
+    return this.getServiceById(created.id);
   },
-
-  async updateService(id: string, updates: Partial<Service>): Promise<Service | null> {
-    logServiceEvent('UPDATE_SERVICE', { id, updates });
-    await simulateNetworkDelay();
-
-    const service = servicesData.services.find(s => s.id === id);
-    if (!service) return null;
-
-    const updatedService = {
-      ...service,
-      ...updates,
-      updatedAt: new Date().toISOString()
-    };
-
-    logServiceEvent('SERVICE_UPDATED', { id });
-    return updatedService;
+  async updateService(id: string, updates: Partial<Service>): Promise<Service> {
+    const current = await this.getServiceById(id);
+    await put(`/services/${id}`, {
+      name: updates.name ?? current.name,
+      description: updates.description ?? current.description,
+      category: updates.category ?? current.category,
+      price: updates.price ?? current.price,
+      durationMinutes: updates.duration ?? current.duration,
+    });
+    return this.getServiceById(id);
   },
-
   async deleteService(id: string): Promise<boolean> {
-    logServiceEvent('DELETE_SERVICE', { id });
-    await simulateNetworkDelay();
-
-    const service = servicesData.services.find(s => s.id === id);
-    if (!service) return false;
-
-    // Em uma implementação real, faria soft delete ou verificaria dependências
-    logServiceEvent('SERVICE_DELETED', { id });
+    await del<void>(`/services/${id}`);
     return true;
   },
-
   async getServiceCategories(tenantId?: string): Promise<string[]> {
-    logServiceEvent('GET_SERVICE_CATEGORIES', { tenantId });
-    await simulateNetworkDelay();
-
-    let services = servicesData.services;
-    
-    if (tenantId) {
-      services = services.filter(service => service.tenantId === tenantId);
-    }
-
-    const categories = [...new Set(services.map(service => service.category))];
-    return categories;
-  }
+    const services = await this.getServices(tenantId);
+    return [...new Set(services.map((service) => service.category))];
+  },
 };
 
 export default servicesAPI;

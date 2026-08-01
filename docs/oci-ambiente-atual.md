@@ -14,7 +14,9 @@
 ```
 Internet → Cloudflare → nginx-proxy (:80/:443)
                               │
-                              ├─ /barbear-ia/  → barbear-ia-frontend:80
+                              ├─ /barbear-ia/api/     → barbear-ia-api:8080
+                              ├─ /barbear-ia/swagger/ → barbear-ia-api:8080
+                              ├─ /barbear-ia/         → barbear-ia-frontend:80
                               ├─ outros projetos (driverhub, healthcore, batuara, …)
                               └─ …
 
@@ -26,23 +28,22 @@ Evolution API (compartilhada Batuara/outros)
 
 ---
 
-## 2. Barbear.IA (frontend)
+## 2. Barbear.IA (stack)
 
 | Item | Valor |
 |------|--------|
 | Código no servidor | `/var/www/Barbear.IA` |
-| Branch deployada | `main` (alinhada a `origin/main` no momento da inspeção) |
-| Container | `barbear-ia-frontend` (image `barbearia-barbear-ia-frontend`) |
-| Porta no container | `80` (somente `expose`; sem publish público direto) |
+| Branch deployada | `main` |
+| Containers | `barbear-ia-frontend`, `barbear-ia-api`, `barbear-ia-postgres`, `barbear-ia-redis` |
 | Redes Docker | `barbearia_barbear-ia-net` + **`www_projetos-net`** (shared com `nginx-proxy`) |
-| Health | `curl` em `/health` dentro do container — status healthy |
 | Compose | `/var/www/Barbear.IA/docker-compose.yml` |
-| Vite `base` | `/barbear-ia/` (coerente com o path do proxy) |
-| Backend API | **ainda não existe** neste host |
+| Secrets | `/var/www/Barbear.IA/.env` (criado no 1º deploy se ausente) |
+| Vite `base` | `/barbear-ia/` |
+| `VITE_API_URL` | `https://batuara.org.br/barbear-ia/api/v1` |
 
-### Deploy (CD existente)
+### Deploy (CD)
 
-O workflow `deploy-oci.yml` faz SSH, `git reset --hard origin/main` em `/var/www/Barbear.IA` e `docker compose up -d --build` do serviço frontend.
+O workflow `deploy-oci.yml` faz SSH, `git reset --hard origin/main`, `docker compose up -d --build` da stack completa, aplica locations no `/var/www/nginx/nginx.conf` e recarrega o `nginx-proxy`.
 
 ---
 
@@ -52,31 +53,23 @@ O workflow `deploy-oci.yml` faz SSH, `git reset --hard origin/main` em `/var/www
 |------|--------|
 | Container | `nginx-proxy` (`nginx:stable-alpine`) |
 | Portas públicas | `0.0.0.0:80`, `0.0.0.0:443` |
-| Rede | `www_projetos-net` (resolve `barbear-ia-frontend` por nome) |
+| Rede | `www_projetos-net` (resolve `barbear-ia-*` por nome) |
 
-### Location ativa (Barbear.IA)
+### Locations ativas (Barbear.IA)
 
-Definida no `nginx.conf` **dentro** do container `nginx-proxy`, no `server` catch-all:
+| Ambiente | Path | Upstream |
+|----------|------|----------|
+| OCI + Local | `/barbear-ia/swagger/` | `barbear-ia-api:8080` → `/swagger/` |
+| OCI + Local | `/barbear-ia/api/` | `barbear-ia-api:8080` → `/api/` |
+| OCI + Local | `/barbear-ia/` | `barbear-ia-frontend:80` |
 
-- `listen 80`
-- `server_name _ 129.153.86.168`
+Locations estão no vhost IP (`:80`) e no vhost HTTPS `batuara.org.br`.
 
-```nginx
-location /barbear-ia/ {
-  set $upstream_barbearia http://barbear-ia-frontend:80;
-  rewrite ^/barbear-ia/(.*)$ /$1 break;
-  proxy_pass $upstream_barbearia;
-  proxy_set_header Host $host;
-  proxy_set_header X-Real-IP $remote_addr;
-  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
+### URLs
 
-### URL pública observada
-
-- `https://batuara.org.br/barbear-ia/` → HTTP 200 (via Cloudflare na inspeção)
-- Origem / IP: path `/barbear-ia/` no nginx da VM
+- OCI front/API: `https://batuara.org.br/barbear-ia/` · `.../api/v1/...` · `.../swagger/index.html`
+- OCI via IP: `http://129.153.86.168/barbear-ia/`
+- Local: `http://192.168.15.119/barbear-ia/`
 
 ### Domínios SSL no mesmo proxy (outros produtos)
 

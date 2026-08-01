@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Alert } from '../ui/alert';
 import { Clock, CreditCard } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
+import { billingAPI } from '../../api';
 
 interface TrialInfo {
   isTrialActive: boolean;
@@ -13,21 +15,31 @@ interface TrialInfo {
   plan: 'pro-monthly' | 'pro-yearly';
 }
 
-// Mock trial data - replace with real API call
-const mockTrialInfo: TrialInfo = {
-  isTrialActive: true,
-  trialEndsAt: '2024-03-15T23:59:59Z',
-  daysRemaining: 5,
-  status: 'active',
-  plan: 'pro-monthly'
-};
-
 export function TrialBanner() {
   const { user } = useAuth();
-  const [trialInfo] = useState<TrialInfo>(mockTrialInfo);
+  const [trialInfo, setTrialInfo] = useState<TrialInfo | null>(null);
+
+  useEffect(() => {
+    if (!user || user.role === 'super_admin' || user.role === 'client') return;
+    billingAPI.getSubscription()
+      .then((subscription) => {
+        const trialEndsAt = subscription.trialEndsAt;
+        const daysRemaining = trialEndsAt
+          ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86_400_000))
+          : 0;
+        setTrialInfo({
+          isTrialActive: subscription.status === 'trial' && daysRemaining > 0,
+          trialEndsAt: trialEndsAt ?? '',
+          daysRemaining,
+          status: subscription.status === 'trial' ? 'active' : subscription.status === 'active' ? 'approved' : 'expired',
+          plan: subscription.plan === 'pro-yearly' ? 'pro-yearly' : 'pro-monthly',
+        });
+      })
+      .catch(() => setTrialInfo(null));
+  }, [user]);
 
   // Don't show banner for super_admin or clients
-  if (!user || user.role === 'super_admin' || user.role === 'client') {
+  if (!user || user.role === 'super_admin' || user.role === 'client' || !trialInfo || !trialInfo.isTrialActive) {
     return null;
   }
 
@@ -57,7 +69,23 @@ export function TrialBanner() {
           </div>          
           {/* Segunda linha: descrição */}
           <div className="flex items-center space-x-2">
-            <Button size="sm" className="h-6 text-[10px] px-2 py-0 flex-shrink-0">
+            <Button
+              size="sm"
+              className="h-6 text-[10px] px-2 py-0 flex-shrink-0"
+              onClick={async () => {
+                try {
+                  const result = await billingAPI.checkout(trialInfo.plan);
+                  toast.success(result.message || 'Assinatura atualizada no sandbox.');
+                  if (result.checkoutUrl && result.checkoutUrl.startsWith('http')) {
+                    window.location.href = result.checkoutUrl;
+                  } else {
+                    setTrialInfo((prev) => prev ? { ...prev, isTrialActive: false, status: 'approved' } : prev);
+                  }
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : 'Falha no checkout.');
+                }
+              }}
+            >
               <CreditCard className="h-2.5 w-2.5 mr-1" />
               Escolher Plano
             </Button>

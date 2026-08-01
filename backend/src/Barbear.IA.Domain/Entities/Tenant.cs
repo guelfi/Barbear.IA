@@ -91,4 +91,10 @@ public class Tenant : Entity
         SettingsJson = settingsJson;
         Touch();
     }
+
+    public void AttachSubscription(TenantSubscription subscription)
+    {
+        ArgumentNullException.ThrowIfNull(subscription);
+        Subscription = subscription;
+    }
 }

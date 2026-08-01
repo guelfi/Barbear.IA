@@ -22,9 +22,6 @@ import { ServiceForm } from './components/services/ServiceForm';
 import { Toaster } from './components/ui/sonner';
 import { InstallPrompt } from './components/pwa/InstallPrompt';
 import { AccessibilityChecker } from './components/accessibility/AccessibilityChecker';
-import { ResponsiveTestSuite } from './components/testing/ResponsiveTestSuite';
-
-import { ProductionDebugPanel } from './components/debug/ProductionDebugPanel';
 import { toast } from 'sonner';
 import { Appointment, Client, Barber, Service } from './types';
 import './components/layout/layout.css';
@@ -32,7 +29,7 @@ import './components/layout/layout.css';
 type GuestView = 'landing' | 'auth';
 
 function AppContent() {
-  const { user, isLoading } = useAuth();
+  const { user, isInitializing, isLoading } = useAuth();
   const { mounted } = useTheme();
   const [guestView, setGuestView] = useState<GuestView>('landing');
   const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
@@ -47,11 +44,12 @@ function AppContent() {
   const [editingBarber, setEditingBarber] = useState<Barber | undefined>();
   const [editingService, setEditingService] = useState<Service | undefined>();
 
-  console.log('App: Estado atual:', { 
-    user: user ? { email: user.email, role: user.role } : null, 
-    isLoading, 
+  console.log('App: Estado atual:', {
+    user: user ? { email: user.email, role: user.role } : null,
+    isInitializing,
+    isLoading,
     mounted,
-    activeTab 
+    activeTab
   });
 
   const titles = useMemo(() => ({
@@ -321,8 +319,8 @@ function AppContent() {
 
   const currentTitle = titles[activeTab as keyof typeof titles] || 'Dashboard';
 
-  // Early returns after all hooks
-  if (isLoading || !mounted) {
+  // Splash só no bootstrap — login/register usam isLoading sem desmontar o AuthForm
+  if (isInitializing || !mounted) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
@@ -383,8 +381,7 @@ function AppContent() {
 
       <Toaster position="top-right" />
       <InstallPrompt />
-      <AccessibilityChecker />
-      <ResponsiveTestSuite />
+      {import.meta.env.DEV && <AccessibilityChecker />}
     </div>
   );
 }
@@ -407,7 +404,6 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <AppContent />
-          <ProductionDebugPanel />
         </AuthProvider>
       </ThemeProvider>
     </Suspense>
