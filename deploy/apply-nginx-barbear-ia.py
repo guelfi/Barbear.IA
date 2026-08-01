@@ -10,14 +10,15 @@ from pathlib import Path
 MARKER_BEGIN = "# BEGIN Barbear.IA (managed by Barbear.IA CD)"
 MARKER_END = "# END Barbear.IA (managed by Barbear.IA CD)"
 
-OLD_BLOCK_RE = re.compile(
-    r"(?ms)^[ \t]*#\s*Barbear\.IA[^\n]*\n"
-    r"[ \t]*location\s+/barbear-ia/\s*\{.*?\n[ \t]*\}\n"
-)
-
 MANAGED_BLOCK_RE = re.compile(
     re.escape(MARKER_BEGIN) + r".*?" + re.escape(MARKER_END) + r"\n?",
     re.DOTALL,
+)
+
+# Qualquer location antiga/manual do Barbear (com ou sem comentário acima).
+LEGACY_LOCATION_RE = re.compile(
+    r"(?ms)^[ \t]*#\s*Barbear\.IA[^\n]*\n|"
+    r"^[ \t]*location\s*(?:=\s*)?(?:\^~\s*)?/barbear-ia(?:/swagger|/api)?/?\s*\{.*?\n[ \t]*\}\n"
 )
 
 
@@ -33,7 +34,11 @@ def load_fragment(path: Path) -> str:
 
 def strip_barbear_blocks(text: str) -> str:
     text = MANAGED_BLOCK_RE.sub("", text)
-    text = OLD_BLOCK_RE.sub("", text)
+    # Remover locations órfãs (legado) — repetir até estabilizar
+    prev = None
+    while prev != text:
+        prev = text
+        text = LEGACY_LOCATION_RE.sub("", text)
     return text
 
 
