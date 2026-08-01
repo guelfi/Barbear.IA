@@ -11,10 +11,12 @@ Publicação na OCI **concluída**. Stack completa em produção (front + API + 
 
 | Ambiente | URL | Status verificado |
 |----------|-----|-------------------|
-| Produção front | https://batuara.org.br/barbear-ia/ | HTTP 200 |
-| Produção API | https://batuara.org.br/barbear-ia/api/v1/ | Login SA OK |
-| Produção Swagger | https://batuara.org.br/barbear-ia/swagger/index.html | HTTP 200 |
+| **Produção front (canônico)** | http://129.153.86.168/barbear-ia/ | HTTP 200 |
+| Produção API | http://129.153.86.168/barbear-ia/api/v1/ | Login SA OK |
+| Produção Swagger | http://129.153.86.168/barbear-ia/swagger/index.html | HTTP 200 |
 | Local (paridade) | http://192.168.15.119/barbear-ia/ | Compose local |
+
+> Acesso OCI deve usar o **IP público + path** (`/barbear-ia/`), não o domínio `batuara.org.br`.
 
 **CI/CD (último ciclo observado):**
 - CI `30720245116` — success (fix nginx legado)
@@ -78,7 +80,7 @@ Mismatch de persona → “Credenciais inválidas.”
 - API: Controllers + Auth/JWT + Tenant middleware
 - Front HTTP: `src/api/http.ts` + módulos; `AuthContext` (`isInitializing` vs `isLoading`)
 - Compose local: `docker-compose.local.yml`
-- Compose OCI: `docker-compose.yml` (`VITE_API_URL=https://batuara.org.br/barbear-ia/api/v1`)
+- Compose OCI: `docker-compose.yml` (`VITE_API_URL=http://129.153.86.168/barbear-ia/api/v1`)
 - Docs: `docs/oci-ambiente-atual.md`, `docs/plano-implementacao-backend.md`, `docs/backlog-fases-futuras.md`
 
 ## Pendências conhecidas (pós go-live)

@@ -1,10 +1,10 @@
 version: '3.3'
 
 # OCI — stack completa (frontend + API + Postgres + Redis).
-# Acesso público:
-#   https://batuara.org.br/barbear-ia/
-#   https://batuara.org.br/barbear-ia/api/v1/...
-#   http://129.153.86.168/barbear-ia/  (nginx-proxy, sem porta publicada)
+# Acesso público canônico (IP + path, nginx-proxy sem porta publicada):
+#   http://129.153.86.168/barbear-ia/
+#   http://129.153.86.168/barbear-ia/api/v1/...
+#   http://129.153.86.168/barbear-ia/swagger/index.html
 #
 # Secrets: sobrescreva via /var/www/Barbear.IA/.env (não versionado).
 
@@ -14,7 +14,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-https://batuara.org.br/barbear-ia/api/v1}
+        VITE_API_URL: ${VITE_API_URL:-http://129.153.86.168/barbear-ia/api/v1}
     container_name: barbear-ia-frontend
     depends_on:
       barbear-ia-api:

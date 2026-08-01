@@ -12,11 +12,11 @@
 | [`docs/backlog-fases-futuras.md`](docs/backlog-fases-futuras.md) | Melhorias pós-v1 (F-BARBER, F-CLIENT-MT, F-PKG) |
 | [`docs/oci-ambiente-atual.md`](docs/oci-ambiente-atual.md) | Topologia OCI / nginx / Evolution |
 
-## Produção
+## Produção (acesso canônico)
 
-- Front: https://batuara.org.br/barbear-ia/
-- API: https://batuara.org.br/barbear-ia/api/v1/
-- Swagger: https://batuara.org.br/barbear-ia/swagger/index.html
+- Front: http://129.153.86.168/barbear-ia/
+- API: http://129.153.86.168/barbear-ia/api/v1/
+- Swagger: http://129.153.86.168/barbear-ia/swagger/index.html
 
 ## Fases futuras (resumo)
 

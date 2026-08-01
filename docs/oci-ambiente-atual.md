@@ -39,7 +39,7 @@ Evolution API (compartilhada Batuara/outros)
 | Compose | `/var/www/Barbear.IA/docker-compose.yml` |
 | Secrets | `/var/www/Barbear.IA/.env` (criado no 1º deploy se ausente) |
 | Vite `base` | `/barbear-ia/` |
-| `VITE_API_URL` | `https://batuara.org.br/barbear-ia/api/v1` |
+| `VITE_API_URL` | `http://129.153.86.168/barbear-ia/api/v1` (canônico) |
 
 ### Deploy (CD)
 
@@ -67,8 +67,7 @@ Locations estão no vhost IP (`:80`) e no vhost HTTPS `batuara.org.br`.
 
 ### URLs
 
-- OCI front/API: `https://batuara.org.br/barbear-ia/` · `.../api/v1/...` · `.../swagger/index.html`
-- OCI via IP: `http://129.153.86.168/barbear-ia/`
+- **OCI (canônico):** `http://129.153.86.168/barbear-ia/` · `.../api/v1/...` · `.../swagger/index.html`
 - Local: `http://192.168.15.119/barbear-ia/`
 
 ### Domínios SSL no mesmo proxy (outros produtos)
@@ -152,7 +151,7 @@ curl -sS http://127.0.0.1:8085/ | head
 
 ## 7. Checklist de follow-up (não bloqueante da aprovação do plano)
 
-- [ ] Confirmar URL canônica definitiva do front (`https://batuara.org.br/barbear-ia/` vs domínio próprio)
+- [x] URL canônica do front/API: `http://129.153.86.168/barbear-ia/`
 - [ ] Definir path/subdomínio da API e location nginx correspondente
 - [ ] Definir rede Docker da API ↔ Evolution (`127.0.0.1:8085` vs attach na network Evolution)
 - [ ] Remover ou corrigir `config_test/barbear_ia.conf` legado

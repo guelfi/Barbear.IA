@@ -356,7 +356,7 @@ Cada épico tem: escopo, entregáveis, dependências, critérios de aceite (temp
 **Paths públicos:** `/barbear-ia/` · `/barbear-ia/api/` · `/barbear-ia/swagger/` (não `/barbear-ia-api/`)
 
 **Entregáveis**
-- [x] `VITE_API_URL` apontando para API real (prod: `https://batuara.org.br/barbear-ia/api/v1`)
+- [x] `VITE_API_URL` apontando para API real (prod: `http://129.153.86.168/barbear-ia/api/v1`)
 - [x] Front sem mock; client HTTP (`src/api/http.ts`)
 - [x] Deploy OCI API + Postgres + Redis + nginx (`deploy-oci.yml` + `deploy/apply-nginx-barbear-ia.py`)
 - [ ] Remover `ProductionDebugPanel` / resíduos cosméticos

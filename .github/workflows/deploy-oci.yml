@@ -78,7 +78,7 @@ jobs:
             # Garante .env de produção (não sobrescreve se já existir)
             if [ ! -f .env ]; then
               printf '%s\n' \
-                'VITE_API_URL=https://batuara.org.br/barbear-ia/api/v1' \
+                'VITE_API_URL=http://129.153.86.168/barbear-ia/api/v1' \
                 'POSTGRES_DB=barbear_ia' \
                 'POSTGRES_USER=barbear' \
                 'POSTGRES_PASSWORD=barbear_oci_change_me' \
