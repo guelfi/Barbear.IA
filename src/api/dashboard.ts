@@ -114,9 +114,14 @@ export const dashboardAPI = {
         monthlyRevenue: Number(tenant.monthlyRevenue ?? 0),
       }));
 
-    const totalTenants = global.tenants ?? tenants.length;
-    const activeTenants = global.approved ?? tenants.filter((t) => t.status === 'approved').length;
-    const pendingApprovals = global.pending ?? tenants.filter((t) => t.status === 'pending').length;
+    // Preferir contagem da mesma lista de tenants (evita divergência com /dashboard/global)
+    const totalTenants = tenants.length || global.tenants || 0;
+    const activeTenants = tenants.length
+      ? tenants.filter((t) => String(t.status ?? '').toLowerCase() === 'approved').length
+      : (global.approved ?? 0);
+    const pendingApprovals = tenants.length
+      ? tenants.filter((t) => String(t.status ?? '').toLowerCase() === 'pending').length
+      : (global.pending ?? 0);
     const monthlyRevenue = Number(revenue.estimatedMrr ?? 0);
     const conversionRate =
       totalTenants > 0 ? Math.round((activeTenants / totalTenants) * 1000) / 10 : 0;

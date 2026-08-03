@@ -76,7 +76,7 @@ public static class DemoDataSeeder
 
         await SeedTenantPackAsync(db, userManager, password, new TenantSeedSpec(
             Key: "gamma",
-            Name: "Barbearia Gamma Suspensa",
+            Name: "Barbearia Gamma Demo",
             TenantEmail: "demo.gamma@barbear.ia",
             Phone: "+551177778888",
             OwnerName: "Eduardo Dono Gamma",

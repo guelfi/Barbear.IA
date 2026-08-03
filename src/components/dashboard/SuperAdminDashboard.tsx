@@ -108,16 +108,28 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
 
   const pendingTenants = filteredTenants.filter(t => t.status === 'pending');
 
+  // Fonte única para cards + lista (evita desktop/mobile com números divergentes)
+  const normalizedStatus = (status?: string) => String(status ?? '').toLowerCase();
+  const activeTenantCount = tenants.filter((t) => normalizedStatus(t.status) === 'approved').length;
+  const pendingTenantCount = tenants.filter((t) => normalizedStatus(t.status) === 'pending').length;
+  const conversionRate =
+    tenants.length > 0 ? Math.round((activeTenantCount / tenants.length) * 1000) / 10 : 0;
+  const recentTenants = [...tenants]
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, 5);
+
+  const patchTenantStatus = (tenantId: string, status: Tenant['status'], extra?: Partial<Tenant>) => {
+    setTenants((prev) =>
+      prev.map((tenant) =>
+        tenant.id === tenantId ? { ...tenant, status, ...extra } : tenant
+      )
+    );
+  };
+
   const handleApproveTenant = async (tenantId: string) => {
     try {
       await barbershopsAPI.approve(tenantId);
-      setTenants((prev) =>
-        prev.map((tenant) =>
-          tenant.id === tenantId
-            ? { ...tenant, status: 'approved' as const, approvedAt: new Date().toISOString() }
-            : tenant
-        )
-      );
+      patchTenantStatus(tenantId, 'approved', { approvedAt: new Date().toISOString() });
       toast.success('Barbearia aprovada com sucesso!');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Falha ao aprovar barbearia.');
@@ -127,11 +139,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
   const handleRejectTenant = async (tenantId: string) => {
     try {
       await barbershopsAPI.reject(tenantId);
-      setTenants((prev) =>
-        prev.map((tenant) =>
-          tenant.id === tenantId ? { ...tenant, status: 'cancelled' as const } : tenant
-        )
-      );
+      patchTenantStatus(tenantId, 'cancelled');
       toast.success('Solicitação rejeitada.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Falha ao rejeitar barbearia.');
@@ -141,11 +149,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
   const handleSuspendTenant = async (tenantId: string) => {
     try {
       await barbershopsAPI.suspend(tenantId);
-      setTenants((prev) =>
-        prev.map((tenant) =>
-          tenant.id === tenantId ? { ...tenant, status: 'suspended' as const } : tenant
-        )
-      );
+      patchTenantStatus(tenantId, 'suspended');
       toast.success('Barbearia suspensa.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Falha ao suspender barbearia.');
@@ -155,11 +159,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
   const handleReactivateTenant = async (tenantId: string) => {
     try {
       await barbershopsAPI.reactivate(tenantId);
-      setTenants((prev) =>
-        prev.map((tenant) =>
-          tenant.id === tenantId ? { ...tenant, status: 'approved' as const } : tenant
-        )
-      );
+      patchTenantStatus(tenantId, 'approved');
       toast.success('Barbearia reativada.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Falha ao reativar barbearia.');
@@ -174,7 +174,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
       cancelled: { variant: 'outline' as const, label: 'Cancelado', icon: XCircle }
     };
     
-    const config = variants[status as keyof typeof variants] ?? variants.pending;
+    const config = variants[normalizedStatus(status) as keyof typeof variants] ?? variants.pending;
     const Icon = config.icon;
     
     return (
@@ -293,9 +293,9 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                     />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalTenants ?? 0}</div>
+                    <div className="text-2xl font-bold">{tenants.length}</div>
                     <p className="text-xs text-muted-foreground">
-                      {stats.activeTenants ?? 0} ativas
+                      {activeTenantCount} ativas · {tenants.length - activeTenantCount - pendingTenantCount} suspensas
                     </p>
                   </CardContent>
                 </Card>
@@ -320,7 +320,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                     />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.pendingApprovals}</div>
+                    <div className="text-2xl font-bold">{pendingTenantCount}</div>
                     <p className="text-xs text-muted-foreground">
                       Aguardando aprovação
                     </p>
@@ -386,14 +386,14 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                         intensity="medium"
                         className="mr-1"
                       />
-                      <span>{stats.conversionRate}% conversão</span>
+                      <span>{conversionRate}% conversão</span>
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
             </motion.div>
 
-            {/* Recent Activity */}
+            {/* Recent Activity — mesma lista `tenants` dos cards (paridade mobile/desktop) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -404,43 +404,45 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                   <CardTitle>Barbearias Recentes</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {(stats.recentTenants ?? []).slice(0, 5).map((tenant, index) => (
+                  <div className="space-y-3">
+                    {recentTenants.map((tenant, index) => (
                       <motion.div 
                         key={tenant.id} 
-                        className="flex items-center space-x-4 p-2 rounded-lg hover:bg-accent/50 transition-colors"
+                        className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-4 p-3 rounded-lg hover:bg-accent/50 transition-colors border border-transparent hover:border-border"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: 0.9 + index * 0.1 }}
                         whileHover={{ x: 5, scale: 1.01 }}
                       >
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex items-center justify-center hover:scale-110 transition-transform duration-200">
-                          {tenant.logo ? (
-                            <img
-                              src={tenant.logo}
-                              alt={tenant.businessName}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <AnimatedIcon
-                              icon={Building2}
-                              animation="float"
-                              category="navigation"
-                              size="md"
-                              intensity="low"
-                              className="text-muted-foreground"
-                            />
-                          )}
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                            {tenant.logo ? (
+                              <img
+                                src={tenant.logo}
+                                alt={tenant.businessName || tenant.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <AnimatedIcon
+                                icon={Building2}
+                                animation="float"
+                                category="navigation"
+                                size="md"
+                                intensity="low"
+                                className="text-muted-foreground"
+                              />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium truncate">{tenant.businessName || tenant.name}</p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {tenant.email}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{tenant.businessName || tenant.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {tenant.name} • {tenant.email}
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center justify-between gap-2 sm:justify-end sm:min-w-[10rem]">
                           {getStatusBadge(tenant.status)}
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
                             {formatDate(tenant.createdAt)}
                           </span>
                         </div>
