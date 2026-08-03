@@ -11,6 +11,7 @@ import { Client } from '../../types';
 import { clientsAPI } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenantWriteAccess } from '../../hooks/useTenantWriteAccess';
+import { formatDate } from '../../lib/formatDate';
 
 interface ClientListProps {
   onCreateClient: () => void;
@@ -222,7 +223,7 @@ export function ClientList({ onCreateClient, onEditClient }: ClientListProps) {
                         intensity="low"
                       />
                       <span>
-                        Última visita: {new Date(client.lastVisit).toLocaleDateString('pt-BR')}
+                        Última visita: {formatDate(client.lastVisit)}
                       </span>
                     </motion.div>
                   )}

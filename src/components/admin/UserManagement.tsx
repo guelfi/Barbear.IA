@@ -37,6 +37,7 @@ import { User as UserType } from '../../types';
 import { toast } from 'sonner';
 import { usersAPI } from '../../api';
 import { UserCrudDialog } from './UserCrudDialog';
+import { formatDateTime } from '../../lib/formatDate';
 
 export function UserManagement() {
   const [users, setUsers] = useState<UserType[]>([]);
@@ -117,16 +118,6 @@ export function UserManagement() {
     };
     
     return config[role as keyof typeof config] || config.client;
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   };
 
   const userStats = {
@@ -310,12 +301,12 @@ export function UserManagement() {
                     </TableCell>
                     <TableCell>
                       <span className="text-sm">
-                        {user.lastLogin ? formatDate(user.lastLogin) : 'Nunca'}
+                        {user.lastLogin ? formatDateTime(user.lastLogin) : 'Nunca'}
                       </span>
                     </TableCell>
                     <TableCell>
                       <span className="text-sm">
-                        {formatDate(user.createdAt)}
+                        {formatDateTime(user.createdAt)}
                       </span>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>

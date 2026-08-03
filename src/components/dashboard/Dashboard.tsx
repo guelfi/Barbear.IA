@@ -8,6 +8,7 @@ import { dashboardAPI } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { DashboardStats } from '../../types';
+import { formatDate } from '../../lib/formatDate';
 
 const statusColors = {
   scheduled: 'bg-blue-100 text-blue-800',
@@ -403,7 +404,7 @@ export function Dashboard() {
                   </p>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {client.lastVisit && new Date(client.lastVisit).toLocaleDateString('pt-BR')}
+                  {client.lastVisit && formatDate(client.lastVisit)}
                 </div>
               </motion.div>
             ))}

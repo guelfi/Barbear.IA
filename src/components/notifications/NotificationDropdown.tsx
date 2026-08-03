@@ -15,6 +15,7 @@ import {
 
 import { toast } from 'sonner';
 import { notificationsAPI } from '../../api';
+import { formatDate } from '../../lib/formatDate';
 
 /**
  * Configuration for notification types including icons, colors, and labels
@@ -292,11 +293,7 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
             if (weeks === 1) return '1 semana atrás';
             if (weeks < 4) return `${weeks} semanas atrás`;
             
-            return timestamp.toLocaleDateString('pt-BR', { 
-                day: '2-digit', 
-                month: '2-digit',
-                year: timestamp.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-            });
+            return formatDate(timestamp);
         } catch (error) {
             console.error('Error formatting timestamp:', error);
             return 'Data inválida';

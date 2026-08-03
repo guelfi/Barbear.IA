@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { Appointment } from '../../types';
 import { appointmentsAPI } from '../../api';
 import { useTenantWriteAccess } from '../../hooks/useTenantWriteAccess';
+import { formatDate, toIsoDateLocal } from '../../lib/formatDate';
 
 interface AppointmentCalendarProps {
   onCreateAppointment: () => void;
@@ -57,7 +58,7 @@ export function AppointmentCalendar({ onCreateAppointment, onEditAppointment }: 
     loadAppointments();
   }, []);
 
-  const selectedDateString = selectedDate.toISOString().split('T')[0];
+  const selectedDateString = toIsoDateLocal(selectedDate);
   const dayAppointments = appointments
     .filter(apt => apt.date === selectedDateString)
     .sort((a, b) => a.time.localeCompare(b.time));
@@ -159,12 +160,7 @@ export function AppointmentCalendar({ onCreateAppointment, onEditAppointment }: 
           <Card className="hover:shadow-lg transition-all duration-300">
             <CardHeader>
               <CardTitle>
-                Agendamentos - {selectedDate.toLocaleDateString('pt-BR', { 
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
+                Agendamentos - {formatDate(selectedDate)}
               </CardTitle>
             </CardHeader>
             <CardContent>

@@ -43,6 +43,7 @@ import { SuperAdminStats, Tenant } from '../../types';
 import { toast } from 'sonner';
 
 import { dashboardAPI, barbershopsAPI } from '../../api';
+import { formatDate } from '../../lib/formatDate';
 
 interface SuperAdminDashboardProps {
   activeSection?: string;
@@ -196,16 +197,6 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
       style: 'currency',
       currency: 'BRL'
     }).format(Number(value ?? 0));
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   };
 
   if (loading) {

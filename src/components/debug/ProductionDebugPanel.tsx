@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatDateTime } from '@/lib/formatDate';
 
 interface DebugLog {
   timestamp: string;
@@ -166,7 +167,7 @@ export const ProductionDebugPanel: React.FC = () => {
                     authLogs.slice(-10).map((log, index) => (
                       <div key={index} className="mb-2 p-2 bg-white rounded text-xs">
                         <div className="font-mono text-gray-600">
-                          {new Date(log.timestamp).toLocaleString()}
+                          {formatDateTime(log.timestamp)}
                         </div>
                         <div className="font-semibold">{log.message}</div>
                         {log.data && (
@@ -190,7 +191,7 @@ export const ProductionDebugPanel: React.FC = () => {
                     dashboardLogs.slice(-10).map((log, index) => (
                       <div key={index} className="mb-2 p-2 bg-white rounded text-xs">
                         <div className="font-mono text-gray-600">
-                          {new Date(log.timestamp).toLocaleString()}
+                          {formatDateTime(log.timestamp)}
                         </div>
                         <div className="font-semibold">{log.message}</div>
                         {log.data && (
@@ -214,7 +215,7 @@ export const ProductionDebugPanel: React.FC = () => {
                     apiLogs.slice(-10).map((log, index) => (
                       <div key={index} className="mb-2 p-2 bg-white rounded text-xs">
                         <div className="font-mono text-gray-600">
-                          {new Date(log.timestamp).toLocaleString()}
+                          {formatDateTime(log.timestamp)}
                         </div>
                         <div className={`font-semibold ${
                           log.level === 'error' ? 'text-red-600' : 

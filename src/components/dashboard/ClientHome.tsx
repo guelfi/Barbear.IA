@@ -6,6 +6,7 @@ import { Progress } from '../ui/progress';
 import { appointmentsAPI } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { getLoyaltyPlanMock } from '../../data/loyaltyPlanMock';
+import { formatDate } from '../../lib/formatDate';
 
 type PastAppointment = {
   id: string;
@@ -82,7 +83,7 @@ export function ClientHome() {
                 <div className="min-w-0">
                   <p className="font-medium truncate">{serviceName}</p>
                   <p className="text-muted-foreground truncate">
-                    {barberName} · {a.date} {a.time}
+                    {barberName} · {formatDate(a.date)} {a.time}
                   </p>
                 </div>
                 <Badge variant="secondary">{a.status === 'completed' ? 'Concluído' : a.status}</Badge>
@@ -107,7 +108,7 @@ export function ClientHome() {
             <Badge>{loyalty.planName}</Badge>
             <Badge variant="outline">{loyalty.shopName}</Badge>
             <span className="text-xs text-muted-foreground">
-              Válido até {new Date(loyalty.validUntil).toLocaleDateString('pt-BR')}
+              Válido até {formatDate(loyalty.validUntil)}
             </span>
           </div>
 

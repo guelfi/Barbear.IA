@@ -28,6 +28,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
 import { WorkingHours } from '../../types';
+import { formatDate } from '../../lib/formatDate';
 
 interface BarbershopProfileData {
   name: string;
@@ -302,7 +303,7 @@ export function BarbershopProfile() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="foundedDate">Data de Fundação</Label>
+                  <Label htmlFor="foundedDate">Data de Fundação (DD/MM/YYYY)</Label>
                   <Input
                     id="foundedDate"
                     type="date"
@@ -400,7 +401,7 @@ export function BarbershopProfile() {
                   <div>
                     <p className="text-sm text-muted-foreground">Fundada em</p>
                     <p className="font-medium">
-                      {new Date(profileData.foundedDate).toLocaleDateString('pt-BR')}
+                      {formatDate(profileData.foundedDate)}
                     </p>
                   </div>
                 </div>

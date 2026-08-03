@@ -11,6 +11,7 @@ import { clientsAPI, barbersAPI, servicesAPI, appointmentsAPI, barbershopsAPI } 
 import type { PublicBarbershop } from '../../api/barbershops';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
+import { toIsoDateLocal } from '../../lib/formatDate';
 
 interface AppointmentFormProps {
   appointment?: Appointment;
@@ -37,7 +38,7 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
     clientId: appointment?.clientId || (isClient ? user?.clientProfileId || '' : ''),
     barberId: appointment?.barberId || '',
     serviceId: appointment?.serviceId || '',
-    date: appointment?.date || new Date().toISOString().split('T')[0],
+    date: appointment?.date || toIsoDateLocal(),
     time: appointment?.time || '',
     status: appointment?.status || 'scheduled',
     notes: appointment?.notes || '',
@@ -359,7 +360,7 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
             )}
 
             <div className="space-y-2">
-              <Label>Data</Label>
+              <Label>Data (DD/MM/YYYY)</Label>
               <Input
                 type="date"
                 value={formData.date}

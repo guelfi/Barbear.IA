@@ -1,6 +1,7 @@
 import { get } from './http';
 import { appointmentsAPI } from './appointments';
 import { barbershopsAPI } from './barbershops';
+import { toIsoDateLocal } from '../lib/formatDate';
 
 /** Shape esperado por `Dashboard.tsx` (objetos aninhados, não campos flat). */
 function mapAppointmentCard(raw: any) {
@@ -84,7 +85,7 @@ export const dashboardAPI = {
 
   async getClientStats(_clientId?: string): Promise<any> {
     const upcoming = await appointmentsAPI.getUpcomingAppointments();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = toIsoDateLocal();
     return {
       todayAppointments: upcoming.filter((a) => a.date === today).length,
       weeklyRevenue: 0,
