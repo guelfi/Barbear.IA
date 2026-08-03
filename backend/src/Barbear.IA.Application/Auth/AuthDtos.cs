@@ -32,7 +32,9 @@ public sealed record AuthUserDto(
     Guid? BarberProfileId,
     Guid? ClientProfileId,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? LastLoginAt);
+    DateTimeOffset? LastLoginAt,
+    /// <summary>pending|approved|suspended|cancelled — null para Super Admin.</summary>
+    string? TenantStatus = null);
 
 public sealed record AuthResponse(
     bool Success,
@@ -45,3 +47,8 @@ public sealed record AuthResponse(
 public sealed record MeResponse(
     AuthUserDto User,
     IReadOnlyList<string> Permissions);
+
+public sealed record UpdateMyProfileRequest(
+    string Name,
+    string Phone,
+    string? Email = null);

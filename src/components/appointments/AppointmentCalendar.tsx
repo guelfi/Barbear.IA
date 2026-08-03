@@ -9,6 +9,7 @@ import { AnimatedIcon } from '../ui/animated-icon';
 import { motion } from 'framer-motion';
 import { Appointment } from '../../types';
 import { appointmentsAPI } from '../../api';
+import { useTenantWriteAccess } from '../../hooks/useTenantWriteAccess';
 
 interface AppointmentCalendarProps {
   onCreateAppointment: () => void;
@@ -34,6 +35,7 @@ const statusLabels = {
 };
 
 export function AppointmentCalendar({ onCreateAppointment, onEditAppointment }: AppointmentCalendarProps) {
+  const { canWrite } = useTenantWriteAccess();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,6 +102,7 @@ export function AppointmentCalendar({ onCreateAppointment, onEditAppointment }: 
         >
           <Button 
             onClick={onCreateAppointment}
+            disabled={!canWrite}
             className="hover:shadow-lg transition-all duration-200"
           >
             <AnimatedIcon
@@ -187,8 +190,11 @@ export function AppointmentCalendar({ onCreateAppointment, onEditAppointment }: 
                   {dayAppointments.map((appointment, index) => (
                     <motion.div
                       key={appointment.id}
-                      className="flex items-center space-x-4 p-4 border border-border rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
-                      onClick={() => onEditAppointment(appointment)}
+                      className={`flex items-center space-x-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-all duration-200 hover:scale-[1.02] hover:shadow-md ${canWrite ? 'cursor-pointer' : 'cursor-default'}`}
+                      onClick={() => {
+                        if (!canWrite) return;
+                        onEditAppointment(appointment);
+                      }}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}

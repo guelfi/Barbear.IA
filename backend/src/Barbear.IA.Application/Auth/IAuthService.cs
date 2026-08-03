@@ -8,4 +8,5 @@ public interface IAuthService
     Task<AuthResponse> RefreshAsync(RefreshRequest request, CancellationToken cancellationToken = default);
     Task LogoutAsync(Guid userId, string? refreshToken, CancellationToken cancellationToken = default);
     Task<MeResponse?> GetMeAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<MeResponse?> UpdateMyProfileAsync(Guid userId, UpdateMyProfileRequest request, CancellationToken cancellationToken = default);
 }

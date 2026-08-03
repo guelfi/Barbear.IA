@@ -6,6 +6,10 @@ export interface User {
   avatar?: string;
   phone?: string;
   tenantId?: string; // Optional for super_admin
+  /** Status da barbearia do usuário (null/undefined para Super Admin). */
+  tenantStatus?: 'pending' | 'approved' | 'suspended' | 'cancelled';
+  clientProfileId?: string;
+  barberProfileId?: string;
   isActive: boolean;
   createdAt: string;
   lastLogin?: string;

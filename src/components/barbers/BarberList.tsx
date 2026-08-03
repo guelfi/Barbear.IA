@@ -10,6 +10,7 @@ import { AnimatedIcon } from '../ui/animated-icon';
 import { motion } from 'framer-motion';
 import { Barber, Service } from '../../types';
 import { barbersAPI, servicesAPI } from '../../api';
+import { useTenantWriteAccess } from '../../hooks/useTenantWriteAccess';
 
 interface BarberListProps {
   onCreateBarber: () => void;
@@ -17,6 +18,7 @@ interface BarberListProps {
 }
 
 export function BarberList({ onCreateBarber, onEditBarber }: BarberListProps) {
+  const { canWrite, guardWrite } = useTenantWriteAccess();
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,6 +52,7 @@ export function BarberList({ onCreateBarber, onEditBarber }: BarberListProps) {
   );
 
   const toggleBarberStatus = (id: string) => {
+    if (!guardWrite()) return;
     setBarbers(prev =>
       prev.map(barber =>
         barber.id === id ? { ...barber, isActive: !barber.isActive } : barber
@@ -102,6 +105,7 @@ export function BarberList({ onCreateBarber, onEditBarber }: BarberListProps) {
         >
           <Button 
             onClick={onCreateBarber}
+            disabled={!canWrite}
             className="hover:shadow-lg transition-all duration-200"
           >
             <AnimatedIcon
@@ -200,6 +204,7 @@ export function BarberList({ onCreateBarber, onEditBarber }: BarberListProps) {
                   >
                     <Switch
                       checked={barber.isActive}
+                      disabled={!canWrite}
                       onCheckedChange={() => toggleBarberStatus(barber.id)}
                     />
                   </motion.div>
@@ -283,6 +288,7 @@ export function BarberList({ onCreateBarber, onEditBarber }: BarberListProps) {
                     variant="outline"
                     size="sm"
                     className="w-full mt-4 hover:shadow-md transition-all duration-200"
+                    disabled={!canWrite}
                     onClick={() => onEditBarber(barber)}
                   >
                     Editar
@@ -320,6 +326,7 @@ export function BarberList({ onCreateBarber, onEditBarber }: BarberListProps) {
               <Button 
                 variant="outline" 
                 className="mt-4 hover:shadow-lg transition-all duration-200" 
+                disabled={!canWrite}
                 onClick={onCreateBarber}
               >
                 <AnimatedIcon

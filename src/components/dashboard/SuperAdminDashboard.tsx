@@ -243,7 +243,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <div>
-          <h2 className="text-2xl font-bold">Super Admin Dashboard</h2>
+          <h2 className="text-2xl font-bold">Dashboard</h2>
           <p className="text-muted-foreground">
             Gerencie todas as barbearias e monitore a plataforma
           </p>

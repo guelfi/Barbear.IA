@@ -202,7 +202,7 @@ public sealed class AuthService(
 
         var permissions = PermissionsFor(user.Role);
         var access = tokenService.CreateAccessToken(user, permissions);
-        return new AuthResponse(true, MapUser(user), access, newRefresh, permissions);
+        return new AuthResponse(true, await MapUserAsync(user, cancellationToken), access, newRefresh, permissions);
     }
 
     public async Task LogoutAsync(Guid userId, string? refreshToken, CancellationToken cancellationToken = default)
@@ -241,7 +241,66 @@ public sealed class AuthService(
             return null;
         }
 
-        return new MeResponse(MapUser(user), PermissionsFor(user.Role));
+        return new MeResponse(await MapUserAsync(user, cancellationToken), PermissionsFor(user.Role));
+    }
+
+    public async Task<MeResponse?> UpdateMyProfileAsync(
+        Guid userId,
+        UpdateMyProfileRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (user is null || !user.IsActive)
+        {
+            return null;
+        }
+
+        var phone = PhoneNormalizer.ToE164Br(request.Phone);
+        if (phone is null)
+        {
+            throw new ArgumentException("Telefone inválido.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new ArgumentException("Nome é obrigatório.");
+        }
+
+        user.Name = request.Name.Trim();
+        user.PhoneNumber = phone;
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            var email = NormalizeEmail(request.Email);
+            var existing = await userManager.FindByEmailAsync(email);
+            if (existing is not null && existing.Id != user.Id)
+            {
+                throw new ArgumentException("E-mail já está em uso.");
+            }
+
+            user.Email = email;
+            user.UserName = email;
+            user.NormalizedEmail = email.ToUpperInvariant();
+            user.NormalizedUserName = email.ToUpperInvariant();
+        }
+
+        var update = await userManager.UpdateAsync(user);
+        if (!update.Succeeded)
+        {
+            throw new InvalidOperationException(string.Join("; ", update.Errors.Select(e => e.Description)));
+        }
+
+        if (user.ClientProfileId is Guid clientProfileId)
+        {
+            var profile = await db.ClientProfiles.FirstOrDefaultAsync(c => c.Id == clientProfileId, cancellationToken);
+            if (profile is not null)
+            {
+                profile.Update(user.Name, user.Email ?? profile.Email, phone, profile.Notes, profile.PreferencesJson);
+                await db.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        return new MeResponse(await MapUserAsync(user, cancellationToken), PermissionsFor(user.Role));
     }
 
     private async Task<AuthResponse> IssueAsync(ApplicationUser user, CancellationToken cancellationToken)
@@ -258,7 +317,7 @@ public sealed class AuthService(
         });
         await db.SaveChangesAsync(cancellationToken);
 
-        return new AuthResponse(true, MapUser(user), access, refresh, permissions);
+        return new AuthResponse(true, await MapUserAsync(user, cancellationToken), access, refresh, permissions);
     }
 
     private static IReadOnlyList<string> PermissionsFor(UserRole role) => role switch
@@ -270,20 +329,37 @@ public sealed class AuthService(
         _ => []
     };
 
-    private static AuthUserDto MapUser(ApplicationUser user) => new(
-        user.Id,
-        user.Name,
-        user.Email ?? string.Empty,
-        RoleNames.ToApi(user.Role),
-        user.TenantId,
-        user.PhoneNumber,
-        user.PhoneNumberConfirmed,
-        user.IsActive,
-        user.AvatarUrl,
-        user.BarberProfileId,
-        user.ClientProfileId,
-        user.CreatedAt,
-        user.LastLoginAt);
+    private async Task<AuthUserDto> MapUserAsync(ApplicationUser user, CancellationToken cancellationToken)
+    {
+        string? tenantStatus = null;
+        if (user.TenantId is Guid tenantId)
+        {
+            var status = await db.Tenants.AsNoTracking()
+                .Where(t => t.Id == tenantId)
+                .Select(t => (TenantStatus?)t.Status)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (status.HasValue)
+            {
+                tenantStatus = status.Value.ToString().ToLowerInvariant();
+            }
+        }
+
+        return new AuthUserDto(
+            user.Id,
+            user.Name,
+            user.Email ?? string.Empty,
+            RoleNames.ToApi(user.Role),
+            user.TenantId,
+            user.PhoneNumber,
+            user.PhoneNumberConfirmed,
+            user.IsActive,
+            user.AvatarUrl,
+            user.BarberProfileId,
+            user.ClientProfileId,
+            user.CreatedAt,
+            user.LastLoginAt,
+            tenantStatus);
+    }
 
     private static AuthResponse Fail(string error) => new(false, Error: error);
 

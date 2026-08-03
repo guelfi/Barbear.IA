@@ -29,9 +29,10 @@ interface SidebarProps {
 // Menu items based on user role with animation configs
 const menuItemsByRole = {
   super_admin: [
-    { id: 'dashboard', label: 'Super Dashboard', icon: BarChart3, animation: 'sparkle' as const, category: 'stats' as const },
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3, animation: 'sparkle' as const, category: 'stats' as const },
     { id: 'tenants', label: 'Barbearias', icon: Building2, animation: 'float' as const, category: 'navigation' as const },
     { id: 'users', label: 'Usuários', icon: Users, animation: 'wiggle' as const, category: 'user' as const },
+    { id: 'services', label: 'Serviços', icon: Scissors, animation: 'cut' as const, category: 'interactive' as const },
     { id: 'billing', label: 'Faturamento', icon: CreditCard, animation: 'pulse' as const, category: 'action' as const },
     { id: 'settings', label: 'Configurações', icon: Settings, animation: 'spin' as const, category: 'system' as const },
   ],

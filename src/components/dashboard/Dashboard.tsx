@@ -220,30 +220,6 @@ export function Dashboard() {
     );
   }
 
-  // Debug logs específicos para produção
-  console.log('Dashboard: Renderizando para usuário:', user?.role);
-  console.log('Dashboard: Usuário completo:', user);
-  console.log('Dashboard: Stats carregados via API:', stats);
-  console.log('Dashboard: Ambiente:', process.env.NODE_ENV);
-  console.log('Dashboard: URL atual:', window.location.href);
-  console.log('Dashboard: localStorage token:', localStorage.getItem('authToken'));
-  console.log('Dashboard: localStorage email:', localStorage.getItem('userEmail'));
-  console.log('Dashboard: Dados da API disponíveis:', {
-    hasStats: !!stats,
-    todayAppointments: stats?.todayAppointments,
-    upcomingAppointments: stats?.upcomingAppointments?.length,
-    recentClients: stats?.recentClients?.length
-  });
-  
-  // Verificação específica de role
-  console.log('Dashboard: Verificando role do usuário:', {
-    userRole: user?.role,
-    isSuperAdmin: user?.role === 'super_admin',
-    isAdmin: user?.role === 'admin',
-    isBarber: user?.role === 'barber',
-    isClient: user?.role === 'client'
-  });
-  
   // Verificação de segurança - se não há usuário, não renderiza nada
   if (!user) {
     console.error('Dashboard: Usuário não encontrado, redirecionando...');
@@ -281,26 +257,8 @@ export function Dashboard() {
     recentClients: []
   };
   
-  // Log dos stats processados
-  console.log('Dashboard: Stats processados:', safeStats);
-  
-  // Log adicional para verificar se os dados foram processados
-  console.log('Dashboard: Stats processados:', {
-    todayAppointments: safeStats.todayAppointments,
-    weeklyRevenue: safeStats.weeklyRevenue,
-    totalClients: safeStats.totalClients,
-    completionRate: safeStats.completionRate,
-    upcomingAppointmentsCount: safeStats.upcomingAppointments?.length || 0,
-    recentClientsCount: safeStats.recentClients?.length || 0
-  });
-
-  // Verificação final antes de renderizar
-  console.log('Dashboard: Pronto para renderizar com dados:', {
-    hasUser: !!user,
-    userRole: user.role,
-    hasStats: !!stats,
-    statsValid: safeStats.todayAppointments >= 0
-  });
+  const isClient = user.role === 'client';
+  const upcoming = safeStats.upcomingAppointments || [];
 
   return (
     <motion.div 
@@ -309,83 +267,70 @@ export function Dashboard() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Stats Grid */}
+      {/* Stats Grid — cliente não vê receita/faturamento */}
       <motion.div 
-        className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+        className={`grid gap-4 ${isClient ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4'}`}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.1 }}
       >
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
+        <StatsCard
+          title="Agendamentos Hoje"
+          value={safeStats.todayAppointments || 0}
+          icon={Calendar}
+          description="seus horários de hoje"
+          trend={{ value: 12, isPositive: true }}
+        />
+        {isClient ? (
           <StatsCard
-            title="Agendamentos Hoje"
-            value={safeStats.todayAppointments || 0}
-            icon={Calendar}
-            description="agendamentos para hoje"
-            trend={{ value: 12, isPositive: true }}
-          />
-        </motion.div>
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
-        >
-          <StatsCard
-            title="Receita Semanal"
-            value={`R$ ${(safeStats.weeklyRevenue || 0).toFixed(2)}`}
-            icon={DollarSign}
-            description="últimos 7 dias"
-            trend={{ value: 8, isPositive: true }}
-          />
-        </motion.div>
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.4 }}
-        >
-          <StatsCard
-            title="Total de Clientes"
-            value={safeStats.totalClients || 0}
-            icon={Users}
-            description="clientes cadastrados"
-            trend={{ value: 5, isPositive: true }}
-          />
-        </motion.div>
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.5 }}
-        >
-          <StatsCard
-            title="Taxa de Conclusão"
-            value={`${safeStats.completionRate || 0}%`}
+            title="Próximos"
+            value={upcoming.length}
             icon={TrendingUp}
-            description="agendamentos concluídos"
-            trend={{ value: 2, isPositive: true }}
+            description="agendamentos à frente"
+            trend={{ value: 0, isPositive: true }}
           />
-        </motion.div>
+        ) : (
+          <>
+            <StatsCard
+              title="Receita Semanal"
+              value={`R$ ${(safeStats.weeklyRevenue || 0).toFixed(2)}`}
+              icon={DollarSign}
+              description="últimos 7 dias"
+              trend={{ value: 8, isPositive: true }}
+            />
+            <StatsCard
+              title="Total de Clientes"
+              value={safeStats.totalClients || 0}
+              icon={Users}
+              description="clientes cadastrados"
+              trend={{ value: 5, isPositive: true }}
+            />
+            <StatsCard
+              title="Taxa de Conclusão"
+              value={`${safeStats.completionRate || 0}%`}
+              icon={TrendingUp}
+              description="agendamentos concluídos"
+              trend={{ value: 2, isPositive: true }}
+            />
+          </>
+        )}
       </motion.div>
 
       <motion.div 
-        className="grid gap-6 md:grid-cols-2"
+        className={`grid gap-6 ${isClient ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.6 }}
       >
-        {/* Próximos Agendamentos */}
         <MaterialCard elevation={2} interactive={true} hoverElevation={3} animation="slideUp">
           <MaterialCardHeader>
             <MaterialCardTitle>Próximos Agendamentos</MaterialCardTitle>
           </MaterialCardHeader>
           <MaterialCardContent className="space-y-4">
-            {(safeStats.upcomingAppointments || []).length === 0 && (
+            {upcoming.length === 0 && (
               <p className="text-sm text-muted-foreground">Nenhum agendamento próximo.</p>
             )}
-            {(safeStats.upcomingAppointments || []).map((appointment: any, index: number) => {
+            {upcoming.map((appointment: any, index: number) => {
               const clientName = appointment.client?.name ?? appointment.clientName ?? 'Cliente';
               const serviceName =
                 (typeof appointment.service === 'string'
@@ -394,6 +339,10 @@ export function Dashboard() {
               const barberName = appointment.barber?.name ?? appointment.barberName ?? 'Barbeiro';
               const avatar = appointment.client?.avatar ?? '';
               const status = String(appointment.status ?? 'scheduled').toLowerCase();
+              const title = isClient ? serviceName : clientName;
+              const subtitle = isClient
+                ? `com ${barberName}`
+                : `${serviceName} com ${barberName}`;
 
               return (
               <motion.div 
@@ -404,41 +353,27 @@ export function Dashboard() {
                 transition={{ duration: 0.3, delay: 0.7 + index * 0.1 }}
                 whileHover={{ x: 5 }}
               >
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Avatar className="h-9 w-9 elevation-1">
-                    <AvatarImage src={avatar} />
-                    <AvatarFallback>{clientName.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                </motion.div>
+                <Avatar className="h-9 w-9 elevation-1">
+                  <AvatarImage src={avatar} />
+                  <AvatarFallback>{title.charAt(0)}</AvatarFallback>
+                </Avatar>
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {clientName}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {serviceName} com {barberName}
-                  </p>
+                  <p className="text-sm font-medium leading-none">{title}</p>
+                  <p className="text-sm text-muted-foreground">{subtitle}</p>
                   <p className="text-xs text-muted-foreground">
                     {appointment.time} - R$ {(Number(appointment.price) || 0).toFixed(2)}
                   </p>
                 </div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Badge className={statusColors[status as keyof typeof statusColors] ?? statusColors.scheduled}>
-                    {statusLabels[status as keyof typeof statusLabels] ?? status}
-                  </Badge>
-                </motion.div>
+                <Badge className={statusColors[status as keyof typeof statusColors] ?? statusColors.scheduled}>
+                  {statusLabels[status as keyof typeof statusLabels] ?? status}
+                </Badge>
               </motion.div>
               );
             })}
           </MaterialCardContent>
         </MaterialCard>
 
-        {/* Clientes Recentes */}
+        {!isClient && (
         <MaterialCard elevation={2} interactive={true} hoverElevation={3} animation="slideUp">
           <MaterialCardHeader>
             <MaterialCardTitle>Clientes Recentes</MaterialCardTitle>
@@ -456,15 +391,10 @@ export function Dashboard() {
                 transition={{ duration: 0.3, delay: 0.7 + index * 0.1 }}
                 whileHover={{ x: 5 }}
               >
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Avatar className="h-9 w-9 elevation-1">
-                    <AvatarImage src={client.avatar} />
-                    <AvatarFallback>{(client.name ?? '?').charAt(0)}</AvatarFallback>
-                  </Avatar>
-                </motion.div>
+                <Avatar className="h-9 w-9 elevation-1">
+                  <AvatarImage src={client.avatar} />
+                  <AvatarFallback>{(client.name ?? '?').charAt(0)}</AvatarFallback>
+                </Avatar>
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-medium leading-none">{client.name ?? 'Cliente'}</p>
                   <p className="text-sm text-muted-foreground">{client.email ?? ''}</p>
@@ -472,17 +402,14 @@ export function Dashboard() {
                     {client.totalAppointments ?? 0} agendamentos
                   </p>
                 </div>
-                <motion.div 
-                  className="text-sm text-muted-foreground"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
-                >
+                <div className="text-sm text-muted-foreground">
                   {client.lastVisit && new Date(client.lastVisit).toLocaleDateString('pt-BR')}
-                </motion.div>
+                </div>
               </motion.div>
             ))}
           </MaterialCardContent>
         </MaterialCard>
+        )}
       </motion.div>
     </motion.div>
   );

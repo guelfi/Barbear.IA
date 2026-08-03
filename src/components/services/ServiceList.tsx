@@ -11,6 +11,8 @@ import { motion } from 'framer-motion';
 import { Service } from '../../types';
 import { servicesAPI } from '../../api';
 import { toast } from 'sonner';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTenantWriteAccess } from '../../hooks/useTenantWriteAccess';
 
 interface ServiceListProps {
   onCreateService: () => void;
@@ -19,6 +21,10 @@ interface ServiceListProps {
 }
 
 export function ServiceList({ onCreateService, onEditService, onChanged }: ServiceListProps) {
+  const { hasPermission } = useAuth();
+  const { canWrite, guardWrite } = useTenantWriteAccess();
+  // Barbeiro / SA: só leitura (view_services). CRUD exige manage_services
+  const allowMutations = canWrite && hasPermission('manage_services');
   const [services, setServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -52,6 +58,7 @@ export function ServiceList({ onCreateService, onEditService, onChanged }: Servi
   };
 
   const toggleServiceStatus = async (id: string) => {
+    if (!allowMutations || !guardWrite()) return;
     try {
       // API atual: DELETE faz soft-delete (inativa). Reativação via edição/recriação.
       await servicesAPI.deleteService(id);
@@ -63,6 +70,7 @@ export function ServiceList({ onCreateService, onEditService, onChanged }: Servi
   };
 
   const deleteService = async (id: string) => {
+    if (!allowMutations || !guardWrite()) return;
     try {
       await servicesAPI.deleteService(id);
       await reload();
@@ -97,6 +105,7 @@ export function ServiceList({ onCreateService, onEditService, onChanged }: Servi
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <h2 className="text-lg font-semibold">Serviços</h2>
+        {allowMutations && (
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -116,6 +125,7 @@ export function ServiceList({ onCreateService, onEditService, onChanged }: Servi
             Novo Serviço
           </Button>
         </motion.div>
+        )}
       </motion.div>
 
       <motion.div 
@@ -166,11 +176,15 @@ export function ServiceList({ onCreateService, onEditService, onChanged }: Servi
             }}
           >
             <Card
-              className="relative hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20 cursor-pointer"
-              onClick={() => onEditService(service)}
+              className={`relative hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20 ${allowMutations ? 'cursor-pointer' : 'cursor-default'}`}
+              onClick={() => {
+                if (!allowMutations) return;
+                onEditService(service);
+              }}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
+                if (!allowMutations) return;
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   onEditService(service);
@@ -195,6 +209,7 @@ export function ServiceList({ onCreateService, onEditService, onChanged }: Servi
                       </motion.div>
                     </div>
                   </div>
+                  {allowMutations && (
                   <motion.div
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -205,6 +220,7 @@ export function ServiceList({ onCreateService, onEditService, onChanged }: Servi
                       onCheckedChange={() => toggleServiceStatus(service.id)}
                     />
                   </motion.div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
@@ -257,6 +273,7 @@ export function ServiceList({ onCreateService, onEditService, onChanged }: Servi
                   </motion.div>
                 </div>
 
+                {allowMutations && (
                 <div className="flex space-x-2 mt-4" onClick={(e) => e.stopPropagation()}>
                   <motion.div
                     className="flex-1"
@@ -322,6 +339,7 @@ export function ServiceList({ onCreateService, onEditService, onChanged }: Servi
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -343,7 +361,7 @@ export function ServiceList({ onCreateService, onEditService, onChanged }: Servi
           >
             {searchTerm ? 'Nenhum serviço encontrado.' : 'Nenhum serviço cadastrado.'}
           </motion.div>
-          {!searchTerm && (
+          {!searchTerm && allowMutations && (
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

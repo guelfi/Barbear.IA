@@ -6,6 +6,7 @@ import { LandingPage } from './components/marketing/LandingPage';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { Dashboard } from './components/dashboard/Dashboard';
+import { ClientHome } from './components/dashboard/ClientHome';
 import { SuperAdminDashboard } from './components/dashboard/SuperAdminDashboard';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TrialBanner } from './components/subscription/TrialBanner';
@@ -18,6 +19,7 @@ import { BarberList } from './components/barbers/BarberList';
 import { BarberForm } from './components/barbers/BarberForm';
 import { BarberProfile } from './components/barbers/BarberProfile';
 import { BarbershopProfile } from './components/barbershop/BarbershopProfile';
+import { ClientBarbershops } from './components/barbershop/ClientBarbershops';
 import { ServiceList } from './components/services/ServiceList';
 import { ServiceForm } from './components/services/ServiceForm';
 import { Toaster } from './components/ui/sonner';
@@ -26,13 +28,15 @@ import { AccessibilityChecker } from './components/accessibility/AccessibilityCh
 import { toast } from 'sonner';
 import { Appointment, Client, Barber, Service } from './types';
 import { servicesAPI } from './api';
+import { useTenantWriteAccess } from './hooks/useTenantWriteAccess';
 import './components/layout/layout.css';
 
 type GuestView = 'landing' | 'auth';
 
 function AppContent() {
-  const { user, isInitializing, isLoading } = useAuth();
+  const { user, isInitializing, isLoading, hasPermission } = useAuth();
   const { mounted } = useTheme();
+  const { guardWrite } = useTenantWriteAccess();
   const [guestView, setGuestView] = useState<GuestView>('landing');
   const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -55,7 +59,12 @@ function AppContent() {
   });
 
   const titles = useMemo(() => ({
-    dashboard: user?.role === 'super_admin' ? 'Super Dashboard' : 'Dashboard',
+    dashboard:
+      user?.role === 'super_admin'
+        ? 'Dashboard'
+        : user?.role === 'client'
+          ? 'Início'
+          : 'Dashboard',
     appointments: 'Agendamentos',
     clients: 'Clientes',
     barbers: 'Barbeiros',
@@ -63,22 +72,26 @@ function AppContent() {
     settings: 'Configurações',
     profile: 'Meu Perfil',
     tenants: 'Barbearias',
+    barbershops: 'Barbearias',
     users: 'Usuários',
     billing: 'Faturamento',
   }), [user?.role]);
 
   // Form handlers - moved to top to comply with Rules of Hooks
   const handleCreateAppointment = useCallback(() => {
+    if (!guardWrite()) return;
     setEditingAppointment(undefined);
     setShowAppointmentForm(true);
-  }, []);
+  }, [guardWrite]);
 
   const handleEditAppointment = useCallback((appointment: Appointment) => {
+    if (!guardWrite()) return;
     setEditingAppointment(appointment);
     setShowAppointmentForm(true);
-  }, []);
+  }, [guardWrite]);
 
   const handleSaveAppointment = useCallback(() => {
+    if (!guardWrite()) return;
     if (editingAppointment) {
       toast.success('Agendamento atualizado com sucesso!');
     } else {
@@ -86,19 +99,34 @@ function AppContent() {
     }
     setShowAppointmentForm(false);
     setEditingAppointment(undefined);
-  }, [editingAppointment]);
+  }, [editingAppointment, guardWrite]);
 
   const handleCreateClient = useCallback(() => {
+    if (!guardWrite()) return;
+    if (!hasPermission('manage_clients')) {
+      toast.error('Barbeiros não podem cadastrar ou editar clientes.');
+      return;
+    }
     setEditingClient(undefined);
     setShowClientForm(true);
-  }, []);
+  }, [guardWrite, hasPermission]);
 
   const handleEditClient = useCallback((client: Client) => {
+    if (!guardWrite()) return;
+    if (!hasPermission('manage_clients')) {
+      toast.error('Barbeiros não podem cadastrar ou editar clientes.');
+      return;
+    }
     setEditingClient(client);
     setShowClientForm(true);
-  }, []);
+  }, [guardWrite, hasPermission]);
 
   const handleSaveClient = useCallback(() => {
+    if (!guardWrite()) return;
+    if (!hasPermission('manage_clients')) {
+      toast.error('Barbeiros não podem cadastrar ou editar clientes.');
+      return;
+    }
     if (editingClient) {
       toast.success('Cliente atualizado com sucesso!');
     } else {
@@ -106,19 +134,22 @@ function AppContent() {
     }
     setShowClientForm(false);
     setEditingClient(undefined);
-  }, [editingClient]);
+  }, [editingClient, guardWrite, hasPermission]);
 
   const handleCreateBarber = useCallback(() => {
+    if (!guardWrite()) return;
     setEditingBarber(undefined);
     setShowBarberForm(true);
-  }, []);
+  }, [guardWrite]);
 
   const handleEditBarber = useCallback((barber: Barber) => {
+    if (!guardWrite()) return;
     setEditingBarber(barber);
     setShowBarberForm(true);
-  }, []);
+  }, [guardWrite]);
 
   const handleSaveBarber = useCallback((_barberData: Partial<Barber>) => {
+    if (!guardWrite()) return;
     if (editingBarber) {
       toast.success('Barbeiro atualizado com sucesso!');
     } else {
@@ -126,19 +157,34 @@ function AppContent() {
     }
     setShowBarberForm(false);
     setEditingBarber(undefined);
-  }, [editingBarber]);
+  }, [editingBarber, guardWrite]);
 
   const handleCreateService = useCallback(() => {
+    if (!guardWrite()) return;
+    if (!hasPermission('manage_services')) {
+      toast.error('Sem permissão para cadastrar ou editar serviços.');
+      return;
+    }
     setEditingService(undefined);
     setShowServiceForm(true);
-  }, []);
+  }, [guardWrite, hasPermission]);
 
   const handleEditService = useCallback((service: Service) => {
+    if (!guardWrite()) return;
+    if (!hasPermission('manage_services')) {
+      toast.error('Sem permissão para cadastrar ou editar serviços.');
+      return;
+    }
     setEditingService(service);
     setShowServiceForm(true);
-  }, []);
+  }, [guardWrite, hasPermission]);
 
   const handleSaveService = useCallback(async (serviceData: Partial<Service>) => {
+    if (!guardWrite()) return;
+    if (!hasPermission('manage_services')) {
+      toast.error('Sem permissão para cadastrar ou editar serviços.');
+      return;
+    }
     try {
       if (editingService) {
         await servicesAPI.updateService(editingService.id, serviceData);
@@ -161,7 +207,7 @@ function AppContent() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Falha ao salvar serviço.');
     }
-  }, [editingService, user?.tenantId]);
+  }, [editingService, user?.tenantId, guardWrite, hasPermission]);
 
   const handleCancel = useCallback(() => {
     setShowAppointmentForm(false);
@@ -237,6 +283,13 @@ function AppContent() {
         case 'users':
         case 'billing':
           return <SuperAdminDashboard activeSection={activeTab} />;
+        case 'services':
+          return (
+            <ServiceList
+              onCreateService={handleCreateService}
+              onEditService={handleEditService}
+            />
+          );
         case 'settings':
           return (
             <div className="text-center py-12">
@@ -255,8 +308,7 @@ function AppContent() {
     console.log('App: Renderizando conteúdo para usuário regular:', { userRole: user?.role, activeTab, userId: user?.id, tenantId: user?.tenantId });
     switch (activeTab) {
       case 'dashboard':
-        console.log('App: Renderizando Dashboard regular para:', { userId: user?.id, role: user?.role, tenantId: user?.tenantId });
-        return <Dashboard />;
+        return user?.role === 'client' ? <ClientHome /> : <Dashboard />;
       case 'appointments':
         return (
           <AppointmentCalendar
@@ -285,6 +337,8 @@ function AppContent() {
             onEditService={handleEditService}
           />
         );
+      case 'barbershops':
+        return user?.role === 'client' ? <ClientBarbershops /> : <Dashboard />;
       case 'profile':
         // Para admin (barbearia) mostra perfil da barbearia, para cliente mostra perfil do cliente
         return user?.role === 'admin' ? <BarbershopProfile /> : <ClientProfile />;
@@ -391,7 +445,7 @@ function AppContent() {
         />
 
         <main className="flex-1 overflow-auto p-4 lg:p-6">
-          {user?.role !== 'super_admin' && user?.role !== 'barber' && <TrialBanner />}
+          {user?.role === 'admin' && <TrialBanner />}
           <ErrorBoundary fallbackTitle="Falha ao carregar o conteúdo">
             {renderContent()}
           </ErrorBoundary>

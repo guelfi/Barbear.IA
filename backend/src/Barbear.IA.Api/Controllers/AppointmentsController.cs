@@ -25,6 +25,11 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
 
     public sealed record CancelRequest(string? Reason);
 
+    public sealed record RescheduleRequest(DateTimeOffset StartsAt);
+
+    /// <summary>Clientes: janela mínima de 24h para cancelar/alterar (independente do settings do tenant).</summary>
+    private const int ClientChangeHours = 24;
+
     [HttpGet]
     public async Task<IActionResult> List(
         [FromQuery] DateTimeOffset? from,
@@ -339,13 +344,13 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             }
         }
 
-        var tenant = await db.Tenants.AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
-        var settings = ParseSettings(tenant?.SettingsJson ?? "{}");
-        if (!User.HasClaim("permission", Permissions.ManageAppointments) &&
-            appointment.StartsAt < DateTimeOffset.UtcNow.AddHours(settings.CancellationHours))
+        var hoursRequired = ResolveChangeWindowHours();
+        if (appointment.StartsAt < DateTimeOffset.UtcNow.AddHours(hoursRequired))
         {
-            return BadRequest(new { error = $"Cancelamento permitido até {settings.CancellationHours}h antes." });
+            return BadRequest(new
+            {
+                error = $"Cancelamento permitido apenas até {hoursRequired}h antes do horário marcado."
+            });
         }
 
         try
@@ -360,6 +365,99 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
         }
     }
 
+    [HttpPost("{id:guid}/reschedule")]
+    public async Task<IActionResult> Reschedule(
+        Guid id,
+        [FromBody] RescheduleRequest request,
+        CancellationToken cancellationToken)
+    {
+        var tenantId = User.GetTenantId();
+        if (tenantId is null)
+        {
+            return Forbid();
+        }
+
+        var appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == id && a.TenantId == tenantId, cancellationToken);
+        if (appointment is null)
+        {
+            return NotFound();
+        }
+
+        var canManage = User.HasClaim("permission", Permissions.ManageAppointments);
+        var canOwn = User.HasClaim("permission", Permissions.CancelOwnAppointments)
+                     || User.HasClaim("permission", Permissions.CreateAppointments);
+        if (!canManage && !canOwn)
+        {
+            return Forbid();
+        }
+
+        if (!canManage)
+        {
+            var clientId = User.GetClientId();
+            if (clientId is null || clientId != appointment.ClientId)
+            {
+                return NotFound();
+            }
+        }
+
+        var hoursRequired = ResolveChangeWindowHours();
+        if (appointment.StartsAt < DateTimeOffset.UtcNow.AddHours(hoursRequired))
+        {
+            return BadRequest(new
+            {
+                error = $"Alteração permitida apenas até {hoursRequired}h antes do horário marcado."
+            });
+        }
+
+        if (request.StartsAt < DateTimeOffset.UtcNow)
+        {
+            return BadRequest(new { error = "Novo horário deve ser no futuro." });
+        }
+
+        var service = await db.Services.AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == appointment.ServiceId && s.TenantId == tenantId, cancellationToken);
+        if (service is null)
+        {
+            return BadRequest(new { error = "Serviço inválido." });
+        }
+
+        var endsAt = request.StartsAt.AddMinutes(service.DurationMinutes);
+        var conflict = await db.Appointments.AsNoTracking().AnyAsync(a =>
+            a.TenantId == tenantId &&
+            a.BarberId == appointment.BarberId &&
+            a.Id != appointment.Id &&
+            a.IsActive &&
+            a.Status != AppointmentStatus.Cancelled &&
+            a.StartsAt < endsAt &&
+            a.EndsAt > request.StartsAt, cancellationToken);
+        if (conflict)
+        {
+            return BadRequest(new { error = "Horário indisponível para este barbeiro." });
+        }
+
+        try
+        {
+            appointment.Reschedule(request.StartsAt, endsAt);
+            await db.SaveChangesAsync(cancellationToken);
+            return Ok(new { appointment.Id, startsAt = appointment.StartsAt, endsAt = appointment.EndsAt });
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    private int ResolveChangeWindowHours()
+    {
+        // Clientes (sem manage_appointments): sempre 24h.
+        if (!User.HasClaim("permission", Permissions.ManageAppointments))
+        {
+            return ClientChangeHours;
+        }
+
+        return 0; // Admin/gestão pode cancelar/alterar sem janela.
+    }
+
     private static (int AdvanceBookingDays, int CancellationHours) ParseSettings(string json)
     {
         try
@@ -367,12 +465,12 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             using var doc = JsonDocument.Parse(string.IsNullOrWhiteSpace(json) ? "{}" : json);
             var root = doc.RootElement;
             var advance = root.TryGetProperty("advanceBookingDays", out var a) && a.TryGetInt32(out var av) ? av : 30;
-            var cancel = root.TryGetProperty("cancellationHours", out var c) && c.TryGetInt32(out var cv) ? cv : 2;
+            var cancel = root.TryGetProperty("cancellationHours", out var c) && c.TryGetInt32(out var cv) ? cv : 24;
             return (advance, cancel);
         }
         catch
         {
-            return (30, 2);
+            return (30, 24);
         }
     }
 

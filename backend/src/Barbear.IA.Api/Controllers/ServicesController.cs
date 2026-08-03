@@ -25,9 +25,33 @@ public sealed class ServicesController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> List([FromQuery] Guid? tenantId, CancellationToken cancellationToken)
     {
         var resolvedTenantId = ResolveTenantId(tenantId);
+
+        // Super Admin sem filtro: catálogo global (somente leitura via UI).
         if (resolvedTenantId is null)
         {
-            return Forbid();
+            if (!User.IsSuperAdmin())
+            {
+                return Forbid();
+            }
+
+            var all = await db.Services.AsNoTracking()
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.Name)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.TenantId,
+                    s.Name,
+                    s.Description,
+                    s.Category,
+                    s.DurationMinutes,
+                    s.Price,
+                    s.IsActive,
+                    s.CreatedAt,
+                    s.UpdatedAt
+                })
+                .ToListAsync(cancellationToken);
+            return Ok(all);
         }
 
         var items = await db.Services.AsNoTracking()

@@ -9,6 +9,8 @@ import { AnimatedIcon } from '../ui/animated-icon';
 import { motion } from 'framer-motion';
 import { Client } from '../../types';
 import { clientsAPI } from '../../api';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTenantWriteAccess } from '../../hooks/useTenantWriteAccess';
 
 interface ClientListProps {
   onCreateClient: () => void;
@@ -16,6 +18,10 @@ interface ClientListProps {
 }
 
 export function ClientList({ onCreateClient, onEditClient }: ClientListProps) {
+  const { hasPermission } = useAuth();
+  const { canWrite } = useTenantWriteAccess();
+  // Barbeiro só visualiza (view_assigned_clients); CRUD exige manage_clients
+  const canManage = canWrite && hasPermission('manage_clients');
   const [clients, setClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -68,6 +74,7 @@ export function ClientList({ onCreateClient, onEditClient }: ClientListProps) {
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <h2 className="text-lg font-semibold">Clientes</h2>
+        {canManage && (
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -87,6 +94,7 @@ export function ClientList({ onCreateClient, onEditClient }: ClientListProps) {
             Novo Cliente
           </Button>
         </motion.div>
+        )}
       </motion.div>
 
       <motion.div 
@@ -138,8 +146,11 @@ export function ClientList({ onCreateClient, onEditClient }: ClientListProps) {
             whileTap={{ scale: 0.98 }}
           >
             <Card
-              className="cursor-pointer hover:bg-accent/50 transition-all duration-200 hover:shadow-lg border-2 hover:border-primary/20"
-              onClick={() => onEditClient(client)}
+              className={`hover:bg-accent/50 transition-all duration-200 hover:shadow-lg border-2 hover:border-primary/20 ${canManage ? 'cursor-pointer' : 'cursor-default opacity-90'}`}
+              onClick={() => {
+                if (!canManage) return;
+                onEditClient(client);
+              }}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center space-x-3">
@@ -247,7 +258,7 @@ export function ClientList({ onCreateClient, onEditClient }: ClientListProps) {
           >
             {searchTerm ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado.'}
           </motion.div>
-          {!searchTerm && (
+          {!searchTerm && canManage && (
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

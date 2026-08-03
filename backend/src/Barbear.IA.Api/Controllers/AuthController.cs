@@ -84,6 +84,33 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
         return me is null ? Unauthorized() : Ok(me);
     }
 
+    [Authorize]
+    [HttpPut("me")]
+    public async Task<ActionResult<MeResponse>> UpdateMe(
+        [FromBody] UpdateMyProfileRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var me = await authService.UpdateMyProfileAsync(userId.Value, request, cancellationToken);
+            return me is null ? Unauthorized() : Ok(me);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     private Guid? GetUserId()
     {
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier)

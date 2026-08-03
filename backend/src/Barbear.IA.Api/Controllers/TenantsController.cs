@@ -58,16 +58,69 @@ public sealed class TenantsController(AppDbContext db) : ControllerBase
         return Ok(new { total, page, pageSize, items });
     }
 
+    /// <summary>
+    /// Catálogo público de barbearias aprovadas (sem assinatura/faturamento).
+    /// </summary>
     [AllowAnonymous]
     [HttpGet("discover")]
     public async Task<IActionResult> Discover(CancellationToken cancellationToken)
     {
-        var items = await db.Tenants.AsNoTracking()
+        var tenants = await db.Tenants.AsNoTracking()
             .Where(t => t.IsActive && t.Status == TenantStatus.Approved)
             .OrderBy(t => t.Name)
-            .Select(t => new { t.Id, t.Name, t.Phone })
             .ToListAsync(cancellationToken);
-        return Ok(items);
+
+        return Ok(tenants.Select(MapPublicSummary));
+    }
+
+    /// <summary>
+    /// Detalhe público: contato, endereço, horários, barbeiros e serviços (sem billing).
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("{id:guid}/public")]
+    public async Task<IActionResult> GetPublic(Guid id, CancellationToken cancellationToken)
+    {
+        var tenant = await db.Tenants.AsNoTracking()
+            .FirstOrDefaultAsync(
+                t => t.Id == id && t.IsActive && t.Status == TenantStatus.Approved,
+                cancellationToken);
+        if (tenant is null)
+        {
+            return NotFound();
+        }
+
+        var barbers = await db.BarberProfiles.AsNoTracking()
+            .Where(b => b.TenantId == id && b.IsActive)
+            .OrderBy(b => b.Name)
+            .Select(b => new
+            {
+                b.Id,
+                b.Name,
+                b.Bio,
+                b.AvatarUrl
+            })
+            .ToListAsync(cancellationToken);
+
+        var services = await db.Services.AsNoTracking()
+            .Where(s => s.TenantId == id && s.IsActive)
+            .OrderBy(s => s.Name)
+            .Select(s => new
+            {
+                s.Id,
+                s.Name,
+                s.Description,
+                s.Category,
+                s.DurationMinutes,
+                s.Price
+            })
+            .ToListAsync(cancellationToken);
+
+        return Ok(new
+        {
+            shop = MapPublicSummary(tenant),
+            barbers,
+            services
+        });
     }
 
     [Authorize]
@@ -223,4 +276,32 @@ public sealed class TenantsController(AppDbContext db) : ControllerBase
             currentPeriodEnd = t.Subscription.CurrentPeriodEnd
         }
     };
+
+    /// <summary>Projeção pública — nunca inclui subscription/settings/owner.</summary>
+    private static object MapPublicSummary(Domain.Entities.Tenant t) => new
+    {
+        t.Id,
+        t.Name,
+        t.Email,
+        t.Phone,
+        address = SafeJson(t.AddressJson),
+        businessHours = SafeJson(t.BusinessHoursJson)
+    };
+
+    private static object SafeJson(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new { };
+        }
+
+        try
+        {
+            return JsonDocument.Parse(json).RootElement.Clone();
+        }
+        catch (JsonException)
+        {
+            return new { };
+        }
+    }
 }

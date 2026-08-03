@@ -39,9 +39,17 @@ export const appointmentsAPI = {
   },
   async cancelAppointment(id: string, reason?: string): Promise<boolean> { await post(`/appointments/${id}/cancel`, { reason }); return true; },
   async completeAppointment(id: string): Promise<boolean> { await post(`/appointments/${id}/complete`); return true; },
+  async rescheduleAppointment(id: string, date: string, time: string): Promise<AppointmentWithDetails> {
+    const startsAt = `${date}T${time}:00.000Z`;
+    await post(`/appointments/${id}/reschedule`, { startsAt });
+    return this.getAppointmentById(id);
+  },
   async updateAppointment(id: string, updates: Partial<Appointment>): Promise<AppointmentWithDetails> {
     if (updates.status === 'cancelled') { await this.cancelAppointment(id, updates.notes); return this.getAppointmentById(id); }
     if (updates.status === 'completed') { await this.completeAppointment(id); return this.getAppointmentById(id); }
+    if (updates.date && updates.time) {
+      return this.rescheduleAppointment(id, updates.date, updates.time);
+    }
     throw new Error('A API não suporta a atualização solicitada para o agendamento.');
   },
   async getTodayAppointments(_tenantId?: string, _barberId?: string): Promise<AppointmentWithDetails[]> { return (await get<any[]>('/appointments/today')).map(map); },

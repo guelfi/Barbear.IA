@@ -46,7 +46,8 @@ public static class Permissions
         ManageSubscriptions,
         ViewBilling,
         ManageSystemSettings,
-        ViewMessagingStatus
+        ViewMessagingStatus,
+        ViewServices
     ];
 
     public static IReadOnlyList<string> ForAdmin { get; } =

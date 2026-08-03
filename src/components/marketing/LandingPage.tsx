@@ -65,7 +65,11 @@ export function LandingPage({ onEnter, onStartTrial }: LandingPageProps) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h2 className="lp-aside__title">Menos improvisação. Mais casa cheia.</h2>
+            <h2 className="lp-aside__title">
+              Menos improvisação.
+              <br />
+              Mais casa cheia.
+            </h2>
             <p className="lp-aside__text">
               Do dono ao barbeiro e ao cliente: cada perfil vê só o que precisa —
               com controle de acesso, isolamento entre unidades e a rotina da

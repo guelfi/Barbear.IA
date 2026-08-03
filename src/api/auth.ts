@@ -1,4 +1,4 @@
-import { get, post } from './http';
+import { get, post, put } from './http';
 
 export interface User {
   id: string;
@@ -6,6 +6,9 @@ export interface User {
   email: string;
   role: 'super_admin' | 'admin' | 'barber' | 'client';
   tenantId?: string;
+  tenantStatus?: 'pending' | 'approved' | 'suspended' | 'cancelled';
+  clientProfileId?: string;
+  barberProfileId?: string;
   avatar: string;
   phone: string;
   isActive: boolean;
@@ -39,10 +42,13 @@ export interface SessionData {
   expiresAt: string;
 }
 
-type ApiUser = Omit<User, 'avatar' | 'lastLogin' | 'role'> & {
+type ApiUser = Omit<User, 'avatar' | 'lastLogin' | 'role' | 'tenantStatus'> & {
   role: string;
   avatarUrl?: string;
   lastLoginAt?: string;
+  tenantStatus?: string | null;
+  clientProfileId?: string | null;
+  barberProfileId?: string | null;
 };
 type AuthResponse = {
   success: boolean;
@@ -61,9 +67,18 @@ const sectionsByRole: Record<string, string[]> = {
 };
 
 function mapUser(user: ApiUser): User {
+  const status = user.tenantStatus?.toLowerCase();
+  const tenantStatus =
+    status === 'pending' || status === 'approved' || status === 'suspended' || status === 'cancelled'
+      ? status
+      : undefined;
+
   return {
     ...user,
     role: user.role as User['role'],
+    tenantStatus,
+    clientProfileId: user.clientProfileId ?? undefined,
+    barberProfileId: user.barberProfileId ?? undefined,
     avatar: user.avatarUrl ?? '',
     phone: user.phone ?? '',
     isActive: user.isActive ?? true,
@@ -146,6 +161,11 @@ export const authAPI = {
 
   async refresh(refreshToken: string): Promise<LoginResponse> {
     return toLoginResponse(await post<AuthResponse>('/auth/refresh', { refreshToken }, { skipAuth: true }));
+  },
+
+  async updateMyProfile(data: { name: string; phone: string; email?: string }): Promise<User> {
+    const me = await put<{ user: ApiUser }>('/auth/me', data);
+    return mapUser(me.user);
   },
 };
 
