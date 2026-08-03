@@ -36,12 +36,15 @@ import {
 import { User as UserType } from '../../types';
 import { toast } from 'sonner';
 import { usersAPI } from '../../api';
+import { UserCrudDialog } from './UserCrudDialog';
 
 export function UserManagement() {
   const [users, setUsers] = useState<UserType[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
 
   // Load users via API
   useEffect(() => {
@@ -76,18 +79,22 @@ export function UserManagement() {
       const user = users.find(u => u.id === userId);
       if (!user) return;
 
-      const updatedUser = await usersAPI.update(userId, { isActive: !user.isActive });
-      
-      setUsers(prev => 
-        prev.map(u => 
-          u.id === userId ? updatedUser : u
+      if (user.isActive) {
+        await usersAPI.deactivateUser(userId);
+      } else {
+        await usersAPI.activateUser(userId);
+      }
+
+      setUsers(prev =>
+        prev.map(u =>
+          u.id === userId ? { ...u, isActive: !user.isActive } : u
         )
       );
-      
-      toast.success('Status do usuário atualizado!');
+
+      toast.success(user.isActive ? 'Usuário suspenso.' : 'Usuário ativado.');
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
-      toast.error('Erro ao atualizar status do usuário');
+      toast.error(error instanceof Error ? error.message : 'Erro ao atualizar status do usuário');
     }
   };
 
@@ -263,7 +270,14 @@ export function UserManagement() {
                 const RoleIcon = getRoleIcon(user.role);
                 
                 return (
-                  <TableRow key={user.id}>
+                  <TableRow
+                    key={user.id}
+                    className="cursor-pointer hover:bg-accent/50"
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setUserDialogOpen(true);
+                    }}
+                  >
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-8 w-8">
@@ -284,7 +298,7 @@ export function UserManagement() {
                     </TableCell>
                     <TableCell>
                       {user.tenantId ? (
-                        <span className="text-sm">ID: {user.tenantId}</span>
+                        <span className="text-sm break-all">ID: {user.tenantId}</span>
                       ) : (
                         <span className="text-sm text-muted-foreground">-</span>
                       )}
@@ -304,7 +318,7 @@ export function UserManagement() {
                         {formatDate(user.createdAt)}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center space-x-2">
                         {user.role !== 'super_admin' && (
                           <AlertDialog>
@@ -355,6 +369,16 @@ export function UserManagement() {
           </Table>
         </CardContent>
       </Card>
+
+      <UserCrudDialog
+        user={selectedUser}
+        open={userDialogOpen}
+        onOpenChange={setUserDialogOpen}
+        onSaved={(updated) => {
+          setUsers((prev) => prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u)));
+          setSelectedUser(updated);
+        }}
+      />
     </div>
   );
 }

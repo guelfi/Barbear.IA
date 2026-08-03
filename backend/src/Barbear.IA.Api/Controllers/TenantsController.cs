@@ -145,6 +145,41 @@ public sealed class TenantsController(AppDbContext db) : ControllerBase
         return Ok(Map(tenant));
     }
 
+    public sealed record UpdateTenantProfileRequest(
+        string Name,
+        string Email,
+        string Phone,
+        JsonElement? Address = null,
+        JsonElement? BusinessHours = null);
+
+    [Authorize(Policy = Permissions.ManageBarbershops)]
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateProfile(
+        Guid id,
+        [FromBody] UpdateTenantProfileRequest request,
+        CancellationToken cancellationToken)
+    {
+        var tenant = await db.Tenants.Include(t => t.Subscription)
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        if (tenant is null)
+        {
+            return NotFound();
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Name) ||
+            string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Phone))
+        {
+            return BadRequest(new { error = "Nome, e-mail e telefone são obrigatórios." });
+        }
+
+        var addressJson = request.Address?.GetRawText() ?? tenant.AddressJson;
+        var hoursJson = request.BusinessHours?.GetRawText() ?? tenant.BusinessHoursJson;
+        tenant.UpdateProfile(request.Name, request.Email, request.Phone, addressJson, hoursJson);
+        await db.SaveChangesAsync(cancellationToken);
+        return Ok(Map(tenant));
+    }
+
     [Authorize(Policy = Permissions.ManageBarbershopSettings)]
     [HttpPut("{id:guid}/settings")]
     public async Task<IActionResult> UpdateSettings(

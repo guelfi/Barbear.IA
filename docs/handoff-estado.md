@@ -46,7 +46,9 @@ Produção OCI **estável** com stack completa (front + API + Postgres + Redis).
 | E Go-live OCI (stack) | ✅ | Compose + CD + nginx `/barbear-ia/{api,swagger}` |
 | E — URL canônica IP | ✅ | `VITE_API_URL` + docs |
 | UX login alerta duplicado | ✅ | Só alerta abaixo do card |
-| Mobile sidebar Sair (iPhone) | 🔄 | Fix `100dvh` + footer fixo + nav scroll — validar no device após deploy |
+| Mobile sidebar Sair (iPhone) | ✅ | `100dvh` + footer fixo — validar no device |
+| CRUD cards (linha → dialog) | ✅ | Barbearias + Usuários; Serviços: clique no card abre form + API |
+| Suspender Usuários/Barbearias | ✅ | stopPropagation; users via activate/deactivate API |
 | E1b Evolution OTP real | ⬜ | `Evolution__Enabled=false` |
 | E7 Stripe real | ⬜ | Sandbox/stub |
 | E9 harden (ZAP, secrets, HttpOnly) | ⬜ | Secrets default no `.env` OCI |

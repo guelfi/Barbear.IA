@@ -5,6 +5,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { UserManagement } from '../admin/UserManagement';
+import { TenantCrudDialog } from '../admin/TenantCrudDialog';
 import { AnimatedIcon } from '../ui/animated-icon';
 import { motion } from 'framer-motion';
 import {
@@ -35,7 +36,6 @@ import {
   CheckCircle,
   XCircle,
   Search,
-  Eye,
   Ban,
   Play,
 } from 'lucide-react';
@@ -53,6 +53,8 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [tenantDialogOpen, setTenantDialogOpen] = useState(false);
   
   // Map sidebar sections to internal tabs
   const getTabFromSection = (section: string) => {
@@ -637,7 +639,11 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                       {filteredTenants.map((tenant) => (
                         <TableRow 
                           key={tenant.id}
-                          className="hover:bg-accent/50 transition-colors"
+                          className="hover:bg-accent/50 transition-colors cursor-pointer"
+                          onClick={() => {
+                            setSelectedTenant(tenant);
+                            setTenantDialogOpen(true);
+                          }}
                         >
                           <TableCell>
                             <div className="flex items-center space-x-3">
@@ -681,23 +687,15 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                               {formatDate(tenant.createdAt)}
                             </span>
                           </TableCell>
-                          <TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center space-x-2">
-                              <Button size="sm" variant="outline" className="hover:scale-105 transition-transform">
-                                <AnimatedIcon
-                                  icon={Eye}
-                                  animation="pulse"
-                                  category="action"
-                                  size="sm"
-                                  intensity="medium"
-                                />
-                              </Button>
                               {tenant.status === 'approved' && (
                                 <Button
                                   size="sm"
                                   variant="destructive"
                                   onClick={() => handleSuspendTenant(tenant.id)}
                                   className="hover:scale-105 transition-transform"
+                                  title="Suspender"
                                 >
                                   <AnimatedIcon
                                     icon={Ban}
@@ -714,6 +712,7 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
                                   variant="default"
                                   onClick={() => handleReactivateTenant(tenant.id)}
                                   className="hover:scale-105 transition-transform"
+                                  title="Reativar"
                                 >
                                   <AnimatedIcon
                                     icon={Play}
@@ -862,6 +861,16 @@ export function SuperAdminDashboard({ activeSection = 'dashboard' }: SuperAdminD
           </TabsContent>
         </Tabs>
       </motion.div>
+
+      <TenantCrudDialog
+        tenant={selectedTenant}
+        open={tenantDialogOpen}
+        onOpenChange={setTenantDialogOpen}
+        onSaved={(updated) => {
+          setTenants((prev) => prev.map((t) => (t.id === updated.id ? { ...t, ...updated } : t)));
+          setSelectedTenant(updated);
+        }}
+      />
     </motion.div>
   );
 }

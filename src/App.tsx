@@ -24,6 +24,7 @@ import { InstallPrompt } from './components/pwa/InstallPrompt';
 import { AccessibilityChecker } from './components/accessibility/AccessibilityChecker';
 import { toast } from 'sonner';
 import { Appointment, Client, Barber, Service } from './types';
+import { servicesAPI } from './api';
 import './components/layout/layout.css';
 
 type GuestView = 'landing' | 'auth';
@@ -136,15 +137,30 @@ function AppContent() {
     setShowServiceForm(true);
   }, []);
 
-  const handleSaveService = useCallback((_serviceData: Partial<Service>) => {
-    if (editingService) {
-      toast.success('Serviço atualizado com sucesso!');
-    } else {
-      toast.success('Serviço cadastrado com sucesso!');
+  const handleSaveService = useCallback(async (serviceData: Partial<Service>) => {
+    try {
+      if (editingService) {
+        await servicesAPI.updateService(editingService.id, serviceData);
+        toast.success('Serviço atualizado com sucesso!');
+      } else {
+        await servicesAPI.createService({
+          name: serviceData.name || '',
+          description: serviceData.description || '',
+          duration: serviceData.duration || 30,
+          price: serviceData.price || 0,
+          category: serviceData.category || 'Corte',
+          tenantId: user?.tenantId || '',
+          isActive: serviceData.isActive ?? true,
+        });
+        toast.success('Serviço cadastrado com sucesso!');
+      }
+      setShowServiceForm(false);
+      setEditingService(undefined);
+      setActiveTab('services');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Falha ao salvar serviço.');
     }
-    setShowServiceForm(false);
-    setEditingService(undefined);
-  }, [editingService]);
+  }, [editingService, user?.tenantId]);
 
   const handleCancel = useCallback(() => {
     setShowAppointmentForm(false);

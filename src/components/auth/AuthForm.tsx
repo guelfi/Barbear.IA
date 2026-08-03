@@ -775,6 +775,12 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                     </MaterialButton>
                   </motion.div>
 
+                  {loginData.userType === 'barbershop' && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Demo: dono.alpha@barbear.ia · senha Demo@123456 · persona Barbearia
+                    </p>
+                  )}
+
                   {/* Demo autofill: apenas em desenvolvimento local */}
                   {import.meta.env.DEV && loginData.userType && (
                     <motion.div

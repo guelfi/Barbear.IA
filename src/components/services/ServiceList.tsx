@@ -10,13 +10,15 @@ import { AnimatedIcon } from '../ui/animated-icon';
 import { motion } from 'framer-motion';
 import { Service } from '../../types';
 import { servicesAPI } from '../../api';
+import { toast } from 'sonner';
 
 interface ServiceListProps {
   onCreateService: () => void;
   onEditService: (service: Service) => void;
+  onChanged?: () => void;
 }
 
-export function ServiceList({ onCreateService, onEditService }: ServiceListProps) {
+export function ServiceList({ onCreateService, onEditService, onChanged }: ServiceListProps) {
   const [services, setServices] = useState<Service[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -43,16 +45,31 @@ export function ServiceList({ onCreateService, onEditService }: ServiceListProps
     (service.description && service.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const toggleServiceStatus = (id: string) => {
-    setServices(prev =>
-      prev.map(service =>
-        service.id === id ? { ...service, isActive: !service.isActive } : service
-      )
-    );
+  const reload = async () => {
+    const allServices = await servicesAPI.getAll();
+    setServices(allServices);
+    onChanged?.();
   };
 
-  const deleteService = (id: string) => {
-    setServices(prev => prev.filter(service => service.id !== id));
+  const toggleServiceStatus = async (id: string) => {
+    try {
+      // API atual: DELETE faz soft-delete (inativa). Reativação via edição/recriação.
+      await servicesAPI.deleteService(id);
+      await reload();
+      toast.success('Serviço inativado.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Falha ao alterar status do serviço.');
+    }
+  };
+
+  const deleteService = async (id: string) => {
+    try {
+      await servicesAPI.deleteService(id);
+      await reload();
+      toast.success('Serviço excluído.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Falha ao excluir serviço.');
+    }
   };
 
   if (loading) {
@@ -148,7 +165,18 @@ export function ServiceList({ onCreateService, onEditService }: ServiceListProps
               transition: { duration: 0.2 } 
             }}
           >
-            <Card className="relative hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20">
+            <Card
+              className="relative hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20 cursor-pointer"
+              onClick={() => onEditService(service)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onEditService(service);
+                }
+              }}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -170,6 +198,7 @@ export function ServiceList({ onCreateService, onEditService }: ServiceListProps
                   <motion.div
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <Switch
                       checked={service.isActive}
@@ -228,7 +257,7 @@ export function ServiceList({ onCreateService, onEditService }: ServiceListProps
                   </motion.div>
                 </div>
 
-                <div className="flex space-x-2 mt-4">
+                <div className="flex space-x-2 mt-4" onClick={(e) => e.stopPropagation()}>
                   <motion.div
                     className="flex-1"
                     whileHover={{ scale: 1.02 }}
