@@ -164,10 +164,10 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
         />
       )}
       
-      {/* Sidebar with enhanced animations and touch support */}
+      {/* Sidebar: no mobile, altura = viewport real (dvh) e Sair fixo no rodapé */}
       <aside 
         ref={sidebarRef}
-        className={`mobile-sidebar smooth-transition h-full bg-card border-r border-border w-64 relative z-50 transition-all duration-300 ease-in-out transform ${isOpen ? 'open' : ''}`}
+        className={`mobile-sidebar smooth-transition bg-card border-r border-border w-64 z-50 transition-all duration-300 ease-in-out transform ${isOpen ? 'open' : ''}`}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -175,9 +175,9 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
         aria-label="Menu principal"
         data-testid="sidebar"
       >
-        <div className="flex flex-col h-full bg-card">
+        <div className="sidebar-panel flex flex-col h-full min-h-0 bg-card">
           {/* Header */}
-          <div className="p-6 border-b border-border bg-card">
+          <div className="sidebar-panel__header shrink-0 p-4 sm:p-6 border-b border-border bg-card">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 cursor-pointer group">
                 <AnimatedIcon
@@ -210,7 +210,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
             </div>
             
             {user && (
-              <div className="mt-4 flex items-center space-x-3">
+              <div className="mt-3 sm:mt-4 flex items-center space-x-3">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user.avatar} />
                   <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
@@ -223,8 +223,12 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
             )}
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4 bg-card" role="navigation" aria-label="Menu de navegação">
+          {/* Navigation — scrollável se a lista for longa */}
+          <nav
+            className="sidebar-panel__nav flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 bg-card"
+            role="navigation"
+            aria-label="Menu de navegação"
+          >
             <ul className="space-y-2" role="menubar">
               {menuItems.map((item, index) => (
                 <li key={item.id} role="none">
@@ -278,8 +282,8 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
             </ul>
           </nav>
 
-          {/* Footer */}
-          <div className="p-4 border-t border-border bg-card">
+          {/* Footer — sempre visível no rodapé do sidebar (mobile + desktop) */}
+          <div className="sidebar-panel__footer shrink-0 p-4 border-t border-border bg-card">
             <Button
               variant="ghost"
               className="w-full justify-start hover:scale-[1.02] transition-all duration-300 ease-out bg-transparent hover:bg-[#f5f5f5] dark:hover:bg-accent focus:bg-[#f5f5f5] dark:focus:bg-accent active:scale-[0.98] hover:shadow-sm"

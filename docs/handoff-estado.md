@@ -1,13 +1,12 @@
 # Handoff — Barbear.IA
 
-**Atualizado:** 2026-08-02 ~23:40 BRT  
-**Branch ativa:** `main` (sincronizada com `origin/main`)  
-**Último commit:** `4b30544` — `fix(ui): remove alerta duplicado dentro do card de login`  
+**Atualizado:** 2026-08-02 ~23:50 BRT  
+**Branch ativa:** `main`  
 **PR fundação:** [#8](https://github.com/guelfi/Barbear.IA/pull/8) (mergeado)
 
 ## Estado atual (resumo)
 
-Produção OCI **estável** com stack completa (front + API + Postgres + Redis). Acesso canônico por **IP + path**. Seed v2 aplicado e validado. CI/CD no `main` verde no último deploy do fix de login.
+Produção OCI **estável** com stack completa (front + API + Postgres + Redis). Acesso canônico por **IP + path**. Seed v2 aplicado. Em andamento: ajustes **mobile-first** (sidebar / Sair no iPhone).
 
 | Ambiente | URL | Status |
 |----------|-----|--------|
@@ -47,6 +46,7 @@ Produção OCI **estável** com stack completa (front + API + Postgres + Redis).
 | E Go-live OCI (stack) | ✅ | Compose + CD + nginx `/barbear-ia/{api,swagger}` |
 | E — URL canônica IP | ✅ | `VITE_API_URL` + docs |
 | UX login alerta duplicado | ✅ | Só alerta abaixo do card |
+| Mobile sidebar Sair (iPhone) | 🔄 | Fix `100dvh` + footer fixo + nav scroll — validar no device após deploy |
 | E1b Evolution OTP real | ⬜ | `Evolution__Enabled=false` |
 | E7 Stripe real | ⬜ | Sandbox/stub |
 | E9 harden (ZAP, secrets, HttpOnly) | ⬜ | Secrets default no `.env` OCI |
@@ -91,23 +91,23 @@ Mismatch de persona → mensagem genérica de credenciais inválidas.
 
 ## Pendências conhecidas
 
-1. **Secrets produção:** rotacionar `Jwt__SigningKey` e `POSTGRES_PASSWORD` no `.env` OCI (defaults do 1º deploy).
-2. **Evolution real:** `Evolution__Enabled`, rede/URL `batuara-evolution-api`, OTP + outbox.
-3. **Stripe real:** webhook assinado; sair do stub.
-4. **Hardening E9:** ZAP, HttpOnly cookies, CSP, Swagger público opcional.
-5. **Limpeza:** `src/database/*.json` órfãos; `ProductionDebugPanel` / logs verbosos no AuthContext.
-6. **Smoke E2E UI prod** além do login (dashboard SA, agenda dono Alpha, etc.).
+1. **Mobile audit (iPhone 11):** validar Sair no sidebar após deploy; varrer demais telas (tabs SuperAdmin, cards, dropdowns, formulários).
+2. **Secrets produção:** rotacionar `Jwt__SigningKey` e `POSTGRES_PASSWORD` no `.env` OCI.
+3. **Evolution real:** `Evolution__Enabled`, OTP + outbox.
+4. **Stripe real:** webhook assinado.
+5. **Hardening E9:** ZAP, HttpOnly cookies, CSP, Swagger.
+6. **Limpeza:** `src/database/*.json`; `ProductionDebugPanel` / logs AuthContext.
 7. **Produto futuro:** F-BARBER, F-CLIENT-MT, F-PKG.
 
 ## Próximos passos sugeridos (prioridade)
 
 | # | Item | Por quê |
 |---|------|---------|
-| 1 | Rotacionar secrets OCI (JWT + Postgres) e reiniciar API | Segurança pós go-live |
-| 2 | Smoke E2E UI em produção (SA + dono Alpha + barbeiro + cliente) | Validar fluxos além do login |
-| 3 | Evolution OTP (E1b) com número de teste | WhatsApp |
-| 4 | Priorizar F-BARBER ou F-CLIENT-MT | Melhorias de produto |
-| 5 | ZAP + revisar Swagger público | Hardening |
+| 1 | Validar sidebar mobile (Sair visível) no iPhone 11 | Fix recém aplicado |
+| 2 | Auditoria mobile das demais telas (SA → dono → barbeiro → cliente) | UX mobile-first |
+| 3 | Rotacionar secrets OCI | Segurança |
+| 4 | Evolution OTP / F-BARBER / F-CLIENT-MT | Produto |
+| 5 | ZAP + Swagger | Hardening |
 
 ## Comandos úteis
 
