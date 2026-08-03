@@ -775,21 +775,6 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                     </MaterialButton>
                   </motion.div>
 
-                  {error && (
-                    <motion.div
-                      role="alert"
-                      aria-live="assertive"
-                      className="auth-shell__alert"
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {error === "Por favor, selecione o tipo de usuário"
-                        ? error
-                        : "Usuário ou senha inválido"}
-                    </motion.div>
-                  )}
-
                   {/* Demo autofill: apenas em desenvolvimento local */}
                   {import.meta.env.DEV && loginData.userType && (
                     <motion.div
