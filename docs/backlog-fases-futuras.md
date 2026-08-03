@@ -15,7 +15,7 @@ Atualizar este documento ao priorizar ou concluir itens.
 | **`docs/backlog-fases-futuras.md`** (este) | Ideias e épicos **após** a v1 / go-live local |
 | `docs/plano-implementacao-backend.md` | Escopo e status da implementação **v1** (E0–E9) |
 | `docs/handoff-estado.md` | Retomada da sessão / hotfixes da branch atual |
-| `STATUS.md` (raiz) | Ponteiro curto (ambientes + commits); detalhe da sessão em `handoff-estado.md` |
+| `STATUS.md` (raiz) | Ponteiro curto atualizado (ambientes + commits + sync); detalhe da sessão em `handoff-estado.md` |
 
 ---
 

@@ -1,21 +1,33 @@
 # Handoff — Barbear.IA
 
-**Atualizado:** 2026-08-03 ~08:35 BRT  
-**Branch ativa:** `main` @ `d306261` (sincronizada com `origin/main`; tip de produto `f62e3bb`)  
+**Atualizado:** 2026-08-03 ~11:06 America/Sao_Paulo  
+**Branch ativa:** `main` @ `8e160b5` (`local` ≡ `origin/main` ≡ tip; ahead/behind **0/0**; working tree limpa)  
 **PR fundação:** [#8](https://github.com/guelfi/Barbear.IA/pull/8) (mergeado)
 
 ## Estado atual (resumo)
 
-Produção OCI **estável** com stack completa (front + API + Postgres + Redis). Acesso canônico por **IP + path**. Seed v2 aplicado. Em `main`: UX do cliente, guards de tenant suspenso, permissões do barbeiro e padronização de datas **DD/MM/YYYY** (pt-BR) em todos os perfis.
+Produção OCI **estável** com stack completa (front + API + Postgres + Redis). Acesso canônico por **IP + path**. Seed v2 aplicado. Em `main`: UX do cliente, guards de tenant suspenso, permissões do barbeiro e padronização de datas **DD/MM/YYYY** (pt-BR) em todos os perfis. Docs/STATUS alinhados ao tip `8e160b5`.
 
 | Ambiente | URL | Notas |
 |----------|-----|--------|
-| **OCI (canônico)** | http://129.153.86.168/barbear-ia/ | Front + API + Swagger |
+| **OCI (canônico)** | http://129.153.86.168/barbear-ia/ | Front + API + Swagger — saudável @ `8e160b5` |
 | Produção API | http://129.153.86.168/barbear-ia/api/v1/ | Login SA / dono / barbeiro / cliente |
 | Produção Swagger | http://129.153.86.168/barbear-ia/swagger/index.html | HTTP 200 |
-| **Local (paridade)** | http://192.168.15.119/barbear-ia/ | `docker-compose.local.yml` |
+| **Local (paridade)** | http://192.168.15.119/barbear-ia/ | `docker-compose.local.yml` — front 200; API 401 unauth OK |
 
 > **Não usar** `batuara.org.br/barbear-ia/` como URL canônica — o produto responde em `http://129.153.86.168/barbear-ia/`.
+
+## Verificação de sync (2026-08-03 ~11:06)
+
+| Check | Resultado |
+|-------|-----------|
+| Git local `main` | `8e160b5` — limpa; ahead/behind **0/0** vs `origin/main` |
+| `origin/main` | `8e160b5` |
+| OCI `/var/www/Barbear.IA` | `8e160b5` (mesmo tip) |
+| Local runtime | http://192.168.15.119/barbear-ia/ — front **200**; API **401** sem auth (esperado) |
+| OCI runtime | http://129.153.86.168/barbear-ia/ — saudável e servindo o HEAD |
+| Asset hash local ≠ OCI | **Esperado** — front embute `VITE_API_URL` diferente; **não** é drift de código |
+| DB (`./scripts/db-sync.sh status`) | Última checagem: contagens **local ≡ OCI** |
 
 ## Como retomar na próxima sessão
 
@@ -31,11 +43,12 @@ Produção OCI **estável** com stack completa (front + API + Postgres + Redis).
 |---------|-------|-------|
 | Super Admin | `admin@barbear.ia` | `Admin123#` |
 | Dono (Owner) | `dono.{alpha\|beta\|gamma}@barbear.ia` | `Demo@123456` |
-| Barbeiro / Cliente | `barbeiro*.{t}@` / `cliente*.{t}@barbear.ia` | `Demo@123456` |
+| Barbeiro | `barbeiro*.{t}@barbear.ia` | `Demo@123456` |
+| Cliente | `cliente.alpha@barbear.ia` (não `cliente1`) / `cliente*.{t}@` | `Demo@123456` |
 
-- **Persona do login deve bater com o role** (mismatch → credenciais inválidas genéricas).
+- **Persona do login (`userType`) deve bater com o role** (mismatch → credenciais inválidas genéricas).
 - Tenants: Alpha + Beta = `Approved` + trial; **Gamma = `Suspended`** (mutações 403 / read-only).
-- Exemplos: `dono.alpha@barbear.ia`, `barbeiro.beta@barbear.ia`, `cliente.gamma@barbear.ia`.
+- Exemplos: `dono.alpha@barbear.ia`, `barbeiro.beta@barbear.ia`, `cliente.alpha@barbear.ia`, `cliente.gamma@barbear.ia`.
 
 ## Infra / ops
 
@@ -43,7 +56,7 @@ Produção OCI **estável** com stack completa (front + API + Postgres + Redis).
 |------|--------|
 | SSH | `ssh -i /home/guelfi/Projetos/oci-key-2026-07-29 ubuntu@129.153.86.168` |
 | Sync DB | `./scripts/db-sync.sh status\|pull\|push` — default **OCI → local** (`pull`); `push` exige `CONFIRM=yes` |
-| Repo servidor | `/var/www/Barbear.IA` @ `main` |
+| Repo servidor | `/var/www/Barbear.IA` @ `main` (`8e160b5`) |
 | Compose OCI | `docker-compose.yml` (front+api+postgres+redis) |
 | Secrets OCI | `/var/www/Barbear.IA/.env` (**não** versionado; CD não sobrescreve se existir) |
 | `VITE_API_URL` | `http://129.153.86.168/barbear-ia/api/v1` |
@@ -58,7 +71,13 @@ Produção OCI **estável** com stack completa (front + API + Postgres + Redis).
 
 ## Recentemente entregue (em `main` / pushed)
 
-### `f62e3bb` — Datas DD/MM/YYYY (pt-BR)
+### `8e160b5` — Docs: STATUS / ponteiros
+- Alinha `STATUS.md` e ponteiros com o handoff vigente
+
+### `d306261` — Docs handoff
+- Handoff atualizado com tip de produto `f62e3bb` (datas DD/MM/YYYY)
+
+### `f62e3bb` — Datas DD/MM/YYYY (pt-BR) — tip de produto
 - Helpers canônicos em `src/lib/formatDate.ts`: `formatDate`, `formatDateTime`, `toIsoDateLocal`
 - Exibição UI: **DD/MM/YYYY** (e data+hora `DD/MM/YYYY HH:mm`) em dashboards, agenda, perfis, listas, notificações, debug
 - DayPicker com locale `pt-BR` em `src/components/ui/calendar.tsx`
@@ -86,6 +105,7 @@ Produção OCI **estável** com stack completa (front + API + Postgres + Redis).
 
 - Exibição ao usuário: **DD/MM/YYYY** (e data+hora `DD/MM/YYYY HH:mm`) via `src/lib/formatDate.ts`
 - Persistência / `<input type="date">` / API: **YYYY-MM-DD** (`toIsoDateLocal`)
+- Calendário: locale **pt-BR**
 - Preferir sempre `formatDate` / `formatDateTime` / `toIsoDateLocal` em vez de `toLocaleDateString` ad-hoc
 
 ## Notas de produto (abertas)
@@ -94,6 +114,7 @@ Produção OCI **estável** com stack completa (front + API + Postgres + Redis).
 2. Ajuste **perfil a perfil** de sidebars/telas (dono, barbeiro, SA, cliente) — trabalho incremental previsto.
 3. Manter **Início** do cliente = histórico + loyalty mock — **não** dashboard admin com receita/métricas de gestão.
 4. **F-CLIENT-MT** (backlog): discovery + booking com barbearia avançaram no pacote `88821a6`, mas o épico completo (cadastro sem tenant / N vínculos ClientProfile) ainda está no backlog.
+5. **Não-bloqueadores conhecidos:** rotacionar secrets OCI; Evolution OTP real; Stripe real; hardening E9.
 
 ## Progresso (épicos / fases)
 
@@ -112,6 +133,7 @@ Produção OCI **estável** com stack completa (front + API + Postgres + Redis).
 | Dashboard black screen + db-sync | ✅ | `923922f` |
 | UX cliente / guards / barbeiro | ✅ | `88821a6` |
 | Datas DD/MM/YYYY (pt-BR) | ✅ | `f62e3bb` — `formatDate.ts` + consumers |
+| Docs STATUS / ponteiros | ✅ | `8e160b5` |
 | E1b Evolution OTP real | ⬜ | `Evolution__Enabled=false` |
 | E7 Stripe real | ⬜ | Sandbox/stub |
 | E9 harden (ZAP, secrets, HttpOnly) | ⬜ | Secrets default no `.env` OCI |
@@ -185,3 +207,4 @@ gh run list --branch main --limit 5
 6. Fix Dashboard black screen + ErrorBoundary + db-sync (`923922f`).
 7. UX cliente, guards suspenso, permissões barbeiro (`88821a6`).
 8. Datas DD/MM/YYYY via `formatDate.ts` (`f62e3bb`).
+9. Docs STATUS / ponteiros (`8e160b5`); handoff refresh ~11:06 America/Sao_Paulo.
