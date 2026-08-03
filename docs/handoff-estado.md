@@ -1,7 +1,7 @@
 # Handoff — Barbear.IA
 
 **Atualizado:** 2026-08-03 ~08:35 BRT  
-**Branch ativa:** `main` @ `f62e3bb` (sincronizada com `origin/main`)  
+**Branch ativa:** `main` @ `d306261` (sincronizada com `origin/main`; tip de produto `f62e3bb`)  
 **PR fundação:** [#8](https://github.com/guelfi/Barbear.IA/pull/8) (mergeado)
 
 ## Estado atual (resumo)
