@@ -1,7 +1,7 @@
 # Barbear.IA — Status (ponteiro)
 
-**Última atualização:** 2026-08-01 ~19:00 BRT  
-**Branch:** `main` @ `219476e` — produção OCI com stack completa (front+API+DB+Redis)
+**Última atualização:** 2026-08-02 ~23:40 BRT  
+**Branch:** `main` @ `4b30544` — produção OCI estável (front+API+DB+Redis)
 
 ## Onde acompanhar o trabalho
 
