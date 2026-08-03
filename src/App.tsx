@@ -7,6 +7,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { SuperAdminDashboard } from './components/dashboard/SuperAdminDashboard';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { TrialBanner } from './components/subscription/TrialBanner';
 import { AppointmentCalendar } from './components/appointments/AppointmentCalendar';
 import { AppointmentForm } from './components/appointments/AppointmentForm';
@@ -391,7 +392,9 @@ function AppContent() {
 
         <main className="flex-1 overflow-auto p-4 lg:p-6">
           {user?.role !== 'super_admin' && user?.role !== 'barber' && <TrialBanner />}
-          {renderContent()}
+          <ErrorBoundary fallbackTitle="Falha ao carregar o conteúdo">
+            {renderContent()}
+          </ErrorBoundary>
         </main>
       </div>
 

@@ -52,7 +52,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (token) {
           try {
-            const validation = await authAPI.validateSession(token);
+            // Timeout evita splash "Carregando..." infinito se /auth/me travar na rede
+            const validation = await Promise.race([
+              authAPI.validateSession(token),
+              new Promise<{ valid: false }>((resolve) => {
+                window.setTimeout(() => resolve({ valid: false }), 12_000);
+              }),
+            ]);
 
             if (validation.valid && validation.user && validation.sessionData) {
               const sessionState: SessionState = {

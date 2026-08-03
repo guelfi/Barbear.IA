@@ -3,6 +3,7 @@ using Barbear.IA.Application;
 using Barbear.IA.Infrastructure;
 using Barbear.IA.Infrastructure.Persistence;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -88,6 +89,13 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health").AllowAnonymous();
+
+// Schema sempre aplica no boot (independente do seed).
+await using (var migrateScope = app.Services.CreateAsyncScope())
+{
+    var db = migrateScope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 if (app.Configuration.GetValue("Seed:Enabled", true))
 {

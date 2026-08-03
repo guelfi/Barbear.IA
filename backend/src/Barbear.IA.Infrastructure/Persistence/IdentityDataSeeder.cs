@@ -1,7 +1,6 @@
 using Barbear.IA.Domain.Enums;
 using Barbear.IA.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,8 +18,6 @@ public static class IdentityDataSeeder
         var roleManager = sp.GetRequiredService<RoleManager<ApplicationRole>>();
         var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
         var config = sp.GetRequiredService<IConfiguration>();
-
-        await db.Database.MigrateAsync(cancellationToken);
 
         foreach (var roleName in new[] { RoleNames.SuperAdmin, RoleNames.Admin, RoleNames.Barber, RoleNames.Client })
         {

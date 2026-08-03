@@ -72,6 +72,8 @@ services:
       ConnectionStrings__Redis: barbear-ia-redis:6379
       Jwt__SigningKey: DEV_ONLY_CHANGE_ME_BarbearIA_Jwt_Signing_Key_32+
       Seed__Enabled: "true"
+      Seed__DemoData: "true"
+      Seed__DemoPassword: Demo@123456
       Seed__SuperAdmin__Email: admin@barbear.ia
       Seed__SuperAdmin__Password: Admin123#
       Swagger__Enabled: "true"

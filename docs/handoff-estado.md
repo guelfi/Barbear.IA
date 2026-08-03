@@ -80,6 +80,9 @@ Mismatch de persona → mensagem genérica de credenciais inválidas.
 | Rede Docker | `www_projetos-net` + `barbear-ia-net` |
 | SSH | `ssh -i /home/guelfi/Projetos/oci-key-2026-07-29 ubuntu@129.153.86.168` |
 | CD | `.github/workflows/deploy-oci.yml` (auto após CI verde em `main`) |
+| Sync DB | `./scripts/db-sync.sh` — `status` / `pull` (OCI→local) / `push` (`CONFIRM=yes`) |
+
+**Postgres local ≠ volume OCI.** Schema converge via EF `MigrateAsync` no boot da API. Dados: espelhar com `db-sync` (fonte operacional = OCI → `pull` após mudanças em prod; `push` só quando o local for o estado desejado).
 
 **Containers:** `barbear-ia-frontend`, `barbear-ia-api`, `barbear-ia-postgres`, `barbear-ia-redis`.
 

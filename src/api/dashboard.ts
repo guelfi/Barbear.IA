@@ -2,16 +2,27 @@ import { get } from './http';
 import { appointmentsAPI } from './appointments';
 import { barbershopsAPI } from './barbershops';
 
+/** Shape esperado por `Dashboard.tsx` (objetos aninhados, não campos flat). */
 function mapAppointmentCard(raw: any) {
+  const clientName =
+    raw.client?.name ?? raw.clientName ?? 'Cliente';
+  const serviceName =
+    (typeof raw.service === 'string' ? raw.service : raw.service?.name) ?? 'Serviço';
+  const barberName =
+    raw.barber?.name ?? raw.barberName ?? 'Barbeiro';
+
   return {
     id: raw.id,
-    clientName: raw.client?.name ?? 'Cliente',
-    service: raw.service?.name ?? 'Serviço',
+    client: {
+      name: clientName,
+      avatar: raw.client?.avatar ?? raw.client?.avatarUrl ?? '',
+    },
+    service: { name: serviceName },
+    barber: { name: barberName },
     time: raw.time ?? (raw.startsAt ? new Date(raw.startsAt).toISOString().slice(11, 16) : ''),
     date: raw.date ?? (raw.startsAt ? String(raw.startsAt).slice(0, 10) : ''),
-    status: raw.status,
-    barberName: raw.barber?.name,
-    price: raw.price ?? 0,
+    status: String(raw.status ?? 'scheduled').toLowerCase(),
+    price: Number(raw.price ?? 0),
   };
 }
 
@@ -19,6 +30,10 @@ export const dashboardAPI = {
   async getStats(userRole?: string, _userId?: string): Promise<any> {
     if (userRole === 'super_admin') {
       return this.getSuperAdminStats();
+    }
+
+    if (userRole === 'client') {
+      return this.getClientStats(_userId);
     }
 
     if (userRole === 'barber') {
@@ -69,8 +84,9 @@ export const dashboardAPI = {
 
   async getClientStats(_clientId?: string): Promise<any> {
     const upcoming = await appointmentsAPI.getUpcomingAppointments();
+    const today = new Date().toISOString().slice(0, 10);
     return {
-      todayAppointments: upcoming.filter((a) => a.date === new Date().toISOString().slice(0, 10)).length,
+      todayAppointments: upcoming.filter((a) => a.date === today).length,
       weeklyRevenue: 0,
       totalClients: 1,
       completionRate: 0,

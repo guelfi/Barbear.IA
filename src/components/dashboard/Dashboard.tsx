@@ -121,8 +121,8 @@ export function Dashboard() {
           user: user ? { id: user.id, role: user.role, tenantId: user.tenantId } : null
         });
         console.error('Dashboard Error:', err);
-        
-        // Em caso de erro, mostrar dados vazios em vez de erro
+
+        // Mantém a tela do dashboard (zeros) — não bloqueia a UI com tela vermelha
         setStats({
           todayAppointments: 0,
           weeklyRevenue: 0,
@@ -131,9 +131,7 @@ export function Dashboard() {
           upcomingAppointments: [],
           recentClients: []
         });
-        
-        // Ainda definir o erro para debug
-        setError(errorMessage);
+        setError(null);
       } finally {
         setLoading(false);
       }
@@ -384,9 +382,22 @@ export function Dashboard() {
             <MaterialCardTitle>Próximos Agendamentos</MaterialCardTitle>
           </MaterialCardHeader>
           <MaterialCardContent className="space-y-4">
-            {(safeStats.upcomingAppointments || []).map((appointment: any, index: number) => (
+            {(safeStats.upcomingAppointments || []).length === 0 && (
+              <p className="text-sm text-muted-foreground">Nenhum agendamento próximo.</p>
+            )}
+            {(safeStats.upcomingAppointments || []).map((appointment: any, index: number) => {
+              const clientName = appointment.client?.name ?? appointment.clientName ?? 'Cliente';
+              const serviceName =
+                (typeof appointment.service === 'string'
+                  ? appointment.service
+                  : appointment.service?.name) ?? 'Serviço';
+              const barberName = appointment.barber?.name ?? appointment.barberName ?? 'Barbeiro';
+              const avatar = appointment.client?.avatar ?? '';
+              const status = String(appointment.status ?? 'scheduled').toLowerCase();
+
+              return (
               <motion.div 
-                key={appointment.id} 
+                key={appointment.id ?? index} 
                 className="flex items-center space-x-4 p-3 rounded-lg hover:bg-accent/50 transition-material interactive"
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
@@ -398,31 +409,32 @@ export function Dashboard() {
                   transition={{ duration: 0.2 }}
                 >
                   <Avatar className="h-9 w-9 elevation-1">
-                    <AvatarImage src={appointment.client.avatar} />
-                    <AvatarFallback>{appointment.client.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={avatar} />
+                    <AvatarFallback>{clientName.charAt(0)}</AvatarFallback>
                   </Avatar>
                 </motion.div>
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {appointment.client.name}
+                    {clientName}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {appointment.service.name} com {appointment.barber.name}
+                    {serviceName} com {barberName}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {appointment.time} - R$ {(appointment.price || 0).toFixed(2)}
+                    {appointment.time} - R$ {(Number(appointment.price) || 0).toFixed(2)}
                   </p>
                 </div>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Badge className={statusColors[appointment.status as keyof typeof statusColors]}>
-                    {statusLabels[appointment.status as keyof typeof statusLabels]}
+                  <Badge className={statusColors[status as keyof typeof statusColors] ?? statusColors.scheduled}>
+                    {statusLabels[status as keyof typeof statusLabels] ?? status}
                   </Badge>
                 </motion.div>
               </motion.div>
-            ))}
+              );
+            })}
           </MaterialCardContent>
         </MaterialCard>
 
@@ -432,9 +444,12 @@ export function Dashboard() {
             <MaterialCardTitle>Clientes Recentes</MaterialCardTitle>
           </MaterialCardHeader>
           <MaterialCardContent className="space-y-4">
+            {(safeStats.recentClients || []).length === 0 && (
+              <p className="text-sm text-muted-foreground">Nenhum cliente recente.</p>
+            )}
             {(safeStats.recentClients || []).map((client: any, index: number) => (
               <motion.div 
-                key={client.id} 
+                key={client.id ?? index} 
                 className="flex items-center space-x-4 p-3 rounded-lg hover:bg-accent/50 transition-material interactive"
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
@@ -447,14 +462,14 @@ export function Dashboard() {
                 >
                   <Avatar className="h-9 w-9 elevation-1">
                     <AvatarImage src={client.avatar} />
-                    <AvatarFallback>{client.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback>{(client.name ?? '?').charAt(0)}</AvatarFallback>
                   </Avatar>
                 </motion.div>
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium leading-none">{client.name}</p>
-                  <p className="text-sm text-muted-foreground">{client.email}</p>
+                  <p className="text-sm font-medium leading-none">{client.name ?? 'Cliente'}</p>
+                  <p className="text-sm text-muted-foreground">{client.email ?? ''}</p>
                   <p className="text-xs text-muted-foreground">
-                    {client.totalAppointments} agendamentos
+                    {client.totalAppointments ?? 0} agendamentos
                   </p>
                 </div>
                 <motion.div 

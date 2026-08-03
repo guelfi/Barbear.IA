@@ -82,6 +82,9 @@ web_modules/
 .env.production.local
 .env.local
 
+# Postgres dumps from scripts/db-sync.sh
+.db-sync/
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
