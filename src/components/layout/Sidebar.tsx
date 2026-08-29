@@ -231,55 +231,60 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
             aria-label="Menu de navegação"
           >
             <ul className="space-y-2" role="menubar">
-              {menuItems.map((item, index) => (
-                <li key={item.id} role="none">
-                  <Button
-                    variant={activeTab === item.id ? 'secondary' : 'ghost'}
-                    className="w-full justify-start hover:scale-[1.02] transition-all duration-300 ease-out bg-transparent hover:bg-[#f5f5f5] dark:hover:bg-accent focus:bg-[#f5f5f5] dark:focus:bg-accent active:scale-[0.98] hover:shadow-sm"
-                    onClick={() => {
-                      measureAction(`navigate_to_${item.id}`, () => {
-                        onTabChange(item.id);
-                        // Close sidebar after navigation with smooth transition
-                        if (isOpen) {
-                          setTimeout(() => {
-                            onToggle();
-                          }, 150); // Small delay for better UX
+              {menuItems.map((item, index) => {
+                const isSelected = activeTab === item.id;
+
+                return (
+                  <li key={item.id} role="none">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start hover:scale-[1.02] transition-all duration-300 ease-out bg-transparent hover:bg-[#f5f5f5] dark:hover:bg-accent focus:bg-[#f5f5f5] dark:focus:bg-accent active:scale-[0.98] hover:shadow-sm"
+                      onClick={() => {
+                        measureAction(`navigate_to_${item.id}`, () => {
+                          onTabChange(item.id);
+                          // Close sidebar after navigation with smooth transition
+                          if (isOpen) {
+                            setTimeout(() => {
+                              onToggle();
+                            }, 150); // Small delay for better UX
+                          }
+                        });
+                      }}
+                      onMouseEnter={() => {
+                        // Preload component on hover for better performance
+                        const componentMap: Record<string, keyof typeof import('../lazy/LazyComponents')['preloadComponents']> = {
+                          'dashboard': 'dashboard',
+                          'appointments': 'appointments',
+                          'clients': 'clients',
+                          'barbers': 'barbers',
+                          'services': 'services'
+                        };
+                        
+                        const componentName = componentMap[item.id];
+                        if (componentName) {
+                          preloadComponent(componentName)();
                         }
-                      });
-                    }}
-                    onMouseEnter={() => {
-                      // Preload component on hover for better performance
-                      const componentMap: Record<string, keyof typeof import('../lazy/LazyComponents')['preloadComponents']> = {
-                        'dashboard': 'dashboard',
-                        'appointments': 'appointments',
-                        'clients': 'clients',
-                        'barbers': 'barbers',
-                        'services': 'services'
-                      };
-                      
-                      const componentName = componentMap[item.id];
-                      if (componentName) {
-                        preloadComponent(componentName)();
-                      }
-                    }}
-                    role="menuitem"
-                    aria-label={`Navegar para ${item.label}`}
-                    tabIndex={0}
-                  >
-                    <AnimatedIcon
-                      icon={item.icon}
-                      animation={item.animation}
-                      category={item.category}
-                      size="sm"
-                      intensity={activeTab === item.id ? "high" : "medium"}
-                      delay={index * 100}
-                      className="mr-2"
-                      aria-hidden="true"
-                    />
-                    {item.label}
-                  </Button>
-                </li>
-              ))}
+                      }}
+                      role="menuitem"
+                      aria-label={`Navegar para ${item.label}`}
+                      aria-current={isSelected ? 'page' : undefined}
+                      tabIndex={0}
+                    >
+                      <AnimatedIcon
+                        icon={item.icon}
+                        animation={item.animation}
+                        category={item.category}
+                        size="sm"
+                        intensity={isSelected ? "high" : "medium"}
+                        delay={index * 100}
+                        className="mr-2"
+                        aria-hidden="true"
+                      />
+                      {item.label}
+                    </Button>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
 

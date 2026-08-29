@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { Info } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -6,12 +7,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Appointment, Service, Client, Barber } from '../../types';
 import { clientsAPI, barbersAPI, servicesAPI, appointmentsAPI, barbershopsAPI } from '../../api';
 import type { PublicBarbershop } from '../../api/barbershops';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { toIsoDateLocal } from '../../lib/formatDate';
+import {
+  getLoyaltyPlanMock,
+  resolveLoyaltyPlanShopId,
+  shopHasActiveLoyaltyPlan,
+} from '../../data/loyaltyPlanMock';
 
 interface AppointmentFormProps {
   appointment?: Appointment;
@@ -53,6 +60,24 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const loyaltyPlan = useMemo(
+    () => (isClient ? getLoyaltyPlanMock(user?.email) : null),
+    [isClient, user?.email],
+  );
+  const planShopId = useMemo(
+    () =>
+      loyaltyPlan
+        ? resolveLoyaltyPlanShopId(loyaltyPlan, shops, user?.tenantId)
+        : undefined,
+    [loyaltyPlan, shops, user?.tenantId],
+  );
+  const selectedShopCoveredByPlan = Boolean(
+    isClient && shopId && planShopId && shopId === planShopId,
+  );
+  const showOutOfPlanWarning = Boolean(
+    isClient && shopId && planShopId && shopId !== planShopId,
+  );
 
   useEffect(() => {
     const boot = async () => {
@@ -171,11 +196,6 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
       return;
     }
 
-    if (isClient && shopId && user?.tenantId && shopId !== user.tenantId) {
-      toast.error('Você só pode agendar na barbearia em que está cadastrado.');
-      return;
-    }
-
     if (isClient && isEdit && !canClientChange(undefined, appointment?.date, appointment?.time)) {
       toast.error(`Alterações só são permitidas até ${CLIENT_CHANGE_HOURS}h antes do horário.`);
       return;
@@ -269,13 +289,32 @@ export function AppointmentForm({ appointment, onSave, onCancel }: AppointmentFo
                     <SelectValue placeholder="Selecione a barbearia" />
                   </SelectTrigger>
                   <SelectContent>
-                    {shops.map((shop) => (
-                      <SelectItem key={shop.id} value={shop.id}>
-                        {shop.name}
-                      </SelectItem>
-                    ))}
+                    {shops.map((shop) => {
+                      const hasPlan =
+                        loyaltyPlan != null &&
+                        shopHasActiveLoyaltyPlan(shop.id, loyaltyPlan, shops, user?.tenantId);
+                      return (
+                        <SelectItem key={shop.id} value={shop.id}>
+                          {hasPlan ? `${shop.name} · Plano ativo` : shop.name}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
+                {showOutOfPlanWarning && (
+                  <Alert className="border-amber-500/40 bg-amber-500/10 text-foreground">
+                    <Info className="h-4 w-4 text-amber-400" />
+                    <AlertTitle>Cobrança à parte</AlertTitle>
+                    <AlertDescription>
+                      Este agendamento será cobrado à parte do Plano de Assinatura.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {selectedShopCoveredByPlan && (
+                  <p className="text-xs text-muted-foreground">
+                    Esta barbearia está coberta pelo seu Plano de Assinatura.
+                  </p>
+                )}
               </div>
             )}
 

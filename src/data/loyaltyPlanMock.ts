@@ -15,7 +15,13 @@ export type LoyaltyPlanMock = {
   planName: string;
   status: 'active' | 'paused' | 'expired';
   validUntil: string;
+  /** Nome da barbearia coberta pelo plano (match com catálogo discover). */
   shopName: string;
+  /**
+   * Quando conhecido, tenantId da barbearia do plano.
+   * Se omitido, resolve por `shopName` contra a lista discover (ou home tenant).
+   */
+  shopTenantId?: string;
   credits: LoyaltyServiceCredit[];
 };
 
@@ -64,4 +70,50 @@ export function getLoyaltyPlanMock(email?: string | null): LoyaltyPlanMock {
     ...FALLBACK,
     planName: `Plano Fidelidade (${email.split('@')[0]})`,
   };
+}
+
+/** Plano utilizável para cobrir agendamentos (ativo e dentro da validade). */
+export function isLoyaltyPlanValid(plan: LoyaltyPlanMock): boolean {
+  if (plan.status !== 'active') return false;
+  if (!plan.validUntil) return true;
+  const end = new Date(`${plan.validUntil}T23:59:59`);
+  return !Number.isNaN(end.getTime()) && end.getTime() >= Date.now();
+}
+
+type ShopRef = { id: string; name: string };
+
+/**
+ * Resolve o tenantId da barbearia coberta pelo plano do cliente.
+ * Ordem: shopTenantId → match por shopName no catálogo → home tenant (fallback genérico).
+ */
+export function resolveLoyaltyPlanShopId(
+  plan: LoyaltyPlanMock,
+  shops: ShopRef[],
+  homeTenantId?: string | null,
+): string | undefined {
+  if (!isLoyaltyPlanValid(plan)) return undefined;
+
+  if (plan.shopTenantId) {
+    return plan.shopTenantId;
+  }
+
+  const target = plan.shopName.trim().toLowerCase();
+  const byName = shops.find((s) => s.name.trim().toLowerCase() === target);
+  if (byName) return byName.id;
+
+  if (target === 'sua barbearia' && homeTenantId) {
+    return homeTenantId;
+  }
+
+  return homeTenantId || undefined;
+}
+
+export function shopHasActiveLoyaltyPlan(
+  shopId: string,
+  plan: LoyaltyPlanMock,
+  shops: ShopRef[],
+  homeTenantId?: string | null,
+): boolean {
+  const planShopId = resolveLoyaltyPlanShopId(plan, shops, homeTenantId);
+  return Boolean(planShopId && planShopId === shopId);
 }

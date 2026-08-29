@@ -16,12 +16,14 @@ namespace Barbear.IA.Api.Controllers;
 [Authorize]
 public sealed class AppointmentsController(AppDbContext db, IMessageOutboxService outbox) : ControllerBase
 {
+    /// <param name="TenantId">Cliente: barbearia alvo (discover). Admin ignora e usa o tenant do token.</param>
     public sealed record CreateAppointmentRequest(
         Guid BarberId,
         Guid ClientId,
         Guid ServiceId,
         DateTimeOffset StartsAt,
-        string? Notes = null);
+        string? Notes = null,
+        Guid? TenantId = null);
 
     public sealed record CancelRequest(string? Reason);
 
@@ -43,11 +45,11 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             return Forbid();
         }
 
-        var query = db.Appointments.AsNoTracking().Where(a => a.TenantId == tenantId && a.IsActive);
+        IQueryable<Appointment> query;
 
         if (User.HasClaim("permission", Permissions.ViewAppointments))
         {
-            // admin: full tenant
+            query = db.Appointments.AsNoTracking().Where(a => a.TenantId == tenantId && a.IsActive);
         }
         else if (User.HasClaim("permission", Permissions.ViewOwnAppointments))
         {
@@ -55,11 +57,16 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             var clientId = User.GetClientId();
             if (barberId.HasValue)
             {
-                query = query.Where(a => a.BarberId == barberId);
+                query = db.Appointments.AsNoTracking()
+                    .Where(a => a.TenantId == tenantId && a.IsActive && a.BarberId == barberId);
             }
             else if (clientId.HasValue)
             {
-                query = query.Where(a => a.ClientId == clientId);
+                // Cliente: inclui agendamentos em outras barbearias (perfis vinculados ao mesmo UserId).
+                // IgnoreQueryFilters: global filter restringe ao tenant do token.
+                var ownedClientIds = await GetOwnedClientProfileIdsAsync(cancellationToken);
+                query = db.Appointments.AsNoTracking().IgnoreQueryFilters()
+                    .Where(a => a.IsActive && ownedClientIds.Contains(a.ClientId));
             }
             else
             {
@@ -91,13 +98,14 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
         var barberIds = rows.Select(a => a.BarberId).Distinct().ToList();
         var clientIds = rows.Select(a => a.ClientId).Distinct().ToList();
 
-        var services = await db.Services.AsNoTracking()
+        // IDs já autorizados pela query acima; IgnoreQueryFilters cobre joins cross-tenant do cliente.
+        var services = await db.Services.AsNoTracking().IgnoreQueryFilters()
             .Where(s => serviceIds.Contains(s.Id))
             .ToDictionaryAsync(s => s.Id, cancellationToken);
-        var barbers = await db.BarberProfiles.AsNoTracking()
+        var barbers = await db.BarberProfiles.AsNoTracking().IgnoreQueryFilters()
             .Where(b => barberIds.Contains(b.Id))
             .ToDictionaryAsync(b => b.Id, cancellationToken);
-        var clients = await db.ClientProfiles.AsNoTracking()
+        var clients = await db.ClientProfiles.AsNoTracking().IgnoreQueryFilters()
             .Where(c => clientIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id, cancellationToken);
 
@@ -140,26 +148,43 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             return Forbid();
         }
 
-        var a = await db.Appointments.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId && x.IsActive, cancellationToken);
+        Appointment? a;
+        if (User.HasClaim("permission", Permissions.ViewAppointments))
+        {
+            a = await db.Appointments.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId && x.IsActive, cancellationToken);
+        }
+        else if (User.GetBarberId() is Guid barberId)
+        {
+            a = await db.Appointments.AsNoTracking()
+                .FirstOrDefaultAsync(
+                    x => x.Id == id && x.TenantId == tenantId && x.IsActive && x.BarberId == barberId,
+                    cancellationToken);
+        }
+        else if (User.GetClientId().HasValue)
+        {
+            var ownedClientIds = await GetOwnedClientProfileIdsAsync(cancellationToken);
+            a = await db.Appointments.AsNoTracking().IgnoreQueryFilters()
+                .FirstOrDefaultAsync(
+                    x => x.Id == id && x.IsActive && ownedClientIds.Contains(x.ClientId),
+                    cancellationToken);
+        }
+        else
+        {
+            return Forbid();
+        }
+
         if (a is null)
         {
             return NotFound();
         }
 
-        if (!User.HasClaim("permission", Permissions.ViewAppointments))
-        {
-            var barberId = User.GetBarberId();
-            var clientId = User.GetClientId();
-            if (barberId != a.BarberId && clientId != a.ClientId)
-            {
-                return NotFound();
-            }
-        }
-
-        var service = await db.Services.AsNoTracking().FirstOrDefaultAsync(s => s.Id == a.ServiceId, cancellationToken);
-        var barber = await db.BarberProfiles.AsNoTracking().FirstOrDefaultAsync(b => b.Id == a.BarberId, cancellationToken);
-        var client = await db.ClientProfiles.AsNoTracking().FirstOrDefaultAsync(c => c.Id == a.ClientId, cancellationToken);
+        var service = await db.Services.AsNoTracking().IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.Id == a.ServiceId, cancellationToken);
+        var barber = await db.BarberProfiles.AsNoTracking().IgnoreQueryFilters()
+            .FirstOrDefaultAsync(b => b.Id == a.BarberId, cancellationToken);
+        var client = await db.ClientProfiles.AsNoTracking().IgnoreQueryFilters()
+            .FirstOrDefaultAsync(c => c.Id == a.ClientId, cancellationToken);
 
         return Ok(new
         {
@@ -201,8 +226,8 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateAppointmentRequest request, CancellationToken cancellationToken)
     {
-        var tenantId = User.GetTenantId();
-        if (tenantId is null)
+        var homeTenantId = User.GetTenantId();
+        if (homeTenantId is null)
         {
             return Forbid();
         }
@@ -214,19 +239,40 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             return Forbid();
         }
 
-        if (canCreate && !canManage)
+        var isClientBooking = canCreate && !canManage;
+        if (isClientBooking)
         {
-            var clientId = User.GetClientId();
-            if (clientId is null || clientId != request.ClientId)
+            var homeClientId = User.GetClientId();
+            if (homeClientId is null || homeClientId != request.ClientId)
             {
                 return Forbid();
             }
         }
 
-        var tenant = await db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
+        // Admin/barbeiro: sempre o tenant do token. Cliente: pode escolher barbearia discoverável.
+        Guid bookingTenantId = homeTenantId.Value;
+        if (isClientBooking && request.TenantId is Guid requestedTenant && requestedTenant != homeTenantId.Value)
+        {
+            var discoverable = await db.Tenants.AsNoTracking().AnyAsync(
+                t => t.Id == requestedTenant && t.IsActive && t.Status == TenantStatus.Approved,
+                cancellationToken);
+            if (!discoverable)
+            {
+                return BadRequest(new { error = "Barbearia indisponível para agendamento." });
+            }
+
+            bookingTenantId = requestedTenant;
+        }
+
+        var tenant = await db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Id == bookingTenantId, cancellationToken);
         if (tenant is null)
         {
             return NotFound();
+        }
+
+        if (tenant.Status is TenantStatus.Suspended or TenantStatus.Cancelled)
+        {
+            return BadRequest(new { error = "Barbearia suspensa ou cancelada." });
         }
 
         var settings = ParseSettings(tenant.SettingsJson);
@@ -240,25 +286,52 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             return BadRequest(new { error = "Horário deve ser no futuro." });
         }
 
-        var service = await db.Services.AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == request.ServiceId && s.TenantId == tenantId && s.IsActive, cancellationToken);
+        // Catálogo/agenda do tenant alvo: IgnoreQueryFilters quando cliente agenda fora do home tenant.
+        var catalog = db.Services.AsNoTracking().IgnoreQueryFilters();
+        var barbersQ = db.BarberProfiles.AsNoTracking().IgnoreQueryFilters();
+        var appointmentsQ = db.Appointments.AsNoTracking().IgnoreQueryFilters();
+
+        var service = await catalog
+            .FirstOrDefaultAsync(s => s.Id == request.ServiceId && s.TenantId == bookingTenantId && s.IsActive, cancellationToken);
         if (service is null)
         {
             return BadRequest(new { error = "Serviço inválido." });
         }
 
-        var barberExists = await db.BarberProfiles.AsNoTracking()
-            .AnyAsync(b => b.Id == request.BarberId && b.TenantId == tenantId && b.IsActive, cancellationToken);
-        var client = await db.ClientProfiles.AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == request.ClientId && c.TenantId == tenantId && c.IsActive, cancellationToken);
-        if (!barberExists || client is null)
+        var barberExists = await barbersQ
+            .AnyAsync(b => b.Id == request.BarberId && b.TenantId == bookingTenantId && b.IsActive, cancellationToken);
+        if (!barberExists)
         {
             return BadRequest(new { error = "Barbeiro ou cliente inválido." });
         }
 
+        ClientProfile? client;
+        if (isClientBooking && bookingTenantId != homeTenantId.Value)
+        {
+            client = await ResolveOrCreateClientProfileInTenantAsync(
+                bookingTenantId,
+                request.ClientId,
+                cancellationToken);
+            if (client is null)
+            {
+                return BadRequest(new { error = "Barbeiro ou cliente inválido." });
+            }
+        }
+        else
+        {
+            client = await db.ClientProfiles.AsNoTracking().IgnoreQueryFilters()
+                .FirstOrDefaultAsync(
+                    c => c.Id == request.ClientId && c.TenantId == bookingTenantId && c.IsActive,
+                    cancellationToken);
+            if (client is null)
+            {
+                return BadRequest(new { error = "Barbeiro ou cliente inválido." });
+            }
+        }
+
         var endsAt = request.StartsAt.AddMinutes(service.DurationMinutes);
-        var conflict = await db.Appointments.AsNoTracking().AnyAsync(a =>
-            a.TenantId == tenantId &&
+        var conflict = await appointmentsQ.AnyAsync(a =>
+            a.TenantId == bookingTenantId &&
             a.BarberId == request.BarberId &&
             a.IsActive &&
             a.Status != AppointmentStatus.Cancelled &&
@@ -274,9 +347,9 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
         try
         {
             var appointment = Appointment.Schedule(
-                tenantId.Value,
+                bookingTenantId,
                 request.BarberId,
-                request.ClientId,
+                client.Id,
                 request.ServiceId,
                 request.StartsAt,
                 endsAt,
@@ -286,7 +359,7 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             if (User.GetUserId() is Guid actorId)
             {
                 db.Notifications.Add(Notification.Create(
-                    tenantId.Value,
+                    bookingTenantId,
                     actorId,
                     "appointment",
                     "Agendamento criado",
@@ -320,12 +393,6 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             return Forbid();
         }
 
-        var appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == id && a.TenantId == tenantId, cancellationToken);
-        if (appointment is null)
-        {
-            return NotFound();
-        }
-
         var canManage = User.HasClaim("permission", Permissions.ManageAppointments)
                         || User.HasClaim("permission", Permissions.ManageOwnAppointments);
         var canCancelOwn = User.HasClaim("permission", Permissions.CancelOwnAppointments);
@@ -334,14 +401,38 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             return Forbid();
         }
 
-        if (canCancelOwn && !User.HasClaim("permission", Permissions.ManageAppointments))
+        Appointment? appointment;
+        if (User.HasClaim("permission", Permissions.ManageAppointments)
+            || User.HasClaim("permission", Permissions.ManageOwnAppointments)
+            || User.GetBarberId().HasValue)
         {
-            var clientId = User.GetClientId();
-            var barberId = User.GetBarberId();
-            if (clientId != appointment.ClientId && barberId != appointment.BarberId)
+            appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == id && a.TenantId == tenantId, cancellationToken);
+            if (appointment is null)
             {
                 return NotFound();
             }
+
+            if (!User.HasClaim("permission", Permissions.ManageAppointments)
+                && User.GetBarberId() is Guid barberId
+                && barberId != appointment.BarberId)
+            {
+                return NotFound();
+            }
+        }
+        else if (User.GetClientId().HasValue)
+        {
+            var ownedClientIds = await GetOwnedClientProfileIdsAsync(cancellationToken);
+            appointment = await db.Appointments.IgnoreQueryFilters().FirstOrDefaultAsync(
+                a => a.Id == id && ownedClientIds.Contains(a.ClientId),
+                cancellationToken);
+            if (appointment is null)
+            {
+                return NotFound();
+            }
+        }
+        else
+        {
+            return Forbid();
         }
 
         var hoursRequired = ResolveChangeWindowHours();
@@ -377,12 +468,6 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             return Forbid();
         }
 
-        var appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == id && a.TenantId == tenantId, cancellationToken);
-        if (appointment is null)
-        {
-            return NotFound();
-        }
-
         var canManage = User.HasClaim("permission", Permissions.ManageAppointments);
         var canOwn = User.HasClaim("permission", Permissions.CancelOwnAppointments)
                      || User.HasClaim("permission", Permissions.CreateAppointments);
@@ -391,14 +476,29 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             return Forbid();
         }
 
-        if (!canManage)
+        Appointment? appointment;
+        if (canManage)
         {
-            var clientId = User.GetClientId();
-            if (clientId is null || clientId != appointment.ClientId)
-            {
-                return NotFound();
-            }
+            appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == id && a.TenantId == tenantId, cancellationToken);
         }
+        else if (User.GetClientId().HasValue)
+        {
+            var ownedClientIds = await GetOwnedClientProfileIdsAsync(cancellationToken);
+            appointment = await db.Appointments.IgnoreQueryFilters().FirstOrDefaultAsync(
+                a => a.Id == id && ownedClientIds.Contains(a.ClientId),
+                cancellationToken);
+        }
+        else
+        {
+            appointment = await db.Appointments.FirstOrDefaultAsync(a => a.Id == id && a.TenantId == tenantId, cancellationToken);
+        }
+
+        if (appointment is null)
+        {
+            return NotFound();
+        }
+
+        var bookingTenantId = appointment.TenantId;
 
         var hoursRequired = ResolveChangeWindowHours();
         if (appointment.StartsAt < DateTimeOffset.UtcNow.AddHours(hoursRequired))
@@ -414,16 +514,16 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
             return BadRequest(new { error = "Novo horário deve ser no futuro." });
         }
 
-        var service = await db.Services.AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == appointment.ServiceId && s.TenantId == tenantId, cancellationToken);
+        var service = await db.Services.AsNoTracking().IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.Id == appointment.ServiceId && s.TenantId == bookingTenantId, cancellationToken);
         if (service is null)
         {
             return BadRequest(new { error = "Serviço inválido." });
         }
 
         var endsAt = request.StartsAt.AddMinutes(service.DurationMinutes);
-        var conflict = await db.Appointments.AsNoTracking().AnyAsync(a =>
-            a.TenantId == tenantId &&
+        var conflict = await db.Appointments.AsNoTracking().IgnoreQueryFilters().AnyAsync(a =>
+            a.TenantId == bookingTenantId &&
             a.BarberId == appointment.BarberId &&
             a.Id != appointment.Id &&
             a.IsActive &&
@@ -456,6 +556,83 @@ public sealed class AppointmentsController(AppDbContext db, IMessageOutboxServic
         }
 
         return 0; // Admin/gestão pode cancelar/alterar sem janela.
+    }
+
+    private async Task<List<Guid>> GetOwnedClientProfileIdsAsync(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        var homeClientId = User.GetClientId();
+        if (userId is null)
+        {
+            return homeClientId is Guid id ? [id] : [];
+        }
+
+        var ids = await db.ClientProfiles.AsNoTracking().IgnoreQueryFilters()
+            .Where(c => c.IsActive && (c.UserId == userId || (homeClientId.HasValue && c.Id == homeClientId)))
+            .Select(c => c.Id)
+            .ToListAsync(cancellationToken);
+        return ids;
+    }
+
+    /// <summary>
+    /// Garante um ClientProfile no tenant alvo para o usuário logado (agendamento em outra barbearia).
+    /// </summary>
+    private async Task<ClientProfile?> ResolveOrCreateClientProfileInTenantAsync(
+        Guid bookingTenantId,
+        Guid homeClientId,
+        CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        if (userId is null)
+        {
+            return null;
+        }
+
+        var existing = await db.ClientProfiles.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(
+                c => c.TenantId == bookingTenantId && c.UserId == userId && c.IsActive,
+                cancellationToken);
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var home = await db.ClientProfiles.AsNoTracking().IgnoreQueryFilters()
+            .FirstOrDefaultAsync(c => c.Id == homeClientId && c.IsActive, cancellationToken);
+        if (home is null)
+        {
+            return null;
+        }
+
+        var byEmail = await db.ClientProfiles.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(
+                c => c.TenantId == bookingTenantId && c.Email == home.Email && c.IsActive,
+                cancellationToken);
+        if (byEmail is not null)
+        {
+            try
+            {
+                byEmail.LinkUser(userId.Value);
+                await db.SaveChangesAsync(cancellationToken);
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+
+            return byEmail;
+        }
+
+        var created = ClientProfile.Create(
+            bookingTenantId,
+            home.Name,
+            home.Email,
+            home.Phone,
+            userId,
+            "Perfil criado automaticamente ao agendar nesta barbearia.");
+        db.ClientProfiles.Add(created);
+        await db.SaveChangesAsync(cancellationToken);
+        return created;
     }
 
     private static (int AdvanceBookingDays, int CancellationHours) ParseSettings(string json)

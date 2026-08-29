@@ -48,4 +48,16 @@ public class ClientProfile : Entity, ITenantScoped
         PreferencesJson = preferencesJson;
         Touch();
     }
+
+    /// <summary>Associa um login a um perfil existente no tenant (ex.: agendamento em outra barbearia).</summary>
+    public void LinkUser(Guid userId)
+    {
+        if (UserId.HasValue && UserId.Value != userId)
+        {
+            throw new InvalidOperationException("Perfil de cliente já vinculado a outro usuário.");
+        }
+
+        UserId = userId;
+        Touch();
+    }
 }

@@ -34,6 +34,33 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Selected nav item — brand gold (#c4a574, same as marketing --lp-brass) */
+.sidebar-panel__nav button[aria-current="page"] {
+  background-color: #c4a574 !important;
+  color: #0c0a09 !important;
+}
+
+.sidebar-panel__nav button[aria-current="page"]:hover,
+.sidebar-panel__nav button[aria-current="page"]:focus {
+  background-color: #c4a574 !important;
+  color: #0c0a09 !important;
+}
+
+/* Dark: gold text only; keep hover surface without losing selection color */
+.dark .sidebar-panel__nav button[aria-current="page"],
+:is(.dark *) .sidebar-panel__nav button[aria-current="page"] {
+  background-color: transparent !important;
+  color: #c4a574 !important;
+}
+
+.dark .sidebar-panel__nav button[aria-current="page"]:hover,
+.dark .sidebar-panel__nav button[aria-current="page"]:focus,
+:is(.dark *) .sidebar-panel__nav button[aria-current="page"]:hover,
+:is(.dark *) .sidebar-panel__nav button[aria-current="page"]:focus {
+  background-color: var(--accent) !important;
+  color: #c4a574 !important;
+}
+
 .sidebar-panel__footer {
   /* iPhone home indicator / barra do browser */
   padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));

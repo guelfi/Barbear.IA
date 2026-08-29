@@ -34,7 +34,15 @@ export const appointmentsAPI = {
   async getAppointmentById(id: string): Promise<AppointmentWithDetails> { return map(await get<any>(`/appointments/${id}`)); },
   async createAppointment(data: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>): Promise<AppointmentWithDetails> {
     const startsAt = `${data.date}T${data.time}:00.000Z`;
-    const created = await post<{ id: string }>('/appointments', { barberId: data.barberId, clientId: data.clientId, serviceId: data.serviceId, startsAt, notes: data.notes });
+    const created = await post<{ id: string }>('/appointments', {
+      barberId: data.barberId,
+      clientId: data.clientId,
+      serviceId: data.serviceId,
+      startsAt,
+      notes: data.notes,
+      // Clientes podem agendar em qualquer barbearia discoverável.
+      tenantId: data.tenantId || undefined,
+    });
     return this.getAppointmentById(created.id);
   },
   async cancelAppointment(id: string, reason?: string): Promise<boolean> { await post(`/appointments/${id}/cancel`, { reason }); return true; },
