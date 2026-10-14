@@ -18,6 +18,8 @@ RUN echo "📦 Removendo package-lock.json e usando npm install limpo" && \
 COPY . .
 
 # Opcional: API real via proxy nginx (ex.: http://192.168.15.119/barbear-ia/api/v1)
+ARG VITE_BASE_PATH=/barbear-ia/
+ENV VITE_BASE_PATH=$VITE_BASE_PATH
 ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
 

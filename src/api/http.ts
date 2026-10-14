@@ -30,7 +30,7 @@ type HttpOptions = {
 };
 
 function buildUrl(path: string, query?: Record<string, QueryValue>): string {
-  const url = new URL(`${API_URL}${path.startsWith('/') ? path : `/${path}`}`);
+  const url = new URL(`${API_URL}${path.startsWith('/') ? path : `/${path}`}`, window.location.origin);
   Object.entries(query ?? {}).forEach(([key, value]) => {
     if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
   });
