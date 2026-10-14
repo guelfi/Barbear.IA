@@ -1,10 +1,10 @@
 version: '3.3'
 
 # OCI — stack completa (frontend + API + Postgres + Redis).
-# Acesso público canônico (IP + path, nginx-proxy sem porta publicada):
-#   http://129.153.86.168/barbear-ia/
-#   http://129.153.86.168/barbear-ia/api/v1/...
-#   http://129.153.86.168/barbear-ia/swagger/index.html
+# Acesso público canônico (nginx-proxy sem porta publicada):
+#   https://barbear.me/
+#   https://barbear.me/api/v1/...
+#   https://barbear.me/swagger/index.html
 #
 # Secrets: sobrescreva via /var/www/Barbear.IA/.env (não versionado).
 
@@ -14,7 +14,8 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://129.153.86.168/barbear-ia/api/v1}
+        VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+        VITE_API_URL: ${VITE_API_URL:-https://barbear.me/api/v1}
     container_name: barbear-ia-frontend
     depends_on:
       barbear-ia-api:
@@ -74,13 +75,15 @@ services:
       ConnectionStrings__Default: Host=barbear-ia-postgres;Port=5432;Database=${POSTGRES_DB:-barbear_ia};Username=${POSTGRES_USER:-barbear};Password=${POSTGRES_PASSWORD:-barbear_oci_change_me}
       ConnectionStrings__Redis: barbear-ia-redis:6379
       Jwt__SigningKey: ${Jwt__SigningKey:-CHANGE_ME_OCI_BarbearIA_Jwt_Signing_Key_32chars+}
-      Seed__Enabled: ${Seed__Enabled:-true}
+      Seed__Enabled: ${Seed__Enabled:-false}
       Seed__DemoData: ${Seed__DemoData:-true}
       Seed__DemoPassword: ${Seed__DemoPassword:-Demo@123456}
       Seed__SuperAdmin__Email: ${Seed__SuperAdmin__Email:-admin@barbear.ia}
       Seed__SuperAdmin__Password: ${Seed__SuperAdmin__Password:-Admin123#}
       Swagger__Enabled: ${Swagger__Enabled:-true}
       Evolution__Enabled: ${Evolution__Enabled:-false}
+      Cors__Origins__4: https://barbear.me
+      Cors__Origins__5: https://www.barbear.me
       Cors__Origins__0: https://batuara.org.br
       Cors__Origins__1: https://www.batuara.org.br
       Cors__Origins__2: http://129.153.86.168

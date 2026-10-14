@@ -16,6 +16,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
+        VITE_BASE_PATH: /barbear-ia/
         VITE_API_URL: http://192.168.15.119/barbear-ia/api/v1
     container_name: barbear-ia-frontend
     expose:

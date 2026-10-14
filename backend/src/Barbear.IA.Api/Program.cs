@@ -74,7 +74,7 @@ if (swaggerEnabled)
     app.UseSwaggerUI(options =>
     {
         // Caminho público via nginx (paridade HealthCore / OCI)
-        options.SwaggerEndpoint("/barbear-ia/swagger/v1/swagger.json", "Barbear.IA API v1");
+        options.SwaggerEndpoint("v1/swagger.json", "Barbear.IA API v1");
         options.RoutePrefix = "swagger";
     });
 }

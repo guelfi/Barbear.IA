@@ -78,12 +78,13 @@ jobs:
             # Garante .env de produção (não sobrescreve se já existir)
             if [ ! -f .env ]; then
               printf '%s\n' \
-                'VITE_API_URL=http://129.153.86.168/barbear-ia/api/v1' \
+                'VITE_BASE_PATH=/' \
+                'VITE_API_URL=https://barbear.me/api/v1' \
                 'POSTGRES_DB=barbear_ia' \
                 'POSTGRES_USER=barbear' \
                 'POSTGRES_PASSWORD=barbear_oci_change_me' \
                 'Jwt__SigningKey=CHANGE_ME_OCI_BarbearIA_Jwt_Signing_Key_32chars+' \
-                'Seed__Enabled=true' \
+                'Seed__Enabled=false' \
                 'Seed__SuperAdmin__Email=admin@barbear.ia' \
                 'Seed__SuperAdmin__Password=Admin123#' \
                 'Swagger__Enabled=true' \
@@ -92,32 +93,32 @@ jobs:
               echo "Created default .env — altere Jwt/Postgres em produção."
             fi
 
-            # Stack completa: postgres + redis + api + frontend
-            sudo docker compose --env-file .env up -d --build --remove-orphans
+            # Preserve o projeto Compose/volume PostgreSQL já existente na OCI.
+            # Seeds de desenvolvimento redefinem senhas; deploys preservam usuários.
+            sudo env Seed__Enabled=false docker compose -p barbearia --env-file .env up -d --build --remove-orphans
 
-            # Nginx: locations API/Swagger/front (IP :80 e batuara :443)
-            if [ -f /var/www/nginx/nginx.conf ]; then
-              sudo python3 deploy/apply-nginx-barbear-ia.py \
-                /var/www/nginx/nginx.conf \
-                deploy/nginx-barbear-ia.locations.conf
-              sudo docker exec nginx-proxy nginx -t
-              sudo docker exec nginx-proxy nginx -s reload
-            else
-              echo "::warning::/var/www/nginx/nginx.conf não encontrado — skip reload nginx"
-            fi
+            # O proxy compartilhado é administrado pela infraestrutura central.
+            # O deploy deste app nunca reescreve rotas dos demais projetos.
+            sudo docker exec nginx-proxy nginx -t
           EOF
 
       - name: Verify deployment
         env:
           OCI_HOST: ${{ secrets.OCI_HOST }}
           OCI_USER: ${{ secrets.OCI_USERNAME }}
+          BARBEAR_PUBLIC_URL: ${{ vars.BARBEAR_PUBLIC_URL || 'https://barbear.me/' }}
+          BARBEAR_API_HEALTH_URL: ${{ vars.BARBEAR_API_HEALTH_URL || 'https://barbear.me/api/health' }}
         run: |
           echo "Waiting for stack to stabilize..."
           sleep 30
           ssh -o StrictHostKeyChecking=no ${OCI_USER}@${OCI_HOST} "sudo docker ps --filter name=barbear-ia --format 'table {{.Names}}\t{{.Status}}'"
-          ssh -o StrictHostKeyChecking=no ${OCI_USER}@${OCI_HOST} "sudo docker exec barbear-ia-frontend wget -q -O /dev/null http://127.0.0.1/health && echo 'frontend health OK' || echo 'frontend health FAILED'"
-          ssh -o StrictHostKeyChecking=no ${OCI_USER}@${OCI_HOST} "sudo docker exec barbear-ia-api curl -fsS http://127.0.0.1:8080/health && echo && echo 'api health OK' || echo 'api health FAILED'"
-          ssh -o StrictHostKeyChecking=no ${OCI_USER}@${OCI_HOST} "curl -fsS -o /dev/null -w 'public front HTTP %{http_code}\n' http://127.0.0.1/barbear-ia/ || true"
-          ssh -o StrictHostKeyChecking=no ${OCI_USER}@${OCI_HOST} "curl -fsS -o /dev/null -w 'public swagger HTTP %{http_code}\n' http://127.0.0.1/barbear-ia/swagger/index.html || true"
+          ssh -o StrictHostKeyChecking=no ${OCI_USER}@${OCI_HOST} "sudo docker exec barbear-ia-frontend wget -q -O /dev/null http://127.0.0.1/health && echo 'frontend health OK'"
+          ssh -o StrictHostKeyChecking=no ${OCI_USER}@${OCI_HOST} "sudo docker exec barbear-ia-api curl -fsS http://127.0.0.1:8080/health && echo && echo 'api health OK'"
+          # Frontend e API públicos devem responder com HTTPS válido.
+          # Falhas interrompem o deploy; rollback pode usar variáveis de URL.
+          curl --fail --silent --show-error --location --max-time 30 \
+            --output /dev/null "$BARBEAR_PUBLIC_URL"
+          curl --fail --silent --show-error --max-time 30 \
+            --output /dev/null "$BARBEAR_API_HEALTH_URL"
           echo "=== Deployed commit (server) ==="
           ssh -o StrictHostKeyChecking=no ${OCI_USER}@${OCI_HOST} "cd /var/www/Barbear.IA && git log -1 --oneline"
