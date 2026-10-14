@@ -84,7 +84,7 @@ jobs:
                 'POSTGRES_USER=barbear' \
                 'POSTGRES_PASSWORD=barbear_oci_change_me' \
                 'Jwt__SigningKey=CHANGE_ME_OCI_BarbearIA_Jwt_Signing_Key_32chars+' \
-                'Seed__Enabled=true' \
+                'Seed__Enabled=false' \
                 'Seed__SuperAdmin__Email=admin@barbear.ia' \
                 'Seed__SuperAdmin__Password=Admin123#' \
                 'Swagger__Enabled=true' \
@@ -93,8 +93,9 @@ jobs:
               echo "Created default .env — altere Jwt/Postgres em produção."
             fi
 
-            # Stack completa: postgres + redis + api + frontend
-            sudo docker compose --env-file .env up -d --build --remove-orphans
+            # Preserve o projeto Compose/volume PostgreSQL já existente na OCI.
+            # Seeds de desenvolvimento redefinem senhas; deploys preservam usuários.
+            sudo env Seed__Enabled=false docker compose -p barbearia --env-file .env up -d --build --remove-orphans
 
             # O proxy compartilhado é administrado pela infraestrutura central.
             # O deploy deste app nunca reescreve rotas dos demais projetos.

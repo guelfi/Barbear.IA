@@ -75,7 +75,7 @@ services:
       ConnectionStrings__Default: Host=barbear-ia-postgres;Port=5432;Database=${POSTGRES_DB:-barbear_ia};Username=${POSTGRES_USER:-barbear};Password=${POSTGRES_PASSWORD:-barbear_oci_change_me}
       ConnectionStrings__Redis: barbear-ia-redis:6379
       Jwt__SigningKey: ${Jwt__SigningKey:-CHANGE_ME_OCI_BarbearIA_Jwt_Signing_Key_32chars+}
-      Seed__Enabled: ${Seed__Enabled:-true}
+      Seed__Enabled: ${Seed__Enabled:-false}
       Seed__DemoData: ${Seed__DemoData:-true}
       Seed__DemoPassword: ${Seed__DemoPassword:-Demo@123456}
       Seed__SuperAdmin__Email: ${Seed__SuperAdmin__Email:-admin@barbear.ia}
