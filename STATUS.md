@@ -1,7 +1,8 @@
 # Barbear.IA — Status (ponteiro)
 
-**Última atualização:** 2026-08-03 ~11:06 America/Sao_Paulo  
-**Branch:** `main` @ `8e160b5` — `local` ≡ `origin/main` ≡ OCI `/var/www/Barbear.IA` (ahead/behind 0/0)
+**Última atualização:** 2026-10-28 America/Sao_Paulo
+**Produção (`main`):** `07f672a` — OCI ≡ `origin/main`; CD validado com a chave rotacionada
+**Em andamento:** PR [#11](https://github.com/guelfi/Barbear.IA/pull/11) — rebrand **Barbear.ME** + nova LP (checks verdes, aguardando merge)
 
 ## Onde acompanhar o trabalho
 
@@ -10,20 +11,21 @@
 | [`docs/handoff-estado.md`](docs/handoff-estado.md) | **Retomada da próxima sessão** — estado, credenciais, sync, recentes, próximos passos |
 | [`docs/plano-implementacao-backend.md`](docs/plano-implementacao-backend.md) | Escopo e status da **v1** (épicos E0–E9) |
 | [`docs/backlog-fases-futuras.md`](docs/backlog-fases-futuras.md) | Melhorias pós-v1 (F-BARBER, F-CLIENT-MT, F-PKG) |
+| [`docs/plano-melhorias-e-lp.md`](docs/plano-melhorias-e-lp.md) | Plano de melhorias + proposta da nova LP |
 | [`docs/oci-ambiente-atual.md`](docs/oci-ambiente-atual.md) | Topologia OCI / nginx / Evolution |
 
 ## Ambientes
 
 | Ambiente | URL | Notas |
 |----------|-----|--------|
-| OCI (canônico) | http://129.153.86.168/barbear-ia/ | Saudável @ `8e160b5` |
-| Local | http://192.168.15.119/barbear-ia/ | Front 200; API 401 unauth OK |
-| API | http://129.153.86.168/barbear-ia/api/v1/ | |
-| Swagger | http://129.153.86.168/barbear-ia/swagger/index.html | |
+| Produção (canônico) | https://barbear.me/ | Front 200 · API sem auth 401 |
+| API | https://barbear.me/api/v1/ | |
+| Swagger | https://barbear.me/swagger/index.html | |
+| Local | http://192.168.15.119/barbear-ia/ | `docker-compose.local.yml` |
 
-**SSH:** `ssh -i /home/guelfi/Projetos/oci-key-2026-07-29 ubuntu@129.153.86.168`  
-**DB sync:** `./scripts/db-sync.sh status|pull|push` (default OCI → local; última checagem: contagens local ≡ OCI)  
-**Asset hash local ≠ OCI:** esperado (bake `VITE_API_URL`) — não é drift.
+**SSH:** `ssh -i /home/guelfi/Projetos/oci-deploy-keys/oci-barbear-ia-20261023 -o IdentitiesOnly=yes ubuntu@129.153.86.168`
+**CD manual:** `gh workflow run deploy-oci.yml --ref main -f confirm_deploy=YES`
+**DB sync:** `./scripts/db-sync.sh status|pull|push`
 
 ## Seed (resumo)
 

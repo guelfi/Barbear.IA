@@ -2,7 +2,7 @@
 
 **Inspecionado em:** 2026-08-01 (via SSH)  
 **Host:** `vmoracleguelfi` · `ubuntu@129.153.86.168`  
-**Acesso SSH (ops):** `ssh -i /home/guelfi/Projetos/oci-key-2026-07-29 ubuntu@129.153.86.168`  
+**Acesso SSH (ops):** `ssh -i /home/guelfi/Projetos/oci-deploy-keys/oci-barbear-ia-20261023 -o IdentitiesOnly=yes ubuntu@129.153.86.168`  
 **Chave:** manter fora do git (já coberta por `.gitignore` no servidor / local).
 
 > Este documento descreve o que está **rodando hoje**. Não inclui API keys nem secrets.
@@ -39,7 +39,7 @@ Evolution API (compartilhada Batuara/outros)
 | Compose | `/var/www/Barbear.IA/docker-compose.yml` |
 | Secrets | `/var/www/Barbear.IA/.env` (criado no 1º deploy se ausente) |
 | Vite `base` | `/barbear-ia/` |
-| `VITE_API_URL` | `http://129.153.86.168/barbear-ia/api/v1` (canônico) |
+| `VITE_API_URL` | `https://barbear.me/api/v1` (canônico) |
 
 ### Deploy (CD)
 
@@ -67,7 +67,7 @@ Locations estão no vhost IP (`:80`) e no vhost HTTPS `batuara.org.br`.
 
 ### URLs
 
-- **OCI (canônico):** `http://129.153.86.168/barbear-ia/` · `.../api/v1/...` · `.../swagger/index.html`
+- **OCI (canônico):** `https://barbear.me/` · `.../api/v1/...` · `.../swagger/index.html`
 - Local: `http://192.168.15.119/barbear-ia/`
 
 ### Domínios SSL no mesmo proxy (outros produtos)
@@ -133,7 +133,7 @@ Não use `localhost:3500` — a porta não é publicada de propósito (igual à 
 
 ```bash
 # SSH
-ssh -i /home/guelfi/Projetos/oci-key-2026-07-29 ubuntu@129.153.86.168
+ssh -i /home/guelfi/Projetos/oci-deploy-keys/oci-barbear-ia-20261023 -o IdentitiesOnly=yes ubuntu@129.153.86.168
 
 # Status frontend
 sudo docker ps --filter name=barbear-ia-frontend
@@ -151,7 +151,7 @@ curl -sS http://127.0.0.1:8085/ | head
 
 ## 7. Checklist de follow-up (não bloqueante da aprovação do plano)
 
-- [x] URL canônica do front/API: `http://129.153.86.168/barbear-ia/`
+- [x] URL canônica do front/API: `https://barbear.me/`
 - [ ] Definir path/subdomínio da API e location nginx correspondente
 - [ ] Definir rede Docker da API ↔ Evolution (`127.0.0.1:8085` vs attach na network Evolution)
 - [ ] Remover ou corrigir `config_test/barbear_ia.conf` legado

@@ -1,41 +1,39 @@
-# Handoff — Barbear.IA
+# Handoff — Barbear.ME (antes Barbear.IA)
 
-**Atualizado:** 2026-08-03 ~11:06 America/Sao_Paulo  
-**Branch ativa:** `main` @ `8e160b5` (`local` ≡ `origin/main` ≡ tip; ahead/behind **0/0**; working tree limpa)  
-**PR fundação:** [#8](https://github.com/guelfi/Barbear.IA/pull/8) (mergeado)
+**Atualizado:** 2026-10-28 America/Sao_Paulo
+**Produção (`main`):** `07f672a` (merge PR #10) — republicado via `workflow_dispatch` em 2026-10-28 ~01:53 UTC (run `40617676322`, sucesso)
+**Em andamento:** PR [#11](https://github.com/guelfi/Barbear.IA/pull/11) `feat/rebrand-barbear-me-lp` @ `aae171b` — **aberto, checks verdes, aguardando merge** (merge via `gh` foi negado pelo classificador de permissões; fazer pela UI do GitHub ou liberar a permissão)
 
 ## Estado atual (resumo)
 
-Produção OCI **estável** com stack completa (front + API + Postgres + Redis). Acesso canônico por **IP + path**. Seed v2 aplicado. Em `main`: UX do cliente, guards de tenant suspenso, permissões do barbeiro e padronização de datas **DD/MM/YYYY** (pt-BR) em todos os perfis. Docs/STATUS alinhados ao tip `8e160b5`.
+Produção OCI **estável** em **https://barbear.me** (stack front + API + Postgres + Redis, nginx-proxy + Cloudflare). Chaves SSH/CD **rotacionadas em 2026-10-23** e **validadas** com deploy real em 2026-10-28. O rebrand **Barbear.IA → Barbear.ME** e a **nova landing page** estão prontos no PR #11, ainda **não** em produção.
 
 | Ambiente | URL | Notas |
 |----------|-----|--------|
-| **OCI (canônico)** | http://129.153.86.168/barbear-ia/ | Front + API + Swagger — saudável @ `8e160b5` |
-| Produção API | http://129.153.86.168/barbear-ia/api/v1/ | Login SA / dono / barbeiro / cliente |
-| Produção Swagger | http://129.153.86.168/barbear-ia/swagger/index.html | HTTP 200 |
-| **Local (paridade)** | http://192.168.15.119/barbear-ia/ | `docker-compose.local.yml` — front 200; API 401 unauth OK |
+| **Produção (canônico)** | https://barbear.me/ | Front 200; API sem auth 401 (esperado) |
+| API | https://barbear.me/api/v1/ | |
+| Swagger | https://barbear.me/swagger/index.html | |
+| Local (paridade) | http://192.168.15.119/barbear-ia/ | `docker-compose.local.yml` (base `/barbear-ia/`) |
+| Legado | http://129.153.86.168/barbear-ia/ | URL antiga por IP; não usar como canônica |
 
-> **Não usar** `batuara.org.br/barbear-ia/` como URL canônica — o produto responde em `http://129.153.86.168/barbear-ia/`.
-
-## Verificação de sync (2026-08-03 ~11:06)
+## Verificação (2026-10-28)
 
 | Check | Resultado |
 |-------|-----------|
-| Git local `main` | `8e160b5` — limpa; ahead/behind **0/0** vs `origin/main` |
-| `origin/main` | `8e160b5` |
-| OCI `/var/www/Barbear.IA` | `8e160b5` (mesmo tip) |
-| Local runtime | http://192.168.15.119/barbear-ia/ — front **200**; API **401** sem auth (esperado) |
-| OCI runtime | http://129.153.86.168/barbear-ia/ — saudável e servindo o HEAD |
-| Asset hash local ≠ OCI | **Esperado** — front embute `VITE_API_URL` diferente; **não** é drift de código |
-| DB (`./scripts/db-sync.sh status`) | Última checagem: contagens **local ≡ OCI** |
+| SSH com `oci-barbear-ia-20261023` (`ubuntu@129.153.86.168`) | OK |
+| OCI `/var/www/Barbear.IA` | `07f672a` ≡ `origin/main` (0/0) |
+| CD manual (`deploy-oci.yml`, `workflow_dispatch`) | Sucesso (validate 3s + deploy 3m43s) |
+| Containers | frontend/API/Postgres `healthy`; Redis `Up` (sem healthcheck) |
+| Secrets GitHub | `OCI_HOST`, `OCI_USERNAME` (2025-10-29), `OCI_SSH_KEY` (2026-10-23) |
 
 ## Como retomar na próxima sessão
 
 1. Ler este handoff + [`docs/backlog-fases-futuras.md`](./backlog-fases-futuras.md).
-2. `git checkout main && git pull origin main`
+2. `git checkout main && git pull origin main` (a branch `codex/pin-validated-oci-revision-20261014` já foi mergeada; trabalho novo sai de branch nova a partir da `main`)
 3. Local (dev): `docker compose -f docker-compose.local.yml up -d --build`
-4. Smoke: http://129.153.86.168/barbear-ia/ — login SA (`admin@barbear.ia` / `Admin123#` / persona **Barbear.IA**).
-5. Escolher item em **Próximos passos sugeridos**.
+4. Smoke: https://barbear.me/ — login SA (`admin@barbear.ia` / persona **Barbear.ME**).
+5. Se o PR #11 ainda estiver aberto: mergear e acompanhar CI + CD (ver "Comandos úteis").
+6. Escolher item em **Próximos passos sugeridos**.
 
 ## Credenciais seed (local e OCI)
 
@@ -54,22 +52,37 @@ Produção OCI **estável** com stack completa (front + API + Postgres + Redis).
 
 | Item | Valor |
 |------|--------|
-| SSH | `ssh -i /home/guelfi/Projetos/oci-key-2026-07-29 ubuntu@129.153.86.168` |
+| SSH | `ssh -i /home/guelfi/Projetos/oci-deploy-keys/oci-barbear-ia-20261023 -o IdentitiesOnly=yes ubuntu@129.153.86.168` (chave por projeto; a antiga `oci-key-2026-07-29` foi substituída) |
 | Sync DB | `./scripts/db-sync.sh status\|pull\|push` — default **OCI → local** (`pull`); `push` exige `CONFIRM=yes` |
 | Repo servidor | `/var/www/Barbear.IA` @ `main` (`8e160b5`) |
 | Compose OCI | `docker-compose.yml` (front+api+postgres+redis) |
 | Secrets OCI | `/var/www/Barbear.IA/.env` (**não** versionado; CD não sobrescreve se existir) |
-| `VITE_API_URL` | `http://129.153.86.168/barbear-ia/api/v1` |
+| `VITE_API_URL` | `https://barbear.me/api/v1` (default do compose; `VITE_BASE_PATH=/`) |
 | Nginx fragment | `deploy/nginx-barbear-ia.locations.conf` |
 | Apply nginx | `sudo python3 deploy/apply-nginx-barbear-ia.py …` (no CD) |
 | Rede Docker | `www_projetos-net` + `barbear-ia-net` |
-| CD | `.github/workflows/deploy-oci.yml` (auto após CI verde em `main`) |
+| CD | `.github/workflows/deploy-oci.yml` — auto após CI verde em push na `main` **ou** `workflow_dispatch` (somente a partir da `main`, input `confirm_deploy=YES`); publica o SHA exato validado |
 
 **Postgres local ≠ volume OCI.** Schema converge via EF `MigrateAsync` no boot da API (migrate **desacoplado** do seed). Dados: espelhar com `db-sync` (fonte operacional = OCI → `pull` após mudanças em prod).
 
 **Containers:** `barbear-ia-frontend`, `barbear-ia-api`, `barbear-ia-postgres`, `barbear-ia-redis`.
 
 ## Recentemente entregue (em `main` / pushed)
+
+### PR #11 — Rebrand Barbear.ME + nova LP (aberto, `aae171b`)
+- Marca **Barbear.IA → Barbear.ME** na UI, PWA, manifest, ícones e `sw.js` (cache `barbear-me-v2.0.0`). **Não** renomeados: e-mails seed `@barbear.ia`, containers, namespaces .NET, repositório, banco
+- LP multi-seção (`src/components/marketing/LandingPage.tsx` + `src/styles/marketing.css`): hero com mockup, números, antes/depois (flip), abas por perfil, simulação WhatsApp, recursos, 3 passos, calculadora de faltas, depoimentos, preço, FAQ, CTA final; `prefers-reduced-motion` respeitado
+- **Preço:** Mensal **R$ 99,00** · Anual **R$ 900,00** pagamento único (≈ R$ 75/mês, economia R$ 288) · **pagamento via PIX** · 7 dias grátis
+- **Depoimentos = modelo ilustrativo de layout** (sem clientes reais; selo "modelo ilustrativo"). Trocar por reais quando existirem
+- "Em breve" na LP: lembretes WhatsApp, link/QR próprio, fidelidade e pacotes (não há backend de lembretes de agendamento; só OTP + outbox)
+- SEO: `canonical`, Open Graph, Twitter Card, `public/og-image.png` (1200×630)
+- Plano completo de melhorias + proposta de LP: [`plano-melhorias-e-lp.md`](./plano-melhorias-e-lp.md)
+- Verificado no navegador em largura desktop; **mobile não verificado visualmente**
+
+### Ops 2026-10 — chaves e CD
+- 2026-10-14: `af6af9a` domínio `barbear.me`; `d1a1fcc`/PR #10 deploy pinado ao SHA do CI verde
+- 2026-10-23: novas chaves SSH por projeto em `/home/guelfi/Projetos/oci-deploy-keys/` e `OCI_SSH_KEY` atualizado no GitHub
+- 2026-10-28: SSH e CD validados com a chave nova
 
 ### `8e160b5` — Docs: STATUS / ponteiros
 - Alinha `STATUS.md` e ponteiros com o handoff vigente
@@ -155,22 +168,28 @@ Produção OCI **estável** com stack completa (front + API + Postgres + Redis).
 
 1. **Mobile audit (iPhone 11):** validar Sair no sidebar; varrer demais telas.
 2. **Ajuste UX perfil a perfil** (sidebars/telas) — pedido do produto.
-3. **Secrets produção:** rotacionar `Jwt__SigningKey` e `POSTGRES_PASSWORD` no `.env` OCI.
+3. **Secrets de aplicação:** chaves SSH/CD já rotacionadas; **falta** confirmar rotação de `Jwt__SigningKey`, `POSTGRES_PASSWORD`, Stripe e Evolution no `.env` OCI.
 4. **Evolution real:** `Evolution__Enabled`, OTP + outbox.
-5. **Stripe real:** webhook assinado.
+5. **Cobrança:** checkout hoje é **Stripe** (sandbox); a LP promete **PIX** → integrar provedor PIX (Mercado Pago/Asaas/Stripe PIX) antes do fim do trial.
 6. **Hardening E9:** ZAP, HttpOnly cookies, CSP, Swagger.
 7. **Limpeza:** `src/database/*.json`; `ProductionDebugPanel` / logs AuthContext.
-8. **Produto futuro:** F-BARBER, F-CLIENT-MT (completo), F-PKG + loyalty real.
+8. **Produto futuro:** F-BARBER, F-CLIENT-MT (completo), F-PKG + loyalty real; lembretes de agendamento por WhatsApp; link/QR público por barbearia.
+9. **Segurança UI:** `AuthForm.tsx` exibe credenciais demo no login público (`Demo: dono.alpha@barbear.ia · senha …`) — ocultar em produção.
+10. **LP:** confirmar políticas "sem cartão" e "cancele quando quiser"; criar páginas Termos/Privacidade; definir WhatsApp comercial; analytics; validar mobile.
+11. **Docs:** `STATUS.md`, `.env.example` e `oci-ambiente-atual.md` ainda citam IP + `/barbear-ia/` e a chave antiga.
+12. **CI:** `actions/checkout@v4` e `webfactory/ssh-agent@v0.9.0` em Node 20 (deprecado); `ubuntu-latest` migrando para Ubuntu 26.
 
 ## Próximos passos sugeridos (prioridade)
 
 | # | Item | Por quê |
 |---|------|---------|
-| 1 | Ajustar sidebars/telas perfil a perfil (manter Início cliente) | Pedido produto |
-| 2 | Validar sidebar mobile (Sair) no iPhone 11 | Fix antigo ainda a validar no device |
-| 3 | Rotacionar secrets OCI | Segurança |
-| 4 | Evolution OTP / F-BARBER / F-CLIENT-MT completo / F-PKG | Produto |
-| 5 | ZAP + Swagger | Hardening |
+| 1 | Mergear PR #11, acompanhar CI/CD e validar LP em https://barbear.me (desktop + mobile) | Rebrand/LP ainda fora do ar |
+| 2 | Integrar cobrança **PIX** | LP já promete PIX |
+| 3 | Ocultar credenciais demo no login; rotacionar secrets de app | Segurança |
+| 4 | Lembretes WhatsApp (Evolution) + link/QR público | Principais ganchos de venda da LP ("em breve") |
+| 5 | Atualizar docs (`STATUS.md`, `.env.example`, `oci-ambiente-atual.md`) | Ainda apontam para IP/chave antigos |
+| 6 | Ajustar sidebars/telas perfil a perfil; validar sidebar mobile no iPhone 11 | Pedido produto / validação pendente |
+| 7 | F-BARBER / F-CLIENT-MT / F-PKG; ZAP + Swagger | Produto / hardening |
 
 ## Comandos úteis
 
@@ -184,7 +203,7 @@ docker compose -f docker-compose.local.yml up -d --build
 # ./scripts/db-sync.sh push   # só com CONFIRM=yes
 
 # SSH OCI
-ssh -i /home/guelfi/Projetos/oci-key-2026-07-29 ubuntu@129.153.86.168
+ssh -i /home/guelfi/Projetos/oci-deploy-keys/oci-barbear-ia-20261023 -o IdentitiesOnly=yes ubuntu@129.153.86.168
 
 # OCI (no servidor)
 cd /var/www/Barbear.IA
@@ -195,6 +214,11 @@ sudo docker exec nginx-proxy nginx -t && sudo docker exec nginx-proxy nginx -s r
 
 # Acompanhar Actions
 gh run list --branch main --limit 5
+gh pr checks 11 --watch
+
+# Deploy manual (somente a partir da main)
+gh workflow run deploy-oci.yml --ref main -f confirm_deploy=YES
+gh run watch <run-id> --exit-status
 ```
 
 ## Histórico compacto (go-live → agora)
@@ -208,3 +232,5 @@ gh run list --branch main --limit 5
 7. UX cliente, guards suspenso, permissões barbeiro (`88821a6`).
 8. Datas DD/MM/YYYY via `formatDate.ts` (`f62e3bb`).
 9. Docs STATUS / ponteiros (`8e160b5`); handoff refresh ~11:06 America/Sao_Paulo.
+10. Rotação de chaves SSH/CD (2026-10-23) e validação por deploy manual (2026-10-28, run `40617676322`).
+11. Rebrand Barbear.ME + nova LP + plano de melhorias (PR #11, `aae171b`) — aguardando merge.
