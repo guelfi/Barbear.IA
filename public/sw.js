@@ -1,4 +1,4 @@
-const CACHE_NAME = 'barbear-ia-v1.0.0';
+const CACHE_NAME = 'barbear-me-v2.0.0';
 const STATIC_CACHE_URLS = [
   '/',
   '/index.html',
@@ -121,7 +121,7 @@ self.addEventListener('push', (event) => {
   console.log('Service Worker: Push notification received');
   
   const options = {
-    body: event.data ? event.data.text() : 'Nova notificação do Barbear.IA',
+    body: event.data ? event.data.text() : 'Nova notificação do Barbear.ME',
     icon: '/icon-192x192.png',
     badge: '/icon-192x192.png',
     vibrate: [200, 100, 200],
@@ -144,7 +144,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('Barbear.IA', options)
+    self.registration.showNotification('Barbear.ME', options)
   );
 });
 

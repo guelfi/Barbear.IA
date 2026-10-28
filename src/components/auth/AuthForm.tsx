@@ -331,7 +331,7 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                 textShadow: "0 0 8px rgba(0,0,0,0.3)"
               }}
             >
-              Barbear.IA
+              Barbear.ME
             </motion.h1>
           </motion.div>
           <motion.p
@@ -662,7 +662,7 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                       delay={400}
                       className="mb-1"
                     />
-                    <span className="text-xs">Barbear.IA</span>
+                    <span className="text-xs">Barbear.ME</span>
                   </MaterialButton>
                 </motion.div>
 
@@ -774,12 +774,6 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                       {isLoading ? "Entrando..." : "Entrar"}
                     </MaterialButton>
                   </motion.div>
-
-                  {loginData.userType === 'barbershop' && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      Demo: dono.alpha@barbear.ia · senha Demo@123456 · persona Barbearia
-                    </p>
-                  )}
 
                   {/* Demo autofill: apenas em desenvolvimento local */}
                   {import.meta.env.DEV && loginData.userType && (

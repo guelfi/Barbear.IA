@@ -4,7 +4,7 @@ export const APP_CONFIG = {
   DEBOUNCE_DELAY: 300,
   
   // App settings
-  APP_NAME: 'Barbear.IA',
+  APP_NAME: 'Barbear.ME',
   VERSION: '1.0.0',
   
   // Development settings

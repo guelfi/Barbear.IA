@@ -32,9 +32,9 @@ export const stripeConfig: StripeConfig = {
 export const subscriptionPlans: StripePlan[] = [
   {
     id: 'pro-monthly',
-    name: 'Barbear.IA Pro',
+    name: 'Barbear.ME Pro',
     description: 'Plataforma completa para gestão de barbearias - Mensal',
-    price: 39.90,
+    price: 99.00,
     currency: 'BRL',
     interval: 'month',
     features: [
@@ -54,9 +54,9 @@ export const subscriptionPlans: StripePlan[] = [
   },
   {
     id: 'pro-yearly',
-    name: 'Barbear.IA Pro',
+    name: 'Barbear.ME Pro',
     description: 'Plataforma completa para gestão de barbearias - Anual',
-    price: 359.00,
+    price: 900.00,
     currency: 'BRL',
     interval: 'year',
     features: [
@@ -70,7 +70,7 @@ export const subscriptionPlans: StripePlan[] = [
       'Multi-unidades',
       'Dashboard avançado',
       'Backup automático',
-      '🎉 Economia de 25% no plano anual'
+      '🎉 Economia de 24% no plano anual'
     ],
     stripePriceId: 'price_pro_yearly',
     popular: true

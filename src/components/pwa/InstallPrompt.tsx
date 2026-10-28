@@ -44,7 +44,7 @@ export function InstallPrompt() {
                 />
               </div>
               <div>
-                <CardTitle className="text-lg">Instalar Barbear.IA</CardTitle>
+                <CardTitle className="text-lg">Instalar Barbear.ME</CardTitle>
                 <CardDescription className="text-sm">
                   Acesse rapidamente como um app nativo
                 </CardDescription>
