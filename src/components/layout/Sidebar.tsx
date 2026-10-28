@@ -190,7 +190,7 @@ export function Sidebar({ activeTab, onTabChange, isOpen, onToggle }: SidebarPro
                   className="text-primary transition-colors duration-300 group-hover:text-primary/80"
                 />
                 <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent group-hover:from-primary/80 group-hover:to-primary/50 transition-all duration-300">
-                  Barbear.IA
+                  Barbear.ME
                 </h1>
               </div>
               <Button

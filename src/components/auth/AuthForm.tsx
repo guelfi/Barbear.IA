@@ -331,7 +331,7 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                 textShadow: "0 0 8px rgba(0,0,0,0.3)"
               }}
             >
-              Barbear.IA
+              Barbear.ME
             </motion.h1>
           </motion.div>
           <motion.p
@@ -662,7 +662,7 @@ export function AuthForm({ onBackToLanding, initialTab = "login" }: AuthFormProp
                       delay={400}
                       className="mb-1"
                     />
-                    <span className="text-xs">Barbear.IA</span>
+                    <span className="text-xs">Barbear.ME</span>
                   </MaterialButton>
                 </motion.div>
 

@@ -139,7 +139,7 @@ export function usePWA() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Barbear.IA',
+          title: 'Barbear.ME',
           text: 'Sistema completo de gestão para barbearias',
           url: window.location.origin
         });

@@ -1,5 +1,5 @@
 /**
- * Padrão de datas do Barbear.IA (todos os perfis):
+ * Padrão de datas do Barbear.ME (todos os perfis):
  * - Exibição: DD/MM/YYYY
  * - Data+hora: DD/MM/YYYY HH:mm
  * - Valores de formulário/API: YYYY-MM-DD (ISO local, sem deslocar fuso)
